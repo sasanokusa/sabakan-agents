@@ -33,7 +33,8 @@ Conversation / Hermes / LLM
 - SQLite audit log（LLM の自然言語説明ではなく Broker が生成）
 - ローカル実行用の `SystemExecutor` と、テスト用 executor インターフェース
 - incident fixture と標準ライブラリだけで動く回帰テスト
-- 3種類の初期評価モデル（Q4_K_M GGUF）と同一条件の評価 runner
+- 3種類の初期評価モデル（Q4_K_M GGUF）と同一条件のOpenAI function-calling評価 runner
+- disposable Docker fixture（実Broker execute / postcheck / health restored）
 
 Hermes、Discord、SSH の unrestricted shell はまだ接続していません。Remote control は authenticated RPC / forced-command executor を追加してから接続します。
 
@@ -45,23 +46,34 @@ Hermes、Discord、SSH の unrestricted shell はまだ接続していません�
 # GGUF本体はGitHubへ含めず、manifestのURLとSHA-256から取得
 python3 scripts/download_models.py
 
-python3 scripts/evaluate_llamacpp.py --output evaluation/results-v2.json
+python3 scripts/evaluate_llamacpp.py --output evaluation/results-v3.json --max-tokens 384
 ```
 
-結果は `evaluation/results-v2.json` に保存されます。旧プロトコルの結果は
+結果は `evaluation/results-v3.json` に保存されます。旧プロトコルの結果は
 `evaluation/results-v1.json`（互換用に `evaluation/results.json` も保持）です。
-評価 runner はモデルが提案した文字列を実行せず、opaque な incident ID と
-症状・観測だけをモデルへ渡します。出力は JSON / llama.cpp tool_calls /
-LFM native marker を Canonical Proposal に変換し、実 Broker の schema・resource
-registry・policy で評価します。Approval 要否はモデル出力ではなく Broker の
-判定結果です。
+評価 runner はBrokerの `TOOL_SPECS` からOpenAI function schemaを生成し、3モデルへ
+同一の `tools` と `tool_choice=auto` を渡します。モデル固有のtool schemaや
+approval promptはありません。llama.cppは各GGUFのchat templateをJinjaで適用します。
+モデルが提案した文字列は実行せず、opaqueなincident IDと症状・観測だけを渡します。
+出力はJSON / llama.cpp tool_calls / LFM native markerをCanonical Proposalに変換し、
+実Brokerのschema・resource registry・policyで評価します。Approval要否はモデル出力
+ではなくBrokerの判定結果です。
 
-v2 の synthetic fixture は実 executor / postcheck を実行しないため、
-`Diagnostic Success Rate` と呼びます。本物の Incident Resolution Rate は、
-Docker/VM fixture で propose → Broker → execute → postcheck → health restored
-まで実装した後に追加します。
+v2/v3のsynthetic benchmarkは実executor / postcheckを実行しないため、
+`Diagnostic Success Rate` と呼びます。Docker fixtureでは実際の
+`propose → Broker → execute → postcheck → health restored` を測定し、初期3ケースの
+`Incident Resolution Rate`を別レポートに保存します。
 
 評価は公式 llama.cpp の CUDA サーバーをモデルごとに起動します。NVIDIA Container Toolkit が使えないホストでは、ホストの CUDA デバイスとドライバライブラリを明示的に渡します。モデルサーバーは各モデルの測定後に削除され、次のモデルへ GPU メモリを持ち越しません。
+
+同じDocker実行fixtureは次で確認できます。
+
+```bash
+python3 scripts/run_docker_fixtures.py --output evaluation/fixture-results-v1.json
+```
+
+現在は `service_restart`、`docker_restart`、`log_rotate` の3ケースです。各ケースは
+一時コンテナを異常状態にして、Brokerの実executor・verification・postcheckで復旧を確認します。
 
 ## 実行
 

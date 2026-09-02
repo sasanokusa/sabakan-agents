@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any, Iterable, Mapping
 
 from .models import PermissionLevel, ToolRequest
 
@@ -21,6 +21,8 @@ class ToolSpec:
     level: PermissionLevel
     required: tuple[str, ...]
     optional: tuple[str, ...] = ()
+    argument_types: Mapping[str, str] | None = None
+    argument_enums: Mapping[str, tuple[str, ...]] | None = None
 
     @property
     def minimum_level(self) -> PermissionLevel:
@@ -31,6 +33,32 @@ class ToolSpec:
     @property
     def allowed_arguments(self) -> frozenset[str]:
         return frozenset(self.required + self.optional)
+
+    def openai_parameters(self) -> dict[str, Any]:
+        """Build the function parameters from the Broker-owned ToolSpec.
+
+        This is intentionally generated from the same required/optional argument
+        lists used by ``validate_tool_request``.  The function schema is a model
+        interface hint only; Broker validation remains authoritative.
+        """
+
+        argument_types = self.argument_types or {}
+        argument_enums = self.argument_enums or {}
+        properties: dict[str, dict[str, Any]] = {}
+        for argument in self.required + self.optional:
+            property_schema: dict[str, Any] = {
+                "type": argument_types.get(argument, "string"),
+            }
+            choices = argument_enums.get(argument)
+            if choices:
+                property_schema["enum"] = list(choices)
+            properties[argument] = property_schema
+        return {
+            "type": "object",
+            "properties": properties,
+            "required": list(self.required),
+            "additionalProperties": False,
+        }
 
 
 _ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:@/+-]{0,127}$")
@@ -45,8 +73,17 @@ TOOL_SPECS: dict[str, ToolSpec] = {
         "journal_query",
         PermissionLevel.L0,
         ("host", "service", "since", "severity", "limit"),
+        argument_types={"limit": "integer"},
+        argument_enums={
+            "severity": ("debug", "info", "notice", "warning", "err", "crit", "alert", "emerg")
+        },
     ),
-    "process_list": ToolSpec("process_list", PermissionLevel.L0, ("host", "sort")),
+    "process_list": ToolSpec(
+        "process_list",
+        PermissionLevel.L0,
+        ("host", "sort"),
+        argument_enums={"sort": ("cpu", "memory", "pid", "name")},
+    ),
     "disk_status": ToolSpec("disk_status", PermissionLevel.L0, ("host",)),
     "disk_usage": ToolSpec("disk_usage", PermissionLevel.L0, ("host", "resource")),
     "memory_status": ToolSpec("memory_status", PermissionLevel.L0, ("host",)),
@@ -54,16 +91,50 @@ TOOL_SPECS: dict[str, ToolSpec] = {
     "port_list": ToolSpec("port_list", PermissionLevel.L0, ("host",)),
     "docker_list": ToolSpec("docker_list", PermissionLevel.L0, ("host",)),
     "docker_status": ToolSpec("docker_status", PermissionLevel.L0, ("host", "container")),
-    "docker_logs": ToolSpec("docker_logs", PermissionLevel.L0, ("host", "container", "limit")),
+    "docker_logs": ToolSpec(
+        "docker_logs", PermissionLevel.L0, ("host", "container", "limit"), argument_types={"limit": "integer"}
+    ),
     "config_read": ToolSpec("config_read", PermissionLevel.L0, ("host", "resource")),
     "service_restart": ToolSpec("service_restart", PermissionLevel.L1, ("host", "service")),
     "docker_restart": ToolSpec("docker_restart", PermissionLevel.L1, ("host", "container")),
     "log_rotate": ToolSpec("log_rotate", PermissionLevel.L1, ("host", "resource")),
-    "config_patch": ToolSpec("config_patch", PermissionLevel.L2, ("host", "resource", "patch")),
+    "config_patch": ToolSpec(
+        "config_patch", PermissionLevel.L2, ("host", "resource", "patch"), argument_types={"patch": "object"}
+    ),
     "package_install": ToolSpec("package_install", PermissionLevel.L2, ("host", "package")),
     "package_remove": ToolSpec("package_remove", PermissionLevel.L2, ("host", "package")),
     "system_reboot": ToolSpec("system_reboot", PermissionLevel.L3, ("host",)),
 }
+
+
+def openai_function_schema(tool: str) -> dict[str, Any]:
+    """Return one OpenAI-compatible function schema for a Broker tool."""
+
+    try:
+        spec = TOOL_SPECS[tool]
+    except KeyError as exc:
+        raise KeyError(f"unknown Broker tool: {tool}") from exc
+    return {
+        "name": spec.name,
+        "description": "Typed Sabakan operation. The Broker validates authorization and resources.",
+        "parameters": spec.openai_parameters(),
+    }
+
+
+def openai_tool_schemas(tool_names: Iterable[str] | None = None) -> list[dict[str, Any]]:
+    """Return OpenAI Chat Completions ``tools`` generated from ``TOOL_SPECS``.
+
+    ``tool_names`` is only a product-level exposure filter. It cannot introduce
+    a tool that is absent from the Broker registry, and it never changes the
+    Broker's permission or resource policy.
+    """
+
+    names = TOOL_SPECS.keys() if tool_names is None else tuple(tool_names)
+    result: list[dict[str, Any]] = []
+    for name in names:
+        function = openai_function_schema(name)
+        result.append({"type": "function", "function": function})
+    return result
 
 
 def _require_safe_identifier(key: str, value: Any) -> None:

@@ -7,12 +7,21 @@ from pathlib import Path
 from typing import Any
 
 from evaluation.adapters import adapt_output
-from scripts.evaluate_models import build_assessment_broker, build_prompt, evaluate_output, read_benchmark
+from scripts.evaluate_llamacpp import build_chat_completion_payload
+from scripts.evaluate_models import (
+    MODEL_TOOL_SCHEMAS,
+    MODEL_VISIBLE_TOOLS,
+    build_assessment_broker,
+    build_prompt,
+    evaluate_output,
+    read_benchmark,
+)
 from sabakan_broker.api import BrokerAPI
 from sabakan_broker.config import load_mapping
 from sabakan_broker.models import ExecutionResult, Principal, ToolRequest
 from sabakan_broker.policy import PolicyEngine
 from sabakan_broker.resources import ResourceRegistry
+from sabakan_broker.schema import TOOL_SPECS, openai_tool_schemas
 
 from tests.support import build_broker
 
@@ -21,6 +30,37 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class NextStageSecurityTests(unittest.TestCase):
+    def test_openai_tools_are_generated_from_broker_tool_specs(self) -> None:
+        generated = openai_tool_schemas()
+        self.assertEqual(
+            [item["function"]["name"] for item in generated], list(TOOL_SPECS)
+        )
+        for item in generated:
+            function = item["function"]
+            spec = TOOL_SPECS[function["name"]]
+            parameters = function["parameters"]
+            self.assertEqual(parameters["required"], list(spec.required))
+            self.assertEqual(set(parameters["properties"]), set(spec.allowed_arguments))
+            self.assertFalse(parameters["additionalProperties"])
+
+    def test_llama_cpp_payload_passes_same_broker_tools_and_token_budget(self) -> None:
+        payload = build_chat_completion_payload(build_prompt({"id": "incident-001"}), MODEL_TOOL_SCHEMAS, 384)
+        self.assertEqual(payload["tools"], list(MODEL_TOOL_SCHEMAS))
+        self.assertEqual(
+            [item["function"]["name"] for item in payload["tools"]], list(MODEL_VISIBLE_TOOLS)
+        )
+        self.assertEqual(payload["tool_choice"], "auto")
+        self.assertEqual(payload["max_tokens"], 384)
+
+    def test_function_message_without_tool_call_is_a_valid_empty_proposal(self) -> None:
+        result = adapt_output(
+            "",
+            {"content": "The root cause is DNS resolution failure.", "tool_calls": []},
+        )
+        self.assertTrue(result.envelope_valid)
+        self.assertEqual(result.source_format, "llama_cpp_message")
+        self.assertEqual(result.proposal["tool_calls"], [])
+
     def test_model_prompt_contains_only_opaque_id_and_public_context(self) -> None:
         fixtures = read_benchmark(ROOT / "evaluation" / "benchmark.json")
         for fixture in fixtures:

@@ -234,6 +234,22 @@ def adapt_output(raw_output: str, response: Mapping[str, Any] | None = None) -> 
             errors=tuple(errors),
         )
 
+    # With OpenAI-compatible function calling, a valid assistant message may
+    # contain only natural-language content (for example, a diagnosis-only
+    # incident) and no tool calls. Treat that message as the canonical empty
+    # tool proposal instead of requiring the model to duplicate it as JSON.
+    if response is not None and ("tool_calls" in response or "content" in response):
+        content = response.get("content")
+        if not isinstance(content, str) or not content.strip():
+            content = response.get("reasoning_content")
+        if isinstance(content, str) and content.strip():
+            return CanonicalProposal(
+                proposal={"hypothesis": content.strip(), "tool_calls": []},
+                envelope_valid=True,
+                source_format="llama_cpp_message",
+                errors=tuple(errors),
+            )
+
     return CanonicalProposal(
         proposal={"hypothesis": "", "tool_calls": []},
         envelope_valid=False,

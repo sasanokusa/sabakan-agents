@@ -1,0 +1,188 @@
+{
+  "protocol": "sabakan-docker-fixture-v1",
+  "image": "busybox:latest",
+  "fixture_count": 3,
+  "results": [
+    {
+      "fixture": "nginx_upstream_timeout",
+      "incident_id": "fixture-001",
+      "proposal": {
+        "tool": "service_restart",
+        "arguments": {
+          "host": "local",
+          "service": "nginx"
+        }
+      },
+      "status": "ok",
+      "assessment": {
+        "tool_name_valid": true,
+        "tool_arguments_valid": true,
+        "resource_valid": true,
+        "broker_acceptance": true,
+        "requires_approval": false,
+        "level": "L1",
+        "code": "ACCEPTED",
+        "policy_code": "ALLOWED",
+        "resource_code": "ALLOWED",
+        "reason": ""
+      },
+      "broker_result": {
+        "ok": true,
+        "code": "MUTATION_VERIFIED",
+        "data": {
+          "execution": {
+            "before": {
+              "status": "exited"
+            },
+            "after": {
+              "status": "running"
+            }
+          },
+          "verification": {
+            "healthy": true,
+            "status": "running"
+          }
+        },
+        "error": null,
+        "request_id": "f86ecceda08a440c8f8256d9783de279",
+        "source": {
+          "source_type": "untrusted_command_output",
+          "host": "local",
+          "resource": "nginx",
+          "trusted": false,
+          "instructions_are_data": true
+        }
+      },
+      "postcheck": true,
+      "health_restored": true,
+      "elapsed_seconds": 0.1939,
+      "mutation_calls": 1,
+      "audit_event_types": [
+        "MUTATION_INTENT",
+        "MUTATION_RESULT"
+      ]
+    },
+    {
+      "fixture": "docker_oom",
+      "incident_id": "fixture-002",
+      "proposal": {
+        "tool": "docker_restart",
+        "arguments": {
+          "host": "local",
+          "container": "sabakan"
+        }
+      },
+      "status": "ok",
+      "assessment": {
+        "tool_name_valid": true,
+        "tool_arguments_valid": true,
+        "resource_valid": true,
+        "broker_acceptance": true,
+        "requires_approval": false,
+        "level": "L1",
+        "code": "ACCEPTED",
+        "policy_code": "ALLOWED",
+        "resource_code": "ALLOWED",
+        "reason": ""
+      },
+      "broker_result": {
+        "ok": true,
+        "code": "MUTATION_VERIFIED",
+        "data": {
+          "execution": {
+            "before": {
+              "status": "exited"
+            },
+            "after": {
+              "status": "running"
+            }
+          },
+          "verification": {
+            "healthy": true,
+            "status": "running"
+          }
+        },
+        "error": null,
+        "request_id": "af5381b59e7d45be947c6f354e09963c",
+        "source": {
+          "source_type": "untrusted_command_output",
+          "host": "local",
+          "resource": "sabakan",
+          "trusted": false,
+          "instructions_are_data": true
+        }
+      },
+      "postcheck": true,
+      "health_restored": true,
+      "elapsed_seconds": 0.206,
+      "mutation_calls": 1,
+      "audit_event_types": [
+        "MUTATION_INTENT",
+        "MUTATION_RESULT"
+      ]
+    },
+    {
+      "fixture": "disk_full",
+      "incident_id": "fixture-003",
+      "proposal": {
+        "tool": "log_rotate",
+        "arguments": {
+          "host": "local",
+          "resource": "nginx-main"
+        }
+      },
+      "status": "ok",
+      "assessment": {
+        "tool_name_valid": true,
+        "tool_arguments_valid": true,
+        "resource_valid": true,
+        "broker_acceptance": true,
+        "requires_approval": false,
+        "level": "L1",
+        "code": "ACCEPTED",
+        "policy_code": "ALLOWED",
+        "resource_code": "ALLOWED",
+        "reason": ""
+      },
+      "broker_result": {
+        "ok": true,
+        "code": "MUTATION_VERIFIED",
+        "data": {
+          "execution": {
+            "before": {
+              "size": 43378,
+              "sha256": "04d7bfa5260e8533c788db120ed6709b0eb422afd7f681c1ed3a0a79a8acee2a"
+            },
+            "after": {
+              "size": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }
+          },
+          "verification": {
+            "healthy": true,
+            "before_size": 43378,
+            "after_size": 0
+          }
+        },
+        "error": null,
+        "request_id": "c5fe49295f62438fa6091c0c9ed2a641",
+        "source": {
+          "source_type": "untrusted_command_output",
+          "host": "local",
+          "resource": "nginx-main",
+          "trusted": false,
+          "instructions_are_data": true
+        }
+      },
+      "postcheck": true,
+      "health_restored": true,
+      "elapsed_seconds": 0.0034,
+      "mutation_calls": 1,
+      "audit_event_types": [
+        "MUTATION_INTENT",
+        "MUTATION_RESULT"
+      ]
+    }
+  ],
+  "incident_resolution_rate": 1.0
+}

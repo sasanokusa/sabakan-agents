@@ -9,6 +9,7 @@ and removes the container before loading the next model.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -24,17 +25,29 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
-from evaluate_models import (
-    MODEL_SPECS,
-    aggregate,
-    build_assessment_broker,
-    build_prompt,
-    evaluate_output,
-    read_benchmark,
-)
+try:
+    from evaluate_models import (
+        MODEL_SPECS,
+        MODEL_TOOL_SCHEMAS,
+        aggregate,
+        build_assessment_broker,
+        build_prompt,
+        evaluate_output,
+        read_benchmark,
+    )
+except ModuleNotFoundError:  # imported as ``scripts.evaluate_llamacpp`` by tests/tools
+    from scripts.evaluate_models import (
+        MODEL_SPECS,
+        MODEL_TOOL_SCHEMAS,
+        aggregate,
+        build_assessment_broker,
+        build_prompt,
+        evaluate_output,
+        read_benchmark,
+    )
 
 
-DEFAULT_OUTPUT = ROOT / "evaluation" / "results-v2.json"
+DEFAULT_OUTPUT = ROOT / "evaluation" / "results-v3.json"
 IMAGE = "ghcr.io/ggml-org/llama.cpp:server-cuda"
 MODEL_CONTAINER_PATH = "/models/model.gguf"
 CUDA_LIB = Path("/usr/lib/x86_64-linux-gnu/libcuda.so.580.173.02")
@@ -45,7 +58,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--models", nargs="+", choices=tuple(MODEL_SPECS), default=list(MODEL_SPECS))
     parser.add_argument("--benchmark", type=Path, default=ROOT / "evaluation" / "benchmark.json")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
-    parser.add_argument("--max-new-tokens", type=int, default=128)
+    parser.add_argument(
+        "--max-tokens", "--max-new-tokens", dest="max_tokens", type=int, default=384,
+        help="OpenAI max_tokens for each completion (default: 384)",
+    )
     parser.add_argument("--reasoning-budget", type=int, default=96, help="bounded thinking tokens; -1 means unrestricted")
     parser.add_argument("--reasoning-mode", choices=("auto", "on", "off"), default="off")
     parser.add_argument("--context-size", type=int, default=2048)
@@ -108,7 +124,7 @@ def docker_command(spec: dict[str, Any], name: str, port: int, image: str, conte
         "-ngl", str(gpu_layers),
         "--reasoning", reasoning_mode,
         "--reasoning-budget", str(reasoning_budget),
-        "--reasoning-budget-message", "Return the requested JSON object now.",
+        "--jinja",
         "--metrics",
     ]
 
@@ -139,15 +155,33 @@ def stop_server(name: str) -> None:
     subprocess.run(["docker", "rm", "-f", name], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
-def generate(base_url: str, messages: list[dict[str, str]], max_new_tokens: int, timeout: float) -> tuple[str, int, int, float, dict[str, Any]]:
-    payload = {
+def build_chat_completion_payload(
+    messages: list[dict[str, str]],
+    tools: list[dict[str, Any]] | tuple[dict[str, Any], ...],
+    max_tokens: int,
+) -> dict[str, Any]:
+    """Build the identical OpenAI-compatible request sent to every model."""
+
+    return {
         "model": MODEL_CONTAINER_PATH,
         "messages": messages,
+        "tools": list(tools),
+        "tool_choice": "auto",
         "temperature": 0,
         "top_p": 1,
-        "max_tokens": max_new_tokens,
+        "max_tokens": max_tokens,
         "stream": False,
     }
+
+
+def generate(
+    base_url: str,
+    messages: list[dict[str, str]],
+    tools: list[dict[str, Any]] | tuple[dict[str, Any], ...],
+    max_tokens: int,
+    timeout: float,
+) -> tuple[str, int, int, float, dict[str, Any]]:
+    payload = build_chat_completion_payload(messages, tools, max_tokens)
     started = time.perf_counter()
     response = http_json(f"{base_url}/v1/chat/completions", payload, timeout=timeout)
     elapsed = time.perf_counter() - started
@@ -210,14 +244,20 @@ def main() -> int:
 
     report: dict[str, Any] = {
         "benchmark": str(args.benchmark),
-        "protocol": "sabakan-canonical-v2",
+        "protocol": "sabakan-canonical-v3-openai-tools",
         "generated_at": time.time(),
         "runtime": {
             "image": args.docker_image,
             "context_size": args.context_size,
             "gpu_layers": args.gpu_layers,
+            "max_tokens": args.max_tokens,
             "reasoning_budget": args.reasoning_budget,
             "reasoning_mode": args.reasoning_mode,
+            "chat_template": "model metadata via llama.cpp Jinja",
+            "tool_names": [item["function"]["name"] for item in MODEL_TOOL_SCHEMAS],
+            "tool_schema_sha256": hashlib.sha256(
+                json.dumps(list(MODEL_TOOL_SCHEMAS), ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            ).hexdigest(),
         },
         "models": [],
     }
@@ -240,7 +280,7 @@ def main() -> int:
             print(f"[{spec['label']}] ready in {load_seconds:.1f}s", flush=True)
             for fixture_index, fixture in enumerate(fixtures, 1):
                 output, prompt_tokens, completion_tokens, elapsed, response_info = generate(
-                    base_url, build_prompt(fixture), args.max_new_tokens, args.request_timeout
+                    base_url, build_prompt(fixture), MODEL_TOOL_SCHEMAS, args.max_tokens, args.request_timeout
                 )
                 result = evaluate_output(
                     output,
