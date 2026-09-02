@@ -1,0 +1,55 @@
+{
+  "tool_levels": {
+    "host_status": "L0",
+    "service_list": "L0",
+    "service_status": "L0",
+    "journal_query": "L0",
+    "process_list": "L0",
+    "disk_status": "L0",
+    "disk_usage": "L0",
+    "memory_status": "L0",
+    "network_status": "L0",
+    "port_list": "L0",
+    "docker_list": "L0",
+    "docker_status": "L0",
+    "docker_logs": "L0",
+    "config_read": "L0",
+    "service_restart": "L1",
+    "docker_restart": "L1",
+    "log_rotate": "L1",
+    "config_patch": "L2",
+    "package_install": "L2",
+    "package_remove": "L2",
+    "system_reboot": "L3"
+  },
+  "mutation_allowlist": [
+    {"tool": "service_restart", "host": "local", "service": "nginx"},
+    {"tool": "docker_restart", "host": "local", "container": "sabakan"},
+    {"tool": "log_rotate", "host": "local", "resource": "nginx-main"}
+  ],
+  "roles": {
+    "owner": {"max_level": "L3"},
+    "operator": {"max_level": "L2"},
+    "observer": {"max_level": "L0"}
+  },
+  "approval_planes": {
+    "L2": "approval",
+    "L3": "oob"
+  },
+  "limits": {
+    "max_tool_calls": 20,
+    "max_identical_tool_repeat": 2,
+    "max_wall_time_seconds": 300,
+    "max_mutations": 3,
+    "max_read_bytes": 65536,
+    "max_read_lines": 400,
+    "max_patch_bytes": 32768
+  },
+  "host_mutation_budget": {
+    "default": {"max": 3, "window_seconds": 600}
+  },
+  "resource_mutation_budget": {
+    "nginx": {"max": 1, "window_seconds": 1800},
+    "sabakan": {"max": 2, "window_seconds": 21600}
+  }
+}

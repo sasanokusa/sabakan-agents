@@ -1,0 +1,40 @@
+{
+  "hosts": {
+    "local": {
+      "services": ["nginx", "docker", "sshd"],
+      "containers": ["sabakan"],
+      "resources": {
+        "nginx-main": {"kind": "config", "path": "/etc/nginx/nginx.conf"},
+        "secret-config": {"kind": "config", "path": "/etc/sabakan/secret.env"},
+        "docker-data": {"kind": "storage", "path": "/var/lib/docker"},
+        "root-disk": {"kind": "disk", "path": "/"}
+      }
+    },
+    "web01": {
+      "services": ["nginx", "sshd"],
+      "containers": [],
+      "resources": {
+        "nginx-main": {"kind": "config", "path": "/etc/nginx/nginx.conf"}
+      }
+    },
+    "nas": {
+      "services": ["smb", "sshd"],
+      "containers": [],
+      "resources": {
+        "root-disk": {"kind": "disk", "path": "/"}
+      }
+    }
+  },
+  "forbidden_paths": [
+    "~/.ssh",
+    "/etc/shadow",
+    "/proc/*/environ",
+    ".env",
+    "credential",
+    "secret",
+    "private.key",
+    "id_rsa",
+    "id_ed25519",
+    "token"
+  ]
+}

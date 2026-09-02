@@ -1,0 +1,35 @@
+{
+  "format": "GGUF Q4_K_M",
+  "downloaded_at": "2026-09-02",
+  "hardware_target": "NVIDIA GeForce GTX 1650 4GiB",
+  "models": [
+    {
+      "label": "LFM2.5-2.6B",
+      "base_model": "LiquidAI/LFM2.5-2.6B",
+      "repository": "LiquidAI/LFM2.5-2.6B-GGUF",
+      "file": "LFM2.5-2.6B-Q4_K_M.gguf",
+      "bytes": 1674455040,
+      "sha256": "02a8b7e17487d326e46d68ce0ba24211e1b80a14c4cd0597fa73c1cd697f52ed",
+      "path": "models/LFM2.5-2.6B-Q4_K_M/LFM2.5-2.6B-Q4_K_M.gguf"
+    },
+    {
+      "label": "Agents-A1-4B",
+      "base_model": "InternScience/Agents-A1-4B",
+      "repository": "InternScience/Agents-A1-4B-Q4_K_M-GGUF",
+      "file": "Agents-A1-4B-Q4_K_M.gguf",
+      "bytes": 2708805312,
+      "sha256": "d93c393a9bd5139a4b5cfe24d31ef553c5a497bfb8afec178a354ecbf508f062",
+      "path": "models/Agents-A1-4B-Q4_K_M/Agents-A1-4B-Q4_K_M.gguf"
+    },
+    {
+      "label": "Granite-4.2-3B",
+      "base_model": "ibm-granite/granite-4.2-3b",
+      "repository": "bartowski/granite-4.2-3b-GGUF",
+      "file": "granite-4.2-3b-Q4_K_M.gguf",
+      "bytes": 2317126048,
+      "sha256": "d8c0c39e0b775ff4e7ed1ed7f0593d27158acb063b07b132fa4f134b2075567f",
+      "path": "models/Granite-4.2-3B-Q4_K_M/granite-4.2-3b-Q4_K_M.gguf",
+      "note": "Q4 conversion of the IBM Granite 4.2 3B checkpoint"
+    }
+  ]
+}

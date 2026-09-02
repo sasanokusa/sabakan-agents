@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sabakan.local/schemas/tool-request.schema.json",
+  "title": "Sabakan typed tool request",
+  "type": "object",
+  "required": ["tool", "arguments"],
+  "additionalProperties": false,
+  "properties": {
+    "tool": {
+      "type": "string",
+      "enum": [
+        "host_status", "service_list", "service_status", "journal_query",
+        "process_list", "disk_status", "disk_usage", "memory_status",
+        "network_status", "port_list", "docker_list", "docker_status",
+        "docker_logs", "config_read", "service_restart", "docker_restart",
+        "log_rotate", "config_patch", "package_install", "package_remove",
+        "system_reboot"
+      ]
+    },
+    "arguments": {"type": "object"},
+    "request_id": {"type": "string"},
+    "incident_id": {"type": "string"},
+    "session_id": {"type": "string"},
+    "model": {"type": "string"}
+  }
+}

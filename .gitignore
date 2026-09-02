@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+.venv/
+build/
+dist/
+*.egg-info/
+data/
+.runtime/
+.coverage
+
+# Model binaries are downloaded locally from models/manifest.json. They are
+# several gigabytes each and are not suitable for a normal GitHub repository.
+models/**/*.gguf
+models/*.gguf
+models/**/*.part
+models/*.part
+
+# Local smoke/intermediate reports; keep only the final benchmark report.
+evaluation/smoke-*.json
+evaluation/results-initial-pass.json
