@@ -43,7 +43,8 @@
     "max_mutations": 3,
     "max_read_bytes": 65536,
     "max_read_lines": 400,
-    "max_patch_bytes": 32768
+    "max_patch_bytes": 32768,
+    "max_total_result_bytes": 65536
   },
   "host_mutation_budget": {
     "default": {"max": 3, "window_seconds": 600}

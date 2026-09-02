@@ -23,6 +23,12 @@ class ToolSpec:
     optional: tuple[str, ...] = ()
 
     @property
+    def minimum_level(self) -> PermissionLevel:
+        """Code-owned permission floor; policy config cannot lower it."""
+
+        return self.level
+
+    @property
     def allowed_arguments(self) -> frozenset[str]:
         return frozenset(self.required + self.optional)
 
@@ -125,6 +131,8 @@ def validate_tool_request(request: ToolRequest, max_patch_bytes: int = 32768) ->
         elif key in {"limit"}:
             _require_limit(key, value)
         elif key == "patch":
+            if request.tool == "config_patch" and not isinstance(value, Mapping):
+                raise ToolValidationError("INVALID_ARGUMENT", "patch must be an object")
             _validate_patch(value, max_patch_bytes)
 
     if request.tool == "journal_query" and request.arguments["severity"] not in {

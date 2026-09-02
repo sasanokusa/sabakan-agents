@@ -11,6 +11,7 @@ from sabakan_broker.broker import Broker
 from sabakan_broker.config import load_mapping
 from sabakan_broker.executor import Executor
 from sabakan_broker.guard import MutationGuard
+from sabakan_broker.guard_store import MutationStateStore
 from sabakan_broker.kill_switch import KillSwitch
 from sabakan_broker.models import Approval, ExecutionResult, Principal, ToolRequest, canonical_json
 from sabakan_broker.policy import PolicyEngine
@@ -93,7 +94,12 @@ class FakeExecutor:
         return ExecutionResult(True, "VERIFIED", {"state_version": self.state_version})
 
 
-def build_broker(tmp_path: Path, *, armed: bool = True) -> tuple[Broker, FakeExecutor, Principal]:
+def build_broker(
+    tmp_path: Path,
+    *,
+    armed: bool = True,
+    guard_state_path: Path | None = None,
+) -> tuple[Broker, FakeExecutor, Principal]:
     resources = ResourceRegistry.from_mapping(load_mapping(ROOT / "config" / "resources.yaml"))
     policy = PolicyEngine.from_mapping(load_mapping(ROOT / "config" / "policy.yaml"), resources)
     audit = AuditLogger(tmp_path / "audit.db")
@@ -109,5 +115,6 @@ def build_broker(tmp_path: Path, *, armed: bool = True) -> tuple[Broker, FakeExe
         audit=audit,
         kill_switch=KillSwitch(armed_path, disabled_path),
         approval_verifier=ApprovalVerifier(SECRET),
+        guard_state_store=MutationStateStore(guard_state_path or (tmp_path / "guard.db")),
     )
     return broker, executor, Principal("alice", plane="conversation", roles=frozenset({"owner"}))

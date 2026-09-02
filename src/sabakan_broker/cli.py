@@ -11,6 +11,7 @@ from .approval import ApprovalVerifier, SQLiteNonceStore
 from .broker import Broker
 from .config import load_mapping
 from .executor import SystemExecutor
+from .guard_store import MutationStateStore
 from .kill_switch import KillSwitch
 from .models import Principal, ToolRequest
 from .policy import PolicyEngine
@@ -22,6 +23,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--policy", default="config/policy.yaml")
     parser.add_argument("--resources", default="config/resources.yaml")
     parser.add_argument("--audit", default="data/audit.db")
+    parser.add_argument("--guard-state", default="data/guard.db")
     parser.add_argument("--armed-path", default="/run/sabakan/ARMED")
     parser.add_argument("--disabled-path", default="/etc/sabakan/DISABLED")
     parser.add_argument("--json", action="store_true", dest="json_output")
@@ -70,6 +72,7 @@ def _build_broker(args: argparse.Namespace) -> Broker:
         audit=audit,
         kill_switch=KillSwitch(args.armed_path, args.disabled_path),
         approval_verifier=verifier,
+        guard_state_store=MutationStateStore(args.guard_state),
     )
 
 

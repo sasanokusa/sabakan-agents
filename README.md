@@ -10,7 +10,7 @@ Conversation / Hermes / LLM
             ▼
       sabakan-broker
   schema → policy → approval
-  kill switch → budget → audit
+  kill switch → budget → intent audit
             │
             ▼
        Executor / ops-agentd
@@ -21,10 +21,14 @@ Conversation / Hermes / LLM
 - 型付き Read / Mutation Tool のスキーマ検証
 - host / service / container / logical resource の allowlist
 - Read 結果の secret redaction、サイズ・行数制限、ログの重複縮約
+- ToolResult 全体の aggregate byte limit（nested mapping / list / log を含む）
 - L0 / L1 / L2 / L3 の policy 判定
+- Tool ごとのコード所有 permission floor（設定による降格を拒否）
 - 具体的な operation hash、期限、nonce、HMAC 署名の Approval 検証
 - execution 直前の state hash 再検証（TOCTOU 対策の executor フックを含む）
 - resource budget、host circuit breaker、incident tool-loop 制限
+- mutation budget / circuit / suspension state の SQLite 永続化
+- mutation 前後の `MUTATION_INTENT` / `MUTATION_RESULT` audit（二段階、fail-closed）
 - `/run/sabakan/ARMED` と `/etc/sabakan/DISABLED` による fail-closed kill switch
 - SQLite audit log（LLM の自然言語説明ではなく Broker が生成）
 - ローカル実行用の `SystemExecutor` と、テスト用 executor インターフェース
@@ -41,10 +45,21 @@ Hermes、Discord、SSH の unrestricted shell はまだ接続していません�
 # GGUF本体はGitHubへ含めず、manifestのURLとSHA-256から取得
 python3 scripts/download_models.py
 
-python3 scripts/evaluate_llamacpp.py
+python3 scripts/evaluate_llamacpp.py --output evaluation/results-v2.json
 ```
 
-結果は `evaluation/results.json` に保存されます。評価 runner はモデルが提案した文字列を実行せず、同一の incident fixture に対する root cause、構造化出力率、承認整合性、unsafe action、不要な mutation、tool call 数などだけを測定します。
+結果は `evaluation/results-v2.json` に保存されます。旧プロトコルの結果は
+`evaluation/results-v1.json`（互換用に `evaluation/results.json` も保持）です。
+評価 runner はモデルが提案した文字列を実行せず、opaque な incident ID と
+症状・観測だけをモデルへ渡します。出力は JSON / llama.cpp tool_calls /
+LFM native marker を Canonical Proposal に変換し、実 Broker の schema・resource
+registry・policy で評価します。Approval 要否はモデル出力ではなく Broker の
+判定結果です。
+
+v2 の synthetic fixture は実 executor / postcheck を実行しないため、
+`Diagnostic Success Rate` と呼びます。本物の Incident Resolution Rate は、
+Docker/VM fixture で propose → Broker → execute → postcheck → health restored
+まで実装した後に追加します。
 
 評価は公式 llama.cpp の CUDA サーバーをモデルごとに起動します。NVIDIA Container Toolkit が使えないホストでは、ホストの CUDA デバイスとドライバライブラリを明示的に渡します。モデルサーバーは各モデルの測定後に削除され、次のモデルへ GPU メモリを持ち越しません。
 
@@ -59,6 +74,8 @@ PYTHONPATH=src python3 -m sabakan_broker status local
 
 # service status（systemd がある環境のみ）
 PYTHONPATH=src python3 -m sabakan_broker service-status local nginx
+
+# durable mutation guard state is stored at data/guard.db by default
 ```
 
 Mutation はデフォルトでは実行されません。`/run/sabakan/ARMED` がなく、また `/etc/sabakan/DISABLED` が存在する場合は必ず拒否します。テストでは一時ディレクトリを kill switch の root として使います。Broker 自身や LLM から kill switch を変更する API はありません。

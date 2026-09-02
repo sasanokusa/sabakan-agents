@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sabakan.local/schemas/canonical-proposal.schema.json",
+  "title": "Canonical Sabakan model proposal",
+  "type": "object",
+  "required": ["hypothesis", "tool_calls"],
+  "additionalProperties": false,
+  "properties": {
+    "hypothesis": {"type": "string"},
+    "tool_calls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["tool", "arguments"],
+        "additionalProperties": false,
+        "properties": {
+          "tool": {"type": "string"},
+          "arguments": {"type": "object"}
+        }
+      }
+    }
+  }
+}

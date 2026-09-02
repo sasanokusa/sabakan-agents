@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import replace
 from typing import Any, Mapping
 
@@ -7,6 +8,7 @@ from .approval import ApprovalError, ApprovalVerifier, make_approval_request
 from .audit import AuditLogger
 from .executor import Executor
 from .guard import MutationGuard
+from .guard_store import MutationStateStore
 from .kill_switch import KillSwitch
 from .models import Approval, ApprovalRequest, ExecutionResult, PermissionLevel, PolicyDecision, Principal, ToolRequest, ToolResult
 from .policy import PolicyEngine
@@ -27,6 +29,7 @@ class Broker:
         approval_verifier: ApprovalVerifier | None = None,
         redactor: Redactor | None = None,
         guard: MutationGuard | None = None,
+        guard_state_store: MutationStateStore | None = None,
     ):
         self.policy = policy
         self.executor = executor
@@ -41,7 +44,44 @@ class Broker:
             max_identical_tool_repeat=policy.limits["max_identical_tool_repeat"],
             max_wall_time_seconds=policy.limits["max_wall_time_seconds"],
             max_mutations=policy.limits["max_mutations"],
+            state_store=guard_state_store,
         )
+
+    def assess_proposal(self, request: ToolRequest, principal: Principal) -> dict[str, Any]:
+        """Assess a model proposal without executing it or consuming guards.
+
+        Evaluation uses this same Broker schema and policy path to distinguish a
+        well-formed proposal, a registry-valid resource, and a policy-accepted
+        operation. Approval remains a Broker result (``requires_approval``), not
+        an LLM protocol field.
+        """
+
+        try:
+            spec = validate_tool_request(request, self.policy.limits["max_patch_bytes"])
+        except ToolValidationError as exc:
+            return {
+                "tool_name_valid": request.tool in self.policy.tool_names,
+                "tool_arguments_valid": False,
+                "resource_valid": False,
+                "broker_acceptance": False,
+                "requires_approval": False,
+                "code": exc.code,
+                "reason": exc.message,
+            }
+        resource_valid, resource_code = self.policy.resource_allowed(request)
+        decision = self.policy.check(request, principal)
+        return {
+            "tool_name_valid": True,
+            "tool_arguments_valid": True,
+            "resource_valid": resource_valid,
+            "broker_acceptance": decision.allowed,
+            "requires_approval": decision.requires_approval,
+            "level": spec.minimum_level.value,
+            "code": decision.code if not decision.allowed else "ACCEPTED",
+            "policy_code": decision.code,
+            "resource_code": resource_code,
+            "reason": decision.reason,
+        }
 
     def handle(
         self,
@@ -99,6 +139,7 @@ class Broker:
                         request_id=request.request_id,
                         approval_request=approval_request,
                     )
+                result = self._finalize_result(result)
                 self._audit(request, principal, "APPROVAL_REQUIRED", result, operation_hash=request.operation_hash(before_hash))
                 return result
             try:
@@ -125,6 +166,32 @@ class Broker:
             self._audit(request, principal, guard_decision.code, result, operation_hash=request.operation_hash(before_hash))
             return result
 
+        operation_hash = request.operation_hash(before_hash)
+        intent = ToolResult(
+            True,
+            "MUTATION_INTENT",
+            data={"status": "validated", "before_hash": before_hash},
+            source=source_metadata(request.tool, request.host(), request.target()),
+            request_id=request.request_id,
+        )
+        if not self._audit(
+            request,
+            principal,
+            "ALLOWED",
+            intent,
+            operation_hash=operation_hash,
+            approval_id=approval_object.request_id if approval_object else None,
+            before_state={"hash": before_hash},
+            event_type="MUTATION_INTENT",
+        ):
+            # Guard state may have been reserved, but the privileged executor is
+            # never entered when the pre-execution audit cannot be committed.
+            return self._failure(
+                request,
+                "AUDIT_INTENT_FAILED",
+                "mutation intent audit could not be written; execution was skipped",
+            )
+
         if approval_object is not None and self.approval_verifier is not None:
             # Consume before entering the privileged executor. A failed operation must
             # not make a signed approval reusable.
@@ -132,7 +199,7 @@ class Broker:
                 self.approval_verifier.consume(approval_object)
             except ApprovalError as exc:
                 result = self._failure(request, exc.code, exc.message)
-                self._audit(request, principal, exc.code, result, operation_hash=request.operation_hash(before_hash))
+                self._audit(request, principal, exc.code, result, operation_hash=operation_hash)
                 return result
 
         try:
@@ -155,21 +222,24 @@ class Broker:
             source=source_metadata(request.tool, request.host(), request.target()),
             request_id=request.request_id,
         )
+        result = self._finalize_result(result)
         if not self._audit(
             request,
             principal,
             "ALLOWED",
             result,
-            operation_hash=request.operation_hash(before_hash),
+            operation_hash=operation_hash,
             approval_id=approval_object.request_id if approval_object else None,
             before_state={"hash": before_hash},
             after_state={"data": self._sanitize_value(execution.after_state)},
             verification_result=self._sanitize_value(verification.data),
-            event_type="mutation",
+            event_type="MUTATION_RESULT",
         ):
             # The operation has already run, so surface the audit failure loudly. It
             # is never hidden behind a successful LLM-facing response.
-            return replace(result, ok=False, code="AUDIT_FAILED", error="audit record could not be written")
+            return self._finalize_result(
+                replace(result, ok=False, code="AUDIT_FAILED", error="audit record could not be written")
+            )
         return result
 
     def prepare_approval(self, request: ToolRequest, principal: Principal) -> ApprovalRequest | ToolResult:
@@ -231,8 +301,11 @@ class Broker:
             source=source_metadata(request.tool, request.host(), request.target()),
             request_id=request.request_id,
         )
+        result = self._finalize_result(result)
         if not self._audit(request, principal, "ALLOWED", result, event_type="read"):
-            return replace(result, ok=False, code="AUDIT_FAILED", error="audit record could not be written")
+            return self._finalize_result(
+                replace(result, ok=False, code="AUDIT_FAILED", error="audit record could not be written")
+            )
         return result
 
     def _verify(self, request: ToolRequest, execution: ExecutionResult) -> ExecutionResult:
@@ -243,18 +316,20 @@ class Broker:
 
     def _sanitize_read(self, request: ToolRequest, data: Any) -> Any:
         if request.tool in {"journal_query", "docker_logs"}:
-            return normalize_log(
+            normalized = normalize_log(
                 data,
                 max_bytes=self.policy.limits["max_read_bytes"],
                 max_lines=self.policy.limits["max_read_lines"],
                 severity=request.arguments.get("severity") if request.tool == "journal_query" else None,
                 redactor=self.redactor,
             )
+            return self._sanitize_value(normalized)
         return self._sanitize_value(data)
 
     def _sanitize_value(self, value: Any) -> Any:
         bounded = self._bound_value(value)
-        return self.redactor.value(bounded)
+        redacted = self.redactor.value(bounded)
+        return self._fit_total_result(redacted, self.policy.limits["max_total_result_bytes"])
 
     def _bound_value(self, value: Any, depth: int = 0) -> Any:
         if depth > 8:
@@ -274,11 +349,147 @@ class Broker:
             return [self._bound_value(child, depth + 1) for child in value[: self.policy.limits["max_read_lines"]]]
         return value
 
+    @staticmethod
+    def _json_size(value: Any) -> int:
+        try:
+            return len(json.dumps(value, ensure_ascii=False, separators=(",", ":"), default=str).encode("utf-8"))
+        except (TypeError, ValueError):
+            return len(json.dumps(str(value), ensure_ascii=False).encode("utf-8"))
+
+    @classmethod
+    def _minimal_truncated_value(cls, budget: int) -> Any:
+        marker = {"_truncated": True}
+        if cls._json_size(marker) <= budget:
+            return marker
+        if cls._json_size(None) <= budget:
+            return None
+        return ""
+
+    @classmethod
+    def _fit_string(cls, value: str, budget: int) -> str:
+        if cls._json_size(value) <= budget:
+            return value
+        low, high = 0, len(value)
+        best = ""
+        while low <= high:
+            middle = (low + high) // 2
+            candidate = value[:middle]
+            if cls._json_size(candidate) <= budget:
+                best = candidate
+                low = middle + 1
+            else:
+                high = middle - 1
+        return best
+
+    @classmethod
+    def _fit_total_result(cls, value: Any, budget: int) -> Any:
+        """Keep the final serialized result within one aggregate byte budget."""
+
+        budget = max(1, int(budget))
+        if cls._json_size(value) <= budget:
+            return value
+        if isinstance(value, str):
+            return cls._fit_string(value, budget)
+        if isinstance(value, Mapping):
+            result: dict[str, Any] = {}
+            truncated = False
+            for raw_key, child in value.items():
+                key = str(raw_key)
+                candidate = dict(result)
+                candidate[key] = child
+                if cls._json_size(candidate) <= budget:
+                    result = candidate
+                    continue
+                remaining = max(1, budget - cls._json_size(result))
+                bounded_child = cls._fit_total_result(child, remaining)
+                candidate[key] = bounded_child
+                if cls._json_size(candidate) <= budget:
+                    result = candidate
+                else:
+                    truncated = True
+                    break
+            if truncated:
+                marker_candidate = dict(result)
+                marker_candidate["_truncated"] = True
+                while cls._json_size(marker_candidate) > budget and result:
+                    result.pop(next(reversed(result)))
+                    marker_candidate = dict(result)
+                    marker_candidate["_truncated"] = True
+                if cls._json_size(marker_candidate) <= budget:
+                    return marker_candidate
+            if cls._json_size(result) <= budget:
+                return result
+            return cls._minimal_truncated_value(budget)
+        if isinstance(value, (list, tuple)):
+            result: list[Any] = []
+            truncated = False
+            for child in value:
+                candidate = result + [child]
+                if cls._json_size(candidate) <= budget:
+                    result = candidate
+                    continue
+                remaining = max(1, budget - cls._json_size(result))
+                bounded_child = cls._fit_total_result(child, remaining)
+                candidate = result + [bounded_child]
+                if cls._json_size(candidate) <= budget:
+                    result = candidate
+                else:
+                    truncated = True
+                    break
+            if truncated:
+                marker_candidate = result + [{"_truncated": True}]
+                while cls._json_size(marker_candidate) > budget and result:
+                    result.pop()
+                    marker_candidate = result + [{"_truncated": True}]
+                if cls._json_size(marker_candidate) <= budget:
+                    return marker_candidate
+            if cls._json_size(result) <= budget:
+                return result
+            return cls._minimal_truncated_value(budget)
+        return cls._minimal_truncated_value(budget)
+
     def _sanitize_text(self, value: str | None) -> str | None:
         return self.redactor.text(value) if isinstance(value, str) else value
 
     def _failure(self, request: ToolRequest, code: str, error: str) -> ToolResult:
-        return ToolResult(False, code, error=self._sanitize_text(error), request_id=request.request_id)
+        return self._finalize_result(
+            ToolResult(False, code, error=self._sanitize_text(error), request_id=request.request_id)
+        )
+
+    def _finalize_result(self, result: ToolResult) -> ToolResult:
+        """Bound the complete serialized ToolResult sent across the boundary."""
+
+        budget = max(1, int(self.policy.limits["max_total_result_bytes"]))
+        if self._json_size(result.as_dict()) <= budget:
+            return result
+
+        # Preserve the envelope and as much data as the remaining budget allows.
+        base = replace(result, data=None, error=None, source=None, approval_request=None)
+        remaining = max(1, budget - self._json_size(base.as_dict()))
+        data = self._fit_total_result(result.data, remaining)
+        candidate = replace(result, data=data, error=None, source=None, approval_request=None)
+        if self._json_size(candidate.as_dict()) <= budget:
+            return candidate
+
+        # Errors and metadata are less useful than a bounded, explicit result
+        # marker. Drop them if necessary; never return an oversized response.
+        candidate = replace(
+            result,
+            data=self._minimal_truncated_value(remaining),
+            error=None,
+            source=None,
+            approval_request=None,
+            request_id=str(result.request_id or "")[:64],
+        )
+        if self._json_size(candidate.as_dict()) <= budget:
+            return candidate
+        return ToolResult(
+            ok=False,
+            code="RESULT_TOO_LARGE",
+            data=None,
+            error="tool result exceeded the Broker aggregate byte limit",
+            request_id=str(result.request_id or "")[:32],
+        )
 
     def _audit(
         self,

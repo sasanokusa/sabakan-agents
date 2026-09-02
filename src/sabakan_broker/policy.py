@@ -21,6 +21,10 @@ def _level(value: Any, fallback: PermissionLevel) -> PermissionLevel:
         return fallback
 
 
+def _max_level(left: PermissionLevel, right: PermissionLevel) -> PermissionLevel:
+    return left if left.number >= right.number else right
+
+
 class PolicyEngine:
     """Policy decision point independent of the LLM and Hermes."""
 
@@ -28,7 +32,9 @@ class PolicyEngine:
         self.registry = registry
         raw_levels = raw.get("tool_levels", {})
         self._levels = {
-            name: _level(raw_levels.get(name), spec.level)
+            # Configuration may tighten a tool's level, but never weaken the
+            # code-owned schema floor. The model cannot influence either value.
+            name: _max_level(spec.minimum_level, _level(raw_levels.get(name), spec.minimum_level))
             for name, spec in TOOL_SPECS.items()
         }
         self._allowlist = tuple(
@@ -53,6 +59,7 @@ class PolicyEngine:
             "max_read_bytes": int(limits.get("max_read_bytes", 65536)),
             "max_read_lines": int(limits.get("max_read_lines", 400)),
             "max_patch_bytes": int(limits.get("max_patch_bytes", 32768)),
+            "max_total_result_bytes": int(limits.get("max_total_result_bytes", 65536)),
         }
         self.host_budget_rules = self._parse_budget_rules(raw.get("host_mutation_budget", {}))
         self.resource_budget_rules = self._parse_budget_rules(raw.get("resource_mutation_budget", {}))
@@ -80,6 +87,10 @@ class PolicyEngine:
 
     def level_for(self, tool: str) -> PermissionLevel:
         return self._levels[tool]
+
+    @property
+    def tool_names(self) -> frozenset[str]:
+        return frozenset(self._levels)
 
     def resource_allowed(self, request: ToolRequest) -> tuple[bool, str]:
         host = request.host()

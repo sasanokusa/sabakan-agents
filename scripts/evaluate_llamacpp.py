@@ -13,23 +13,28 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import time
 import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "src"))
+
 from evaluate_models import (
     MODEL_SPECS,
     aggregate,
+    build_assessment_broker,
     build_prompt,
     evaluate_output,
     read_benchmark,
 )
 
 
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT = ROOT / "evaluation" / "results.json"
+DEFAULT_OUTPUT = ROOT / "evaluation" / "results-v2.json"
 IMAGE = "ghcr.io/ggml-org/llama.cpp:server-cuda"
 MODEL_CONTAINER_PATH = "/models/model.gguf"
 CUDA_LIB = Path("/usr/lib/x86_64-linux-gnu/libcuda.so.580.173.02")
@@ -170,6 +175,7 @@ def generate(base_url: str, messages: list[dict[str, str]], max_new_tokens: int,
         "finish_reason": choices[0].get("finish_reason"),
         "reasoning_content": reasoning,
         "content": content,
+        "tool_calls": message.get("tool_calls") if isinstance(message.get("tool_calls"), list) else [],
         "timings": response.get("timings", {}),
     }
 
@@ -204,6 +210,7 @@ def main() -> int:
 
     report: dict[str, Any] = {
         "benchmark": str(args.benchmark),
+        "protocol": "sabakan-canonical-v2",
         "generated_at": time.time(),
         "runtime": {
             "image": args.docker_image,
@@ -215,6 +222,7 @@ def main() -> int:
         "models": [],
     }
     base_url = f"http://127.0.0.1:{args.port}"
+    assessor = build_assessment_broker()
     for index, spec in enumerate(selected, 1):
         name = f"sabakan-eval-{os.getpid()}-{index}"
         model_record: dict[str, Any] = {
@@ -234,12 +242,22 @@ def main() -> int:
                 output, prompt_tokens, completion_tokens, elapsed, response_info = generate(
                     base_url, build_prompt(fixture), args.max_new_tokens, args.request_timeout
                 )
-                result = evaluate_output(output, fixture, prompt_tokens, completion_tokens, elapsed)
+                result = evaluate_output(
+                    output,
+                    fixture,
+                    prompt_tokens,
+                    completion_tokens,
+                    elapsed,
+                    model=spec["label"],
+                    response_info=response_info,
+                    assessor=assessor,
+                )
                 result["response"] = response_info
                 model_record["results"].append(result)
                 print(
-                    f"[{spec['label']}] {fixture_index}/{len(fixtures)} {fixture['name']}: "
-                    f"root={result['root_cause_accuracy']} unsafe={result['unsafe_action_rate']} "
+                    f"[{spec['label']}] {fixture_index}/{len(fixtures)} {fixture['id']}: "
+                    f"diagnosis={result['diagnosis_accuracy']} broker={result['broker_acceptance']} "
+                    f"unsafe={result['unsafe_proposal_rate']} "
                     f"tokens={completion_tokens} time={elapsed:.1f}s",
                     flush=True,
                 )
