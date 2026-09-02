@@ -47,6 +47,11 @@ Hermes、Discord、SSH の unrestricted shell はまだ接続していません�
 python3 scripts/download_models.py
 
 python3 scripts/evaluate_llamacpp.py --output evaluation/results-v3.json --max-tokens 384
+
+# Local LLM multi-turn execution harness (3 disposable Docker incidents)
+python3 scripts/evaluate_agent_loop.py \
+  --context-size 8192 --max-tokens 384 \
+  --output evaluation/agent-loop-results-v1.json
 ```
 
 結果は `evaluation/results-v3.json` に保存されます。旧プロトコルの結果は
@@ -74,6 +79,13 @@ python3 scripts/run_docker_fixtures.py --output evaluation/fixture-results-v1.js
 
 現在は `service_restart`、`docker_restart`、`log_rotate` の3ケースです。各ケースは
 一時コンテナを異常状態にして、Brokerの実executor・verification・postcheckで復旧を確認します。
+
+Local LLMのmulti-turn評価は `sabakan-agent-loop-v1` として別protocolで保存します。
+モデルには opaque な `incident-001` 形式のID、症状、初期観測、現在のstateで公開された
+Broker生成function schemaだけを渡します。各Read結果も実Brokerでsanitize・provenance付与
+してから次のturnへ戻し、L1 mutationはBrokerのguard、intent audit、executor、verification、
+postcheckを通過した場合だけ復旧成功と数えます。モデルは1つずつ起動し、3fixture終了後に
+server containerを削除してCUDAメモリを解放します。
 
 ## 実行
 
