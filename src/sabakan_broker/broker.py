@@ -12,6 +12,7 @@ from .guard_store import MutationStateStore
 from .kill_switch import KillSwitch
 from .models import Approval, ApprovalRequest, ExecutionResult, PermissionLevel, PolicyDecision, Principal, ToolRequest, ToolResult
 from .policy import PolicyEngine
+from .proposal import classify_proposal
 from .redaction import Redactor, normalize_log, source_metadata
 from .schema import ToolValidationError, validate_tool_request
 
@@ -59,7 +60,7 @@ class Broker:
         try:
             spec = validate_tool_request(request, self.policy.limits["max_patch_bytes"])
         except ToolValidationError as exc:
-            return {
+            assessment = {
                 "tool_name_valid": request.tool in self.policy.tool_names,
                 "tool_arguments_valid": False,
                 "resource_valid": False,
@@ -68,9 +69,11 @@ class Broker:
                 "code": exc.code,
                 "reason": exc.message,
             }
+            assessment.update(classify_proposal(request, assessment))
+            return assessment
         resource_valid, resource_code = self.policy.resource_allowed(request)
         decision = self.policy.check(request, principal)
-        return {
+        assessment = {
             "tool_name_valid": True,
             "tool_arguments_valid": True,
             "resource_valid": resource_valid,
@@ -82,6 +85,8 @@ class Broker:
             "resource_code": resource_code,
             "reason": decision.reason,
         }
+        assessment.update(classify_proposal(request, assessment))
+        return assessment
 
     def handle(
         self,
@@ -91,7 +96,18 @@ class Broker:
     ) -> ToolResult:
         """Validate, authorize, execute and verify one typed request."""
 
-        guard_decision = self.guard.admit_tool_call(request)
+        # An approval submission is the trusted Approval Plane continuation of an
+        # already-admitted conversation proposal. It still passes the guard's
+        # incident time gate, but is not counted as a second model call. Mutation
+        # budgets remain enforced by reserve_mutation below.
+        try:
+            is_approval_level = self.policy.level_for(request.tool).number >= 2
+        except KeyError:
+            is_approval_level = False
+        guard_decision = self.guard.admit_tool_call(
+            request,
+            approval_continuation=approval is not None and is_approval_level,
+        )
         if not guard_decision.allowed:
             result = self._failure(request, guard_decision.code, guard_decision.reason)
             self._audit(request, principal, "GUARD_DENIED", result)
@@ -207,20 +223,42 @@ class Broker:
         except Exception as exc:  # executor failures are converted into safe results
             execution = ExecutionResult(False, "EXECUTOR_ERROR", error=str(exc))
         verification = self._verify(request, execution)
+        rollback: ExecutionResult | None = None
+        rollback_attempted = False
+        if execution.ok and not verification.ok:
+            rollback_fn = getattr(self.executor, "rollback", None)
+            if request.tool == "config_patch" and callable(rollback_fn):
+                rollback_attempted = True
+                try:
+                    rollback = rollback_fn(request, execution)
+                except Exception as exc:  # rollback is best-effort but observable
+                    rollback = ExecutionResult(False, "ROLLBACK_FAILED", error=str(exc))
 
         result_code = "MUTATION_VERIFIED" if execution.ok and verification.ok else (
             verification.code if execution.ok else execution.code
         )
+        execution_data = execution.data if isinstance(execution.data, Mapping) else {}
+        internal_rollback_attempted = bool(execution_data.get("rollback_attempted"))
+        internal_rollback_success = bool(execution_data.get("rollback_success"))
         result = ToolResult(
             execution.ok and verification.ok,
             result_code,
             data={
                 "execution": self._sanitize_value(execution.data),
                 "verification": self._sanitize_value(verification.data),
+                "rollback": self._sanitize_value(rollback.data if rollback is not None else None),
+                "rollback_code": rollback.code if rollback is not None else None,
+                "rollback_attempted": rollback_attempted or internal_rollback_attempted,
+                "rollback_success": bool(rollback is not None and rollback.ok) or internal_rollback_success,
             },
             error=self._sanitize_text(verification.error if execution.ok and not verification.ok else execution.error),
             source=source_metadata(request.tool, request.host(), request.target()),
             request_id=request.request_id,
+            execution_attempted=True,
+            mutation_executed=bool(
+                execution.ok
+                or (isinstance(execution.data, Mapping) and execution.data.get("mutation_executed") is True)
+            ),
         )
         result = self._finalize_result(result)
         if not self._audit(

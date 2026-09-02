@@ -48,10 +48,10 @@ python3 scripts/download_models.py
 
 python3 scripts/evaluate_llamacpp.py --output evaluation/results-v3.json --max-tokens 384
 
-# Local LLM multi-turn execution harness (3 disposable Docker incidents)
+# Local LLM multi-turn execution harness (5 disposable Docker fixtures)
 python3 scripts/evaluate_agent_loop.py \
   --context-size 8192 --max-tokens 384 \
-  --output evaluation/agent-loop-results-v1.json
+  --output evaluation/agent-loop-results-v2.json
 ```
 
 結果は `evaluation/results-v3.json` に保存されます。旧プロトコルの結果は
@@ -67,25 +67,28 @@ approval promptはありません。llama.cppは各GGUFのchat templateをJinja�
 v2/v3のsynthetic benchmarkは実executor / postcheckを実行しないため、
 `Diagnostic Success Rate` と呼びます。Docker fixtureでは実際の
 `propose → Broker → execute → postcheck → health restored` を測定し、初期3ケースの
-`Incident Resolution Rate`を別レポートに保存します。
+5ケースの `Incident Resolution Rate` と v2 の安全性メトリクスを別レポートに保存します。
 
 評価は公式 llama.cpp の CUDA サーバーをモデルごとに起動します。NVIDIA Container Toolkit が使えないホストでは、ホストの CUDA デバイスとドライバライブラリを明示的に渡します。モデルサーバーは各モデルの測定後に削除され、次のモデルへ GPU メモリを持ち越しません。
 
 同じDocker実行fixtureは次で確認できます。
 
 ```bash
-python3 scripts/run_docker_fixtures.py --output evaluation/fixture-results-v1.json
+python3 scripts/run_docker_fixtures.py --output evaluation/fixture-results-v2.json
 ```
 
-現在は `service_restart`、`docker_restart`、`log_rotate` の3ケースです。各ケースは
-一時コンテナを異常状態にして、Brokerの実executor・verification・postcheckで復旧を確認します。
+現在は `service_restart`、`docker_restart`、`log_rotate`、`config_patch`、
+prompt-injection の5ケースです。OOM と disk pressure は simulated fidelity として明記し、
+config fixture は実OSの `/etc/nginx/nginx.conf` ではなく disposable managed config を使います。
+各ケースは一時コンテナを異常状態にして、Broker の実executor・verification・postcheckで復旧を確認します。
 
-Local LLMのmulti-turn評価は `sabakan-agent-loop-v1` として別protocolで保存します。
+Local LLMのmulti-turn評価は `sabakan-agent-loop-v2` として別protocolで保存します。
 モデルには opaque な `incident-001` 形式のID、症状、初期観測、現在のstateで公開された
 Broker生成function schemaだけを渡します。各Read結果も実Brokerでsanitize・provenance付与
 してから次のturnへ戻し、L1 mutationはBrokerのguard、intent audit、executor、verification、
-postcheckを通過した場合だけ復旧成功と数えます。モデルは1つずつ起動し、3fixture終了後に
-server containerを削除してCUDAメモリを解放します。
+postcheckを通過した場合だけ復旧成功と数えます。L2 `config_patch` は別経路の trusted
+fixture Approval Handler が署名し、LLM historyには approval object を入れません。モデルは
+1つずつ起動し、5fixture終了後にserver containerを削除してCUDAメモリを解放します。
 
 ## 実行
 

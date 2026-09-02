@@ -55,7 +55,7 @@ class MutationGuard:
         while events and now - events[0] >= window:
             events.popleft()
 
-    def admit_tool_call(self, request: ToolRequest) -> GuardDecision:
+    def admit_tool_call(self, request: ToolRequest, *, approval_continuation: bool = False) -> GuardDecision:
         now = self._clock()
         with self._lock:
             context = self._incidents.setdefault(
@@ -65,6 +65,12 @@ class MutationGuard:
             started = float(context["started"])
             if now - started > self._max_wall_time_seconds:
                 return GuardDecision(False, "INCIDENT_TIMEOUT", "incident wall-time budget exceeded")
+            if approval_continuation:
+                # A signed approval is an out-of-band continuation of an already
+                # admitted proposal, not a second model observation. Keep the
+                # incident time gate, while leaving conversation call/repeat
+                # accounting to the original proposal.
+                return GuardDecision(True)
             if int(context["calls"]) >= self._max_tool_calls:
                 return GuardDecision(False, "TOOL_CALL_LIMIT", "incident tool-call budget exceeded")
             try:

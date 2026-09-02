@@ -121,6 +121,16 @@ class NextStageSecurityTests(unittest.TestCase):
         self.assertEqual(native_result.proposal["tool_calls"][0]["tool"], "docker_status")
         self.assertEqual(native_result.proposal["tool_calls"][0]["arguments"]["host"], "local")
 
+        tagged_result = adapt_output(
+            "<function=service_restart>\n"
+            "<parameter=host>\nlocal\n</parameter>\n"
+            "<parameter=service>\nnginx\n</parameter>\n"
+            "</function>"
+        )
+        self.assertTrue(tagged_result.envelope_valid)
+        self.assertEqual(tagged_result.source_format, "tagged_function")
+        self.assertEqual(tagged_result.proposal["tool_calls"][0]["arguments"]["service"], "nginx")
+
     def test_permission_floor_cannot_be_lowered_but_can_be_raised(self) -> None:
         resources = ResourceRegistry.from_mapping(load_mapping(ROOT / "config" / "resources.yaml"))
         raw = load_mapping(ROOT / "config" / "policy.yaml")

@@ -16,7 +16,7 @@ from evaluation.docker_fixtures import BUSYBOX_IMAGE, run_docker_fixtures  # noq
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=ROOT / "evaluation" / "fixture-results-v1.json")
+    parser.add_argument("--output", type=Path, default=ROOT / "evaluation" / "fixture-results-v2.json")
     parser.add_argument("--image", default=BUSYBOX_IMAGE)
     args = parser.parse_args()
     report = run_docker_fixtures(args.output, image=args.image)

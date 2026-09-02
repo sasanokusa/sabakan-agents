@@ -89,6 +89,11 @@ class ToolResult:
     source: Mapping[str, Any] | None = None
     request_id: str | None = None
     approval_request: "ApprovalRequest | None" = None
+    # These fields are Broker-owned execution facts.  They are intentionally
+    # distinct: an executor may be entered and fail its precondition without a
+    # mutation being applied.
+    execution_attempted: bool = False
+    mutation_executed: bool = False
 
     def as_dict(self) -> dict[str, Any]:
         result: dict[str, Any] = {
@@ -102,6 +107,8 @@ class ToolResult:
             result["source"] = dict(self.source)
         if self.approval_request is not None:
             result["approval_request"] = self.approval_request.as_dict()
+        result["execution_attempted"] = self.execution_attempted
+        result["mutation_executed"] = self.mutation_executed
         return result
 
 

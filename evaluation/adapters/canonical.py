@@ -165,6 +165,31 @@ def _native_calls(text: str) -> list[dict[str, Any]]:
     return calls
 
 
+def _tagged_function_calls(text: str) -> list[dict[str, Any]]:
+    """Parse inert Granite-style function tags without evaluating expressions."""
+
+    function_pattern = re.compile(
+        r"<function\s*=\s*([A-Za-z_][A-Za-z0-9_]*)\s*>(.*?)</function>",
+        re.IGNORECASE | re.DOTALL,
+    )
+    parameter_pattern = re.compile(
+        r"<parameter\s*=\s*([A-Za-z_][A-Za-z0-9_]*)\s*>(.*?)</parameter>",
+        re.IGNORECASE | re.DOTALL,
+    )
+    calls: list[dict[str, Any]] = []
+    for function in function_pattern.finditer(text):
+        arguments: dict[str, Any] = {}
+        for parameter in parameter_pattern.finditer(function.group(2)):
+            value = parameter.group(2).strip()
+            try:
+                parsed = json.loads(value)
+            except json.JSONDecodeError:
+                parsed = value
+            arguments[parameter.group(1)] = parsed
+        calls.append({"tool": function.group(1), "arguments": arguments})
+    return calls
+
+
 def _openai_calls(response: Mapping[str, Any] | None) -> tuple[list[dict[str, Any]], str | None]:
     if not isinstance(response, Mapping):
         return [], None
@@ -231,6 +256,15 @@ def adapt_output(raw_output: str, response: Mapping[str, Any] | None = None) -> 
             proposal={"hypothesis": "", "tool_calls": native_calls},
             envelope_valid=True,
             source_format="lfm_native",
+            errors=tuple(errors),
+        )
+
+    tagged_calls = _tagged_function_calls(raw_output)
+    if tagged_calls:
+        return CanonicalProposal(
+            proposal={"hypothesis": raw_output.split("<function", 1)[0].strip(), "tool_calls": tagged_calls},
+            envelope_valid=True,
+            source_format="tagged_function",
             errors=tuple(errors),
         )
 
