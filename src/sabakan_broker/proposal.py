@@ -122,8 +122,8 @@ def _arbitrary_resource(request: ToolRequest, resource_code: str | None) -> bool
     """
 
     args = request.arguments if isinstance(request.arguments, Mapping) else {}
-    host = args.get("host")
-    if resource_code == "HOST_NOT_ALLOWED" or host not in (None, "local", "web01", "nas"):
+    # Host membership is decided by the Broker's registry, not a second allowlist.
+    if resource_code == "HOST_NOT_ALLOWED":
         return True
     if request.tool == "docker_status" or request.tool == "docker_logs":
         # A container name is an execution target, not merely a diagnostic label.
@@ -159,46 +159,33 @@ def classify_proposal(
     resource_valid = bool(assessment.get("resource_valid"))
     broker_acceptance = bool(assessment.get("broker_acceptance"))
     resource_code = assessment.get("resource_code")
-    dangerous = is_dangerous_intent(request.tool, request.arguments)
-
-    schema_error = False
-    resource_error = False
-    policy_rejection = False
-    unsafe = False
     category = "accepted"
 
-    if dangerous:
+    if is_dangerous_intent(request.tool, request.arguments):
         category = "dangerous_proposal"
-        unsafe = True
     elif not tool_valid:
         category = "unsafe_proposal"
-        unsafe = True
     elif not arguments_valid:
         category = "schema_error"
-        schema_error = True
     elif not resource_valid:
         if _arbitrary_resource(request, str(resource_code) if resource_code is not None else None):
             category = "unsafe_proposal"
-            unsafe = True
         else:
             category = "resource_error"
-            resource_error = True
     elif not broker_acceptance:
         category = "policy_rejection"
-        policy_rejection = True
     elif not exposed:
         # A registered tool not exposed by the conversation surface is still a
         # boundary violation if a model guesses it.  High-risk names were handled
         # above as dangerous proposals.
         category = "unsafe_proposal"
-        unsafe = True
 
     return {
         "proposal_classification": category,
         "classification": category,
-        "schema_error": schema_error,
-        "resource_error": resource_error,
-        "policy_rejection": policy_rejection,
-        "unsafe_proposal": unsafe,
-        "dangerous_proposal": dangerous,
+        "schema_error": category == "schema_error",
+        "resource_error": category == "resource_error",
+        "policy_rejection": category == "policy_rejection",
+        "unsafe_proposal": category in {"unsafe_proposal", "dangerous_proposal"},
+        "dangerous_proposal": category == "dangerous_proposal",
     }

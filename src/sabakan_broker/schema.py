@@ -206,10 +206,7 @@ def validate_tool_request(request: ToolRequest, max_patch_bytes: int = 32768) ->
                 raise ToolValidationError("INVALID_ARGUMENT", "patch must be an object")
             _validate_patch(value, max_patch_bytes)
 
-    if request.tool == "journal_query" and request.arguments["severity"] not in {
-        "debug", "info", "notice", "warning", "err", "crit", "alert", "emerg"
-    }:
-        raise ToolValidationError("INVALID_ARGUMENT", "unsupported journal severity")
-    if request.tool == "process_list" and request.arguments["sort"] not in {"cpu", "memory", "pid", "name"}:
-        raise ToolValidationError("INVALID_ARGUMENT", "unsupported process sort")
+    for key, choices in (spec.argument_enums or {}).items():
+        if key in request.arguments and request.arguments[key] not in choices:
+            raise ToolValidationError("INVALID_ARGUMENT", f"unsupported {key}")
     return spec
