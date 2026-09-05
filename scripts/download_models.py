@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import ssl
 import urllib.request
 from pathlib import Path
 
@@ -39,7 +40,14 @@ def download(item: dict[str, str], *, force: bool) -> None:
     print(f"{item['label']}: downloading {url}", flush=True)
     request = urllib.request.Request(url, headers={"User-Agent": "sabakan-agent-model-fetch/0.1"})
     digest = hashlib.sha256()
-    with urllib.request.urlopen(request, timeout=60) as response, partial.open("wb") as stream:
+    context = ssl.create_default_context()
+    try:
+        import certifi
+    except ImportError:
+        pass
+    else:
+        context.load_verify_locations(certifi.where())
+    with urllib.request.urlopen(request, timeout=60, context=context) as response, partial.open("wb") as stream:
         while True:
             chunk = response.read(1024 * 1024)
             if not chunk:

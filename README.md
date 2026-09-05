@@ -51,7 +51,7 @@ python3 scripts/evaluate_llamacpp.py --output evaluation/results-v3.json --max-t
 # Local LLM multi-turn execution harness (5 disposable Docker fixtures)
 python3 scripts/evaluate_agent_loop.py \
   --context-size 8192 --max-tokens 384 \
-  --output evaluation/agent-loop-results-v2.json
+  --output evaluation/agent-loop-results-v3.json
 ```
 
 結果は `evaluation/results-v3.json` に保存されます。旧プロトコルの結果は
@@ -67,7 +67,7 @@ approval promptはありません。llama.cppは各GGUFのchat templateをJinja�
 v2/v3のsynthetic benchmarkは実executor / postcheckを実行しないため、
 `Diagnostic Success Rate` と呼びます。Docker fixtureでは実際の
 `propose → Broker → execute → postcheck → health restored` を測定し、初期3ケースの
-5ケースの `Incident Resolution Rate` と v2 の安全性メトリクスを別レポートに保存します。
+旧5ケース混合の集計は予備実験記録として保持します。復旧不要ケースを含む旧比率を研究用の復旧率として使用しません。
 
 評価は公式 llama.cpp の CUDA サーバーをモデルごとに起動します。NVIDIA Container Toolkit が使えないホストでは、ホストの CUDA デバイスとドライバライブラリを明示的に渡します。モデルサーバーは各モデルの測定後に削除され、次のモデルへ GPU メモリを持ち越しません。
 
@@ -82,13 +82,25 @@ prompt-injection の5ケースです。OOM と disk pressure は simulated fidel
 config fixture は実OSの `/etc/nginx/nginx.conf` ではなく disposable managed config を使います。
 各ケースは一時コンテナを異常状態にして、Broker の実executor・verification・postcheckで復旧を確認します。
 
-Local LLMのmulti-turn評価は `sabakan-agent-loop-v2` として別protocolで保存します。
+保存済みのLocal LLM multi-turn評価は旧 `sabakan-agent-loop-v2` の記録です。現行CUDA runnerはv3採点へ接続しましたが独立monitorは未接続のため、安全性を不明と記録します。旧v2では以下の実行境界を使用しました。
 モデルには opaque な `incident-001` 形式のID、症状、初期観測、現在のstateで公開された
 Broker生成function schemaだけを渡します。各Read結果も実Brokerでsanitize・provenance付与
 してから次のturnへ戻し、L1 mutationはBrokerのguard、intent audit、executor、verification、
 postcheckを通過した場合だけ復旧成功と数えます。L2 `config_patch` は別経路の trusted
 fixture Approval Handler が署名し、LLM historyには approval object を入れません。モデルは
 1つずつ起動し、5fixture終了後にserver containerを削除してCUDAメモリを解放します。
+
+## Macでの研究用補助評価
+
+[実行契約](docs/mac-research-protocol.md) と [事前固定仕様](evaluation/protocols/mac-pilot-v3.json) に従い、ネイティブ `llama-server` とDockerでP0–P2の限定評価を行います。モデルはmanifestのSHA-256に一致するGGUFを1つずつロードします。
+
+```bash
+python3 scripts/run_research_controls.py
+python3 scripts/evaluate_mac_research.py --output evaluation/mac-pilot-results-v3.json
+python3 scripts/analyze_mac_research.py evaluation/mac-pilot-results-v3.json --output docs/mac-pilot-results-v3.md
+```
+
+出力先に既存ファイルがあれば停止します。復旧・非介入・安全性の欠測を分離し、公開観測だけを読むplaybook、最小／提案ハーネス、単一機構ablation、3モデルを比較します。Mac結果はGTX 1650 4GBでの主評価と分けて扱います。[112試行の実施結果と限界](docs/mac-pilot-summary-v3.md) を保存しています。
 
 ## 実行
 

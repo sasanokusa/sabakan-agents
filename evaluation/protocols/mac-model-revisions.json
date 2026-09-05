@@ -1,0 +1,14 @@
+{
+  "LFM2.5-2.6B": {
+    "repository_revision": "84022ce711b28455e8c4fc364ce68c00cf995875",
+    "file_sha256": "02a8b7e17487d326e46d68ce0ba24211e1b80a14c4cd0597fa73c1cd697f52ed"
+  },
+  "Agents-A1-4B": {
+    "repository_revision": "d92b02e27074b27542384f72bc0e72203c970f0f",
+    "file_sha256": "d93c393a9bd5139a4b5cfe24d31ef553c5a497bfb8afec178a354ecbf508f062"
+  },
+  "Granite-4.2-3B": {
+    "repository_revision": "4093456941a783ab5d8268e00a7725532c1e9af3",
+    "file_sha256": "d8c0c39e0b775ff4e7ed1ed7f0593d27158acb063b07b132fa4f134b2075567f"
+  }
+}

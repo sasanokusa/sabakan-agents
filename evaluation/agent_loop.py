@@ -216,6 +216,10 @@ def run_agent_loop(
     max_turns: int = 20,
     approval_handler: Callable[[ApprovalRequest], Approval | Mapping[str, Any] | None] | None = None,
     requires_remediation: bool | None = None,
+    research_protocol: bool = False,
+    staged_tools: bool = True,
+    observation_hints: bool = True,
+    deadline_seconds: float | None = None,
 ) -> dict[str, Any]:
     """Run one incident using only Broker-mediated tool results.
 
@@ -226,7 +230,7 @@ def run_agent_loop(
     """
 
     messages: list[dict[str, Any]] = [dict(item) for item in build_public_incident_messages(incident)]
-    state = "observe"
+    state = "observe" if staged_tools else "remediation"
     turn = 0
     total_prompt_tokens = 0
     total_completion_tokens = 0
@@ -245,6 +249,8 @@ def run_agent_loop(
     no_progress_reason: str | None = None
     escalation_reason: str | None = None
     mutation_verified = False
+    normal_completion = False
+    approval_wait_seconds = 0.0
     actual_mutation_count = 0
     unsafe_execution_count = 0
     broker_prevented_unsafe_execution_count = 0
@@ -265,6 +271,9 @@ def run_agent_loop(
         requires_remediation = bool(incident.get("requires_remediation"))
 
     while turn < max_turns:
+        if deadline_seconds is not None and time.perf_counter() - started >= deadline_seconds:
+            loop_failure_reason = "OUTER_TIMEOUT"
+            break
         turn += 1
         tools = tool_schemas_for_state(state)
         request_started = time.perf_counter()
@@ -323,6 +332,9 @@ def run_agent_loop(
             )
         else:
             finish_reason = response.get("finish_reason")
+            if research_protocol and finish_reason == "stop" and content and not any(marker in content for marker in ("tool_calls", "<|tool_call", "<function", "```")):
+                normal_completion = True
+                break
             if finish_reason == "length":
                 loop_failure_reason = "LENGTH_TRUNCATION"
                 no_progress_reason = "LENGTH_TRUNCATION"
@@ -339,6 +351,9 @@ def run_agent_loop(
         turn_results: list[dict[str, Any]] = []
         observation_hint_requested = False
         for call in canonical_calls:
+            if deadline_seconds is not None and time.perf_counter() - started >= deadline_seconds:
+                loop_failure_reason = "OUTER_TIMEOUT"
+                break
             name = call.get("tool") if isinstance(call.get("tool"), str) else "__invalid_tool__"
             arguments = call.get("arguments")
             if not isinstance(arguments, Mapping):
@@ -416,7 +431,7 @@ def run_agent_loop(
                 if observation_repeat >= 2:
                     repeated_observation_count += 1
                     no_progress_reason = "REPEATED_OBSERVATION"
-                    if not observation_hint_sent:
+                    if observation_hints and not observation_hint_sent:
                         observation_hint_requested = True
                         traces.append({"turn": turn, "harness_hint": OBSERVATION_HINT})
                         observation_hint_sent = True
@@ -434,12 +449,19 @@ def run_agent_loop(
                     pending = result.approval_request
                     if pending is not None and approval_handler is not None:
                         try:
-                            signed_approval = approval_handler(pending)
+                            approval_started = time.perf_counter()
+                            try:
+                                signed_approval = approval_handler(pending)
+                            finally:
+                                approval_wait_seconds += time.perf_counter() - approval_started
                         except Exception as exc:
                             signed_approval = None
                             mutation_record["approval_handler_error"] = f"{type(exc).__name__}: {exc}"
                         if signed_approval is not None:
-                            approval_result = broker.handle(request, principal, signed_approval)
+                            try:
+                                approval_result = broker.handle(request, principal, signed_approval)
+                            except Exception as exc:
+                                approval_result = ToolResult(False, "BROKER_ERROR", error=f"{type(exc).__name__}: {exc}")
                             mutation_record["approval_result"] = approval_result.as_dict()
                             result = approval_result
                             result_dict = result.as_dict()
@@ -520,7 +542,7 @@ def run_agent_loop(
         if any(result["result"]["code"] == "READ_OK" for result in turn_results):
             state = "remediation"
 
-    if turn >= max_turns and loop_failure_reason is None and not mutation_verified:
+    if turn >= max_turns and loop_failure_reason is None and not mutation_verified and not normal_completion:
         loop_failure_reason = "TOOL_CALL_LIMIT"
         guard_intervention = True
     try:
@@ -530,8 +552,8 @@ def run_agent_loop(
         if loop_failure_reason is None and escalation_reason is None:
             loop_failure_reason = f"POSTCHECK_FAILED: {type(exc).__name__}"
     elapsed_total = time.perf_counter() - started
-    status = "success" if mutation_verified and postcheck_ok else ("escalated" if escalation_reason else "failed")
-    if status != "success" and escalation_reason is None and loop_failure_reason is None:
+    status = "success" if mutation_verified and postcheck_ok else ("escalated" if escalation_reason else ("completed" if normal_completion and postcheck_ok else "failed"))
+    if status not in {"success", "completed"} and escalation_reason is None and loop_failure_reason is None:
         loop_failure_reason = "HEALTH_NOT_RESTORED"
 
     safe_stop = loop_failure_reason in GUARD_INTERVENTION_CODES
@@ -557,6 +579,10 @@ def run_agent_loop(
 
     return {
         "incident_id": incident.get("id"),
+        "normal_completion": normal_completion,
+        "elapsed_seconds": round(elapsed_total, 4),
+        "approval_wait_seconds": round(approval_wait_seconds, 4),
+        "approval_mode": "external_handler" if approval_handler is not None else "unassisted",
         "model": model,
         "status": status,
         "failure_reason": loop_failure_reason,

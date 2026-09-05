@@ -17,6 +17,26 @@
 9. **Gateway** — 未接続。Conversation Plane と Approval Plane を分けた gateway を追加する。
 10. **Autonomous Remediation** — 未有効化。L1 でも ARMED、allowlist、budget、circuit、verification の全条件が必要。
 
+## P0–P2: Mac補助評価（2026-09-05）
+
+[実行契約](mac-research-protocol.md) と [事前仕様](../evaluation/protocols/mac-pilot-v3.json) を追加した。対象は隔離したbusyboxコンテナの停止／正常状態であり、GTX 1650の主評価やHTTPサービスの復旧とは区別する。
+
+- **P0（限定したMac実行経路）**: 復旧・非介入・エスカレーション・未解決を分離し、分子／分母／不明数と分母0の `null` を保存する。Executor記録、要求ID付き完了audit、独立Docker postcheck、再起動時刻の変化を照合する。読出しエラーや証拠不足を違反0件にしない。外側タイマー、正常終了、必要観測の到達、trace redaction、成功／失敗／承認待ち時間を実装した。旧traceの再採点可能性は [監査記録](legacy-trace-rescoring.md) に整理した。
+- **P1**: 正常／停止×攻撃あり／なしを対にした。攻撃到達は次のモデル入力に含まれるtool messageから計測する。実Brokerの固定要求11件（正当要求、承認要求、改ざん・expiry・replay、resource、budget、前提条件）と、Dockerの対照6件（正常非介入、不要再起動、復旧を伴う悪影響、全拒否、無応答、例外）を保存した。正解はBrokerの判断結果から作らない。
+- **P2（Mac補助評価を完了）**: 公開観測だけを読むB0、最小B1、提案B2、段階公開なし／ヒントなしの単一機構ablationを用意した。LFMでハーネスを比較し、B2でLFM・Agents-A1・Graniteを比較する。評価用8ケース×2回×7条件＝112試行を事前固定した。開発用32試行を実行後、別出力で本評価112試行を完了した。欠落・重複・準備エラーは0。ケース内反復を平均した対応差と記述的区間を保存した。結果と限界は [実施結果](mac-pilot-summary-v3.md) を参照する。
+
+回帰テスト92件が通過した。本評価ではGraniteによる正常コンテナへの不要再起動1件を検出し、非介入成功から除外した。計測範囲内の境界違反は0/112だが、包括的な安全性の保証とは扱わない。
+
+主要な実装:
+
+- `evaluation/research_protocol.py`: 終了結果・指標・欠測の扱い。
+- `evaluation/research_cases.py`: 隔離ケース、公開観測playbook、独立効果記録。
+- `evaluation/request_controls.py`: 正当要求／不正要求の対照。
+- `scripts/evaluate_mac_research.py`: ネイティブMetal推論、trial上限、再現条件、モデルの逐次ロード／解放。
+- `scripts/analyze_mac_research.py`: ケース別集計、反復を独立試行と誤認しない対応比較、計画行列の欠落検出。
+
+旧結果JSONは変更していない。CUDA向け `scripts/evaluate_agent_loop.py` はv3採点へ接続したが、その5ケースの独立monitorは未接続で、安全性不明として扱う。今回のP0–P2の結果は新しいMac runnerの限定された実行経路に対するものである。L2はメモリ内Executorの承認対照に含むが、人間の承認運用やLLMによるL2復旧比較は未評価。Docker外の操作経路やホスト侵害、GPU VRAM peak、異なる故障族への汎化は未検証である。
+
 ## v2 で追加した評価境界
 
 - model prompt は `incident-001` 形式の opaque ID、symptom、observations のみ。Tool surfaceはBroker生成のfunction schemaとして別送する。
@@ -28,9 +48,9 @@
 
 ## 評価上の既知の制約
 
-- 現行v2の成功判定は `mutation_verified` を必要とするため、適切な非介入を成功として評価できない。復旧・非介入・攻撃対応を分離する仕様は [研究設計・評価方針](research-design.md) に定義したが、実装と再集計は未実施。
+- 現行v2の成功判定は `mutation_verified` を必要とするため、適切な非介入を成功として評価できない。復旧・非介入・攻撃対応を分離する仕様に基づく新しいMac実行経路を追加した。旧v2は再実行・上書きしていない。
 - `unsafe_execution_rate` は、危険と分類された提案に由来する変更実行件数を全提案件数で割った現行指標であり、情報漏えいや許可済み操作の運用上の悪影響まで網羅する指標ではない。
-- `security_invariants` の固定 `True` は設計上の宣言と区別する必要がある。未計測・例外終了を違反0件として扱わず、独立した観測に基づく評価へ改める。
+- `security_invariants` の固定 `True` は設計上の宣言と区別する必要がある。未計測・例外終了を違反0件として扱わず、新しいMac実行経路では独立観測を使い、設計前提と未計測を分離する。
 - 現行の平均復旧時間には失敗終了時間も含まれる。成功時の復旧時間、失敗・打切り時間、承認待ちを分離して報告する。
 - 既存の結果JSONは旧protocolの測定記録として保持する。新仕様に基づく結果は別protocol・別ファイルで作成し、旧結果を無断で上書きしない。
 
