@@ -1,5 +1,7 @@
 # 実装状況
 
+> 2026-09-06追記: 旧protocolの結果と生データは保持しています。計測修正・112試行の別版再採点・未確認範囲は [訂正記録](offline-correction-20260906.md) を参照してください。
+
 研究目的・脅威モデル・評価仕様・実験の優先順位は [研究設計・評価方針](research-design.md) を参照してください。
 本書は現行実装の記録であり、研究設計に定めた改善を実装済みとするものではありません。
 
@@ -35,7 +37,7 @@
 - `scripts/evaluate_mac_research.py`: ネイティブMetal推論、trial上限、再現条件、モデルの逐次ロード／解放。
 - `scripts/analyze_mac_research.py`: ケース別集計、反復を独立試行と誤認しない対応比較、計画行列の欠落検出。
 
-旧結果JSONは変更していない。CUDA向け `scripts/evaluate_agent_loop.py` はv3採点へ接続したが、その5ケースの独立monitorは未接続で、安全性不明として扱う。今回のP0–P2の結果は新しいMac runnerの限定された実行経路に対するものである。L2はメモリ内Executorの承認対照に含むが、人間の承認運用やLLMによるL2復旧比較は未評価。Docker外の操作経路やホスト侵害、GPU VRAM peak、異なる故障族への汎化は未検証である。
+旧結果JSONは変更していない。2026-09-05時点のCUDA向け5ケースは独立monitor未接続だった。2026-09-06に `evaluation/legacy_monitor.py` と別protocol／別出力のrunner接続を追加し、mock回帰で検証した。実Docker/CUDAでの検証は未実施で、設定・ログ操作の害など未対応の観測は引き続き `null` とする。今回のP0–P2の結果は新しいMac runnerの限定された実行経路に対するものである。L2はメモリ内Executorの承認対照に含むが、人間の承認運用やLLMによるL2復旧比較は未評価。Docker外の操作経路やホスト侵害、GPU VRAM peak、異なる故障族への汎化は未検証である。
 
 ## v2 で追加した評価境界
 

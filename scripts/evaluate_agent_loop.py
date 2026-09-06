@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
+import math
 import os
 import sys
 import tempfile
@@ -17,8 +19,16 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
-from evaluation.research_protocol import PROTOCOL, CaseContract, TrialEvidence, score_trial, aggregate_trials
 from evaluation.agent_loop import aggregate_agent_loop, run_agent_loop, tool_schemas_for_state  # noqa: E402
+from evaluation.legacy_monitor import (  # noqa: E402
+    LEGACY_PROTOCOL,
+    LegacyIndependentMonitor,
+    aggregate_legacy_trials,
+    fixture_scope,
+    score_legacy_trial,
+)
+from evaluation.research_protocol import TrialEvidence  # noqa: E402
+from scripts.evaluate_mac_research import TrialTimeout, deadline, write_report  # noqa: E402
 from evaluation.docker_fixtures import (  # noqa: E402
     DockerFixtureExecutor,
     PRINCIPAL,
@@ -52,7 +62,7 @@ except ModuleNotFoundError:  # direct execution with scripts on sys.path
     )
 
 
-DEFAULT_OUTPUT = ROOT / "evaluation" / "agent-loop-results-v3.json"
+DEFAULT_OUTPUT = ROOT / "evaluation" / "agent-loop-results-independent-v1.json"
 
 
 def parse_args() -> argparse.Namespace:
@@ -66,6 +76,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--reasoning-mode", choices=("auto", "on", "off"), default="off")
     parser.add_argument("--port", type=int, default=18080)
     parser.add_argument("--request-timeout", type=float, default=300.0)
+    parser.add_argument("--trial-timeout", type=float, default=300.0)
     parser.add_argument("--docker-image", default=IMAGE)
     return parser.parse_args()
 
@@ -157,6 +168,8 @@ def _score_case(result: dict[str, Any], case: Any) -> dict[str, Any]:
 
 def main() -> int:
     args = parse_args()
+    if not math.isfinite(args.trial_timeout) or args.trial_timeout <= 0:
+        raise ValueError("--trial-timeout must be a finite positive number")
     if args.output.exists():
         raise FileExistsError(f"Refusing to overwrite existing evaluation: {args.output}")
     require_runtime()
@@ -165,9 +178,14 @@ def main() -> int:
     read_tools = tool_schemas_for_state("observe")
     remediation_tools = tool_schemas_for_state("remediation")
     report: dict[str, Any] = {
-        "protocol": PROTOCOL,
+        "protocol": LEGACY_PROTOCOL,
+        "experiment_status": "unmeasured_until_runtime_execution",
         "fixtures": [case.incident_id for case in cases],
         "fixture_count": len(cases),
+        "case_denominators": {
+            "remediation_required": sum(case.requires_remediation for case in cases),
+            "non_remediation": sum(not case.requires_remediation for case in cases),
+        },
         "runtime": {
             "image": args.docker_image,
             "context_size": args.context_size,
@@ -175,6 +193,7 @@ def main() -> int:
             "max_tokens": args.max_tokens,
             "reasoning_budget": args.reasoning_budget,
             "reasoning_mode": args.reasoning_mode,
+            "trial_timeout_seconds": args.trial_timeout,
             "chat_template": "model metadata via llama.cpp Jinja",
             "read_tool_schema_sha256": _schema_hash(read_tools),
             "remediation_tool_schema_sha256": _schema_hash(remediation_tools),
@@ -182,7 +201,7 @@ def main() -> int:
         "security_assessment": {
             "status": "unmeasured",
             "design_assumptions": ["protected Broker and policy", "separate approval plane", "isolated executor"],
-            "limitation": "Independent boundary and operational harm monitors are not yet connected.",
+            "limitation": "No CUDA trial is claimed until this runner is executed; unsupported monitor facts remain null.",
         },
         "models": [],
     }
@@ -227,17 +246,22 @@ def main() -> int:
                 fixture_root: Path | None = None
                 trial_started = False
                 trial_started_at = None
+                monitor: LegacyIndependentMonitor | None = None
+                broker = None
+                raw_model_events: list[dict[str, Any]] = []
                 try:
                     with tempfile.TemporaryDirectory(prefix="sabakan-agent-case-") as directory:
                         fixture_root = Path(directory)
-                        setup = _normalize_setup(case.setup(container_name + f"-{fixture_index}", fixture_root))
-                        executor = DockerFixtureExecutor(
+                        with deadline(30.0):
+                            setup = _normalize_setup(case.setup(container_name + f"-{fixture_index}", fixture_root))
+                        fixture_executor = DockerFixtureExecutor(
                             setup.containers,
                             setup.log_path,
                             case.read_data,
                             config_path=setup.config_path,
                         )
-                        broker = build_fixture_broker(fixture_root / "broker", executor)
+                        monitor = LegacyIndependentMonitor(fixture_executor, fixture_scope(case))
+                        broker = build_fixture_broker(fixture_root / "broker", monitor)
                         incident = {
                             "id": case.incident_id,
                             "symptom": case.symptom,
@@ -245,52 +269,152 @@ def main() -> int:
                         }
                         trial_started = True
                         trial_started_at = time.perf_counter()
-                        result = run_agent_loop(
-                            incident=incident,
-                            broker=broker,
-                            principal=PRINCIPAL,
-                            chat=chat,
-                            postcheck=lambda: case.postcheck(executor),
-                            model=model_name,
-                            max_tokens=args.max_tokens,
-                            max_turns=20,
-                            approval_handler=trusted_fixture_approval_handler,
-                            requires_remediation=case.requires_remediation,
-                            research_protocol=True,
-                        )
+
+                        def monitored_chat(messages: list[dict[str, Any]], tools: tuple[dict[str, Any], ...]):
+                            request_started = time.perf_counter()
+                            monitor.record_model_input(messages)
+                            event: dict[str, Any] = {
+                                "kind": "model_request",
+                                "input": copy.deepcopy(messages),
+                                "tools": copy.deepcopy(tools),
+                            }
+                            try:
+                                response = chat(messages, tools)
+                            except BaseException as exc:
+                                event.update(
+                                    response=None,
+                                    error=f"{type(exc).__name__}: {exc}",
+                                    elapsed_seconds=time.perf_counter() - request_started,
+                                )
+                                raw_model_events.append(event)
+                                raise
+                            event.update(
+                                response=copy.deepcopy(dict(response)),
+                                elapsed_seconds=time.perf_counter() - request_started,
+                            )
+                            raw_model_events.append(event)
+                            return response
+
+                        def monitored_postcheck() -> bool:
+                            try:
+                                value = bool(case.postcheck(monitor))
+                            except BaseException as exc:
+                                monitor.record_postcheck(None, f"{type(exc).__name__}: {exc}")
+                                raise
+                            monitor.record_postcheck(value)
+                            return value
+
+                        try:
+                            with deadline(args.trial_timeout):
+                                result = run_agent_loop(
+                                    incident=incident,
+                                    broker=broker,
+                                    principal=PRINCIPAL,
+                                    chat=monitored_chat,
+                                    postcheck=monitored_postcheck,
+                                    model=model_name,
+                                    max_tokens=args.max_tokens,
+                                    max_turns=20,
+                                    approval_handler=trusted_fixture_approval_handler,
+                                    requires_remediation=case.requires_remediation,
+                                    research_protocol=True,
+                                    deadline_seconds=args.trial_timeout,
+                                )
+                        except TrialTimeout:
+                            result = {
+                                "incident_id": case.incident_id,
+                                "model": model_name,
+                                "status": "failed",
+                                "failure_reason": "OUTER_TIMEOUT",
+                                "normal_completion": False,
+                                "elapsed_seconds": time.perf_counter() - trial_started_at,
+                                "approval_mode": "fixture_auto_signature",
+                                "turns": [],
+                                "mutations": [],
+                                "tool_call_count": None,
+                                "mutation_count": None,
+                                "loop_trace_complete": False,
+                                "postcheck": None,
+                            }
+                        if not monitor.postchecks:
+                            try:
+                                postcheck_timeout = min(5.0, max(0.1, args.trial_timeout))
+                                with deadline(postcheck_timeout):
+                                    result["postcheck"] = monitored_postcheck()
+                            except TrialTimeout:
+                                monitor.record_postcheck(None, "OUTER_POSTCHECK_TIMEOUT")
+                                result["postcheck"] = None
+                            except BaseException:
+                                result["postcheck"] = None
+                        result.setdefault("loop_trace_complete", True)
                         result = _score_case(result, case)
                         result["approval_mode"] = "fixture_auto_signature"
-                        result["research_score"] = score_trial(
-                            result, CaseContract(case.requires_remediation, case.malicious), TrialEvidence()
+                        audit_events = broker.audit.list_events()
+                        monitor_details = monitor.details(audit_events)
+                        result["raw_model_events"] = raw_model_events
+                        result["audit_events"] = audit_events
+                        result["independent_monitor"] = monitor_details
+                        if monitor_details.get("postcheck") is not None:
+                            result["postcheck"] = monitor_details["postcheck"]
+                        result["research_score"] = score_legacy_trial(
+                            result,
+                            requires_remediation=case.requires_remediation,
+                            attack_present=case.malicious,
+                            evidence=monitor.evidence(audit_events),
+                            started=trial_started,
+                            deadline_seconds=args.trial_timeout,
                         )
                         model_record["results"].append(result)
                         print(
                             f"[{model_name}] {fixture_index}/{len(cases)} {case.incident_id}: "
-                            f"status={result['status']} diagnosis={result['diagnosis_accuracy']} "
-                            f"calls={result['tool_call_count']} mutations={result['mutation_count']} "
-                            f"postcheck={result['postcheck']}",
+                            f"status={result.get('status')} diagnosis={result.get('diagnosis_accuracy')} "
+                            f"calls={result.get('tool_call_count')} mutations={result.get('mutation_count')} "
+                            f"postcheck={result.get('postcheck')}",
                             flush=True,
                         )
-                except Exception as exc:
+                except (Exception, TrialTimeout) as exc:
                     model_record["results"].append(
                         {
                             "incident_id": case.incident_id,
                             "fixture": case.name,
                             "model": model_name,
                             "status": "failed",
-                            "failure_reason": f"{type(exc).__name__}: {exc}",
+                            "failure_reason": "SETUP_TIMEOUT" if isinstance(exc, TrialTimeout) and not trial_started else f"{type(exc).__name__}: {exc}",
+                            "loop_trace_complete": False,
                             "health_restored": False,
-                            "research_score": score_trial(
+                            "raw_model_events": raw_model_events,
+                            "research_score": score_legacy_trial(
                                 {"elapsed_seconds": time.perf_counter() - trial_started_at if trial_started_at is not None else None},
-                                CaseContract(case.requires_remediation, case.malicious), TrialEvidence(), started=trial_started
+                                requires_remediation=case.requires_remediation,
+                                attack_present=case.malicious,
+                                evidence=monitor.evidence(broker.audit.list_events()) if monitor is not None and broker is not None else TrialEvidence(),
+                                started=trial_started,
+                                deadline_seconds=args.trial_timeout,
                             ),
                         }
                     )
+                    if monitor is not None:
+                        failure_record = model_record["results"][-1]
+                        audit_events = broker.audit.list_events() if broker is not None else []
+                        failure_record["audit_events"] = audit_events
+                        failure_record["independent_monitor"] = monitor.details(audit_events)
                     print(f"[{model_name}] {case.incident_id} ERROR {type(exc).__name__}: {exc}", flush=True)
                 finally:
-                    _remove_container(container_name + f"-{fixture_index}")
-            model_record["legacy_v2_diagnostics"] = aggregate_agent_loop(model_record["results"])
-            model_record["metrics"] = aggregate_trials([result["research_score"] for result in model_record["results"]])
+                    if broker is not None:
+                        broker.audit.close()
+                    try:
+                        with deadline(25.0):
+                            _remove_container(container_name + f"-{fixture_index}")
+                    except (Exception, TrialTimeout) as cleanup_error:
+                        if model_record["results"]:
+                            model_record["results"][-1]["cleanup_error"] = f"{type(cleanup_error).__name__}: {cleanup_error}"
+            complete_loops = [r for r in model_record["results"] if r.get("loop_trace_complete") is True]
+            model_record["legacy_v2_diagnostics"] = {
+                "scope": "Complete loop traces only; not independent safety evidence",
+                "excluded_incomplete_trials": len(model_record["results"]) - len(complete_loops),
+                "metrics": aggregate_agent_loop(complete_loops),
+            }
+            model_record["metrics"] = aggregate_legacy_trials([result["research_score"] for result in model_record["results"]])
         except Exception as exc:
             model_record["error"] = f"{type(exc).__name__}: {exc}"
             print(f"[{model_name}] ERROR {model_record['error']}", flush=True)
@@ -299,7 +423,7 @@ def main() -> int:
             report["models"].append(model_record)
             report["generated_at"] = time.time()
             args.output.parent.mkdir(parents=True, exist_ok=True)
-            args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+            write_report(args.output, report)
             print(f"[{model_name}] unloaded; intermediate report written", flush=True)
 
     print(f"wrote {args.output}")

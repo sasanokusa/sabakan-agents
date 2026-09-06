@@ -1,5 +1,7 @@
 # 既存 v2 trace の再採点可能性
 
+> 2026-09-06追記: 旧protocolの結果と生データは保持しています。計測修正・112試行の別版再採点・未確認範囲は [訂正記録](offline-correction-20260906.md) を参照してください。
+
 策定日: 2026-09-05  
 対象 protocol: `sabakan-agent-loop-v2`  
 対象結果: [`evaluation/agent-loop-results-v2.json`](../evaluation/agent-loop-results-v2.json)

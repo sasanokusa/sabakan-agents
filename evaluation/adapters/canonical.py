@@ -151,18 +151,23 @@ def _native_arguments(text: str) -> tuple[dict[str, Any], str | None]:
     return arguments, None
 
 
-def _native_calls(text: str) -> list[dict[str, Any]]:
+def _native_calls(text: str) -> tuple[list[dict[str, Any]], list[str]]:
     start = re.search(r"<\|tool_call_start\|>", text, re.IGNORECASE)
     if start is None:
-        return []
+        return [], []
     tail = text[start.end() :]
     end = re.search(r"<\|tool_call_end\|>", tail, re.IGNORECASE)
     body = tail[: end.start()] if end is not None else tail
     calls: list[dict[str, Any]] = []
+    errors: list[str] = []
+    if end is None:
+        errors.append("native tool call end marker missing")
     for name, arguments_text in _scan_calls(body):
-        arguments, _ = _native_arguments(arguments_text)
+        arguments, error = _native_arguments(arguments_text)
         calls.append({"tool": name, "arguments": arguments})
-    return calls
+        if error:
+            errors.append(error)
+    return calls, errors
 
 
 def _tagged_function_calls(text: str) -> list[dict[str, Any]]:
@@ -194,6 +199,8 @@ def _openai_calls(response: Mapping[str, Any] | None) -> tuple[list[dict[str, An
     if not isinstance(response, Mapping):
         return [], None
     raw_calls = response.get("tool_calls")
+    if "tool_calls" in response and raw_calls is not None and not isinstance(raw_calls, list):
+        return [], "tool_calls must be an array"
     if not isinstance(raw_calls, list):
         return [], None
     calls: list[dict[str, Any]] = []
@@ -212,9 +219,9 @@ def adapt_output(raw_output: str, response: Mapping[str, Any] | None = None) -> 
     errors: list[str] = []
     response = response if isinstance(response, Mapping) else None
     openai_calls, openai_error = _openai_calls(response)
+    if openai_error:
+        errors.append(openai_error)
     if openai_calls:
-        if openai_error:
-            errors.append(openai_error)
         content = response.get("content") or response.get("reasoning_content") or ""
         hypothesis = content if isinstance(content, str) else ""
         return CanonicalProposal(
@@ -250,13 +257,16 @@ def adapt_output(raw_output: str, response: Mapping[str, Any] | None = None) -> 
             errors=tuple(errors),
         )
 
-    native_calls = _native_calls(raw_output)
-    if native_calls:
+    native_marker = re.search(r"<\|tool_call_start\|>", raw_output, re.IGNORECASE)
+    if native_marker is not None:
+        native_calls, native_errors = _native_calls(raw_output)
+        if not native_calls:
+            native_errors.append("native tool call marker contained no calls")
         return CanonicalProposal(
             proposal={"hypothesis": "", "tool_calls": native_calls},
-            envelope_valid=True,
+            envelope_valid=not native_errors,
             source_format="lfm_native",
-            errors=tuple(errors),
+            errors=tuple(errors + native_errors),
         )
 
     tagged_calls = _tagged_function_calls(raw_output)
@@ -266,6 +276,28 @@ def adapt_output(raw_output: str, response: Mapping[str, Any] | None = None) -> 
             envelope_valid=True,
             source_format="tagged_function",
             errors=tuple(errors),
+        )
+
+    # Do not turn a truncated function-tag response into a valid natural
+    # language message.  The caller must retain this as an unknown parse.
+    if re.search(r"<function\s*=", raw_output, re.IGNORECASE):
+        return CanonicalProposal(
+            proposal={"hypothesis": raw_output.split("<function", 1)[0].strip(), "tool_calls": []},
+            envelope_valid=False,
+            source_format="tagged_function",
+            errors=tuple(errors + ["function tag parse failed: closing tag missing"]),
+        )
+
+    # A response that advertises a JSON object but ends before a complete
+    # object is available must remain unknown.  Otherwise the OpenAI-message
+    # fallback would incorrectly turn truncated structured output into a safe
+    # diagnosis-only proposal.
+    if re.search(r"(?:^|\n)\s*(?:```(?:json)?\s*)?\{", raw_output, re.IGNORECASE):
+        return CanonicalProposal(
+            proposal={"hypothesis": "", "tool_calls": []},
+            envelope_valid=False,
+            source_format="sabakan_json",
+            errors=tuple(errors + ["JSON proposal parse failed: no complete object found"]),
         )
 
     # With OpenAI-compatible function calling, a valid assistant message may

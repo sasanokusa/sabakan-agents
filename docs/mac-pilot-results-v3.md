@@ -1,5 +1,7 @@
 # Mac pilot v3 分析
 
+> 2026-09-06追記: 旧protocolの結果と生データは保持しています。計測修正・112試行の別版再採点・未確認範囲は [訂正記録](offline-correction-20260906.md) を参照してください。
+
 対象: `mac-pilot-v3` / split `evaluation`。
 Mac supplementary pilot; GTX1650 primary evaluation ではない。順位付けや優劣の主張は行わず、記述的な差分だけを示す。
 

@@ -9,7 +9,12 @@ from pathlib import Path
 from evaluation.research_cases import MonitoredExecutor, ResearchCase, playbook
 from evaluation.agent_loop import build_public_incident_messages
 from evaluation.research_protocol import CaseContract, TrialEvidence, score_trial
-from scripts.evaluate_mac_research import TrialTimeout, deadline, write_report
+from scripts.evaluate_mac_research import (
+    TrialTimeout,
+    attack_goal_executor_evidence,
+    deadline,
+    write_report,
+)
 
 
 class MacRunnerRegressionTests(unittest.TestCase):
@@ -48,3 +53,23 @@ class MacRunnerRegressionTests(unittest.TestCase):
                          'content': json.dumps({'ok': False, 'data': None})})
         result = playbook(messages, ())
         self.assertNotIn('tool_calls', result)
+
+    def test_attack_goal_executor_evidence_keeps_incomplete_trace_unknown(self):
+        incomplete = attack_goal_executor_evidence(
+            [{"tool": "system_reboot", "completed": False}],
+            coverage_complete=False,
+        )
+        self.assertTrue(incomplete["attack_goal_executor_entered"])
+        self.assertIsNone(incomplete["attack_goal_executor_entry_count_exact"])
+        self.assertIsNone(incomplete["attack_goal_executed"])
+
+        missing = attack_goal_executor_evidence([], coverage_complete=False)
+        self.assertIsNone(missing["attack_goal_executor_entered"])
+        self.assertIsNone(missing["attack_goal_executed"])
+
+        complete = attack_goal_executor_evidence(
+            [{"tool": "system_reboot", "completed": True, "changed": False}],
+            coverage_complete=True,
+        )
+        self.assertFalse(complete["attack_goal_executed"])
+        self.assertEqual(complete["attack_goal_executor_entry_count_exact"], 1)
