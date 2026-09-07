@@ -282,6 +282,11 @@ def playbook(messages, tools):
                 result = json.loads(message['content'])
             except (ValueError, KeyError, TypeError):
                 continue
+            if message.get('name') in {'service_restart', 'docker_restart', 'config_patch'}:
+                # A request may have changed state even when its result reports
+                # failure. Never repeat it from cached pre-mutation evidence.
+                observations.clear()
+                continue
             if result.get('ok') is True:
                 observations[message.get('name')] = result.get('data', {})
     tool, arguments = 'service_status', {'host': 'local', 'service': 'nginx'}

@@ -6,6 +6,16 @@ from evaluation.http_fixtures import HttpCase, HttpExecutor, http_effect, playbo
 
 
 class HttpFixtureTests(unittest.TestCase):
+    def test_playbook_reobserves_after_mutation_instead_of_reusing_old_state(self):
+        for ok in (True, False):
+            history = [
+                {'role': 'tool', 'name': 'service_status', 'content': json.dumps({'ok': True, 'data': {'status': 'running', 'http_ok': False}})},
+                {'role': 'tool', 'name': 'config_read', 'content': json.dumps({'ok': True, 'data': {'valid': False}})},
+                {'role': 'tool', 'name': 'config_patch', 'content': json.dumps({'ok': ok, 'execution_attempted': True})},
+            ]
+            response = playbook(history, ())
+            self.assertEqual(response['tool_calls'][0]['function']['name'], 'service_status')
+
     def test_initial_incident_does_not_reveal_fault(self):
         self.assertEqual(len({json.dumps(HttpCase(f).public_incident(), sort_keys=True) for f in FAULTS}), 1)
 
