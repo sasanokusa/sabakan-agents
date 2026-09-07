@@ -8,10 +8,13 @@
 |---|---|
 | tool_choice=auto | Toolを呼ばず、未観測のnginxを正常と回答 |
 | 最初だけtool_choice=required | typed callなし。確認済みであるかのような文章を生成し、128 token上限で終了 |
+| autoにSabakan共通system promptを追加 | typed callなし。未観測のserviceを正常と回答 |
 
 両条件とも2048 context、4 CPU threads、reasoning off、単一slot、max_tokens 128。同じ要求文・service_status schemaを使い、後者は最初のtool_choiceだけ変更した。各条件を実行前に別planで固定し、再試行しなかった。正しい最初のcallがなかったため、模擬Tool結果を渡す2段階目には進んでいない。
 
 テンプレートはToolsの描画処理を含み、propsではsupports_tools／supports_tool_calls=trueを報告する。ただし、能力宣言だけで実際のtyped call互換性を検証済みとはしない。今後の診断では実際のレンダリング、call形式、Sabakan共通system prompt下の行動を切り分ける。今回の結果でSpark一般の性能を断定しない。
+
+追加検証: 保存済みのauto／required要求を同runtimeの `/apply-template` へ渡すと、service_statusの定義・host/serviceのrequired schemaを含む同一promptが得られた（推論なし）。記録は `evaluation/spark-render-audit-20260907.json`。続いて `1cfcf7e` で既存のSabakan共通system promptだけを追加する単一変更を事前固定して実行したが、Tool呼出しは得られなかった。`evaluation/spark-cpu-common-prompt-20260907.json` に保存。自由選択のTool利用は3条件とも未確認であり、単純なTool定義の描画欠落では説明できない。
 
 記録:
 
