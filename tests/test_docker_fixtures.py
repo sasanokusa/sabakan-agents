@@ -1,11 +1,23 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
+from types import SimpleNamespace
 
-from evaluation.docker_fixtures import fixture_cases
+from evaluation.docker_fixtures import fixture_cases, _start_loop_container
 
 
 class DockerFixtureDefinitionTests(unittest.TestCase):
+    def test_disposable_container_keeps_resource_and_network_limits(self):
+        with patch('evaluation.docker_fixtures._docker', return_value=SimpleNamespace(returncode=0)) as docker:
+            _start_loop_container('test-only')
+        argv = docker.call_args.args[0]
+        for flag, value in (('--network', 'none'), ('--memory', '64m'),
+                            ('--cpus', '0.25'), ('--pids-limit', '32'),
+                            ('--cap-drop', 'ALL'), ('--security-opt', 'no-new-privileges')):
+            self.assertEqual(argv[argv.index(flag) + 1], value)
+        self.assertIn('--read-only', argv)
+
     def test_initial_docker_cases_use_only_fixed_broker_operations(self) -> None:
         cases = fixture_cases()
         self.assertEqual(

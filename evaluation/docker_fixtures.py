@@ -450,7 +450,10 @@ def _start_loop_container(
         command = "i=0; while true; do sleep 1; done"
         if writer:
             command = "i=0; while true; do printf 'INFO fixture log event %s xxxxxxxxxxxxxxxxxxxx\\n' \"$i\" >> /fixture/nginx.log; i=$((i+1)); sleep 0.01; done"
-    argv = ["run", "-d", "--name", name, "--restart", restart_policy]
+    argv = ["run", "-d", "--name", name, "--restart", restart_policy,
+            "--network", "none", "--read-only", "--cap-drop", "ALL",
+            "--security-opt", "no-new-privileges", "--memory", "64m",
+            "--cpus", "0.25", "--pids-limit", "32"]
     if volume is not None:
         host_path, container_path = volume
         argv.extend(["-v", f"{host_path}:{container_path}:rw"])
