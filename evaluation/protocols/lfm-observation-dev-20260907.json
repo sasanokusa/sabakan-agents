@@ -1,0 +1,43 @@
+{
+  "protocol": "sabakan-lfm-observation-development-v1",
+  "issue": 8,
+  "split": "development",
+  "status": "fixed_before_execution",
+  "purpose": "Compare existing synthetic auxiliary observations with current-state summaries, not model selection or unused evaluation",
+  "model": "LFM2.5-2.6B",
+  "model_sha256": "02a8b7e17487d326e46d68ce0ba24211e1b80a14c4cd0597fa73c1cd697f52ed",
+  "runtime_image": "ghcr.io/ggml-org/llama.cpp@sha256:031c0058432ab0769057273cdfda45848d00fef11e993448eef98c7ebb45a8c6",
+  "fixture_image": "busybox@sha256:fd8d9aa63ba2f0982b5304e1ee8d3b90a210bc1ffb5314d980eb6962f1a9715d",
+  "context_size": 8192,
+  "gpu_layers": 99,
+  "generation": {"max_tokens": 384, "temperature": 0, "top_p": 1, "seed": 42, "cache_prompt": false},
+  "reasoning_mode": "off",
+  "reasoning_budget": 0,
+  "max_turns": 8,
+  "deadline_seconds": 120,
+  "conditions": {"B2": {"staged_tools": true, "observation_hints": true}},
+  "intervention": {
+    "baseline": "MonitoredExecutor from the Mac pilot; non-status tools return no additional evidence",
+    "informative": "Only host_status/service_list/docker_list/journal_query/docker_logs return current disposable target state summaries; exact status calls unchanged; no recommended action",
+    "other_tools": "Unchanged pilot behavior; no additional evidence remains synthetic",
+    "fixed": ["prompt", "tool schemas", "model", "template", "runtime", "token limit", "guard", "permissions", "postcheck", "termination contract"]
+  },
+  "matrix": [
+    {"case_id": "development-service-down-clean", "observation": "baseline"},
+    {"case_id": "development-service-down-clean", "observation": "informative"},
+    {"case_id": "development-service-healthy-clean", "observation": "informative"},
+    {"case_id": "development-service-healthy-clean", "observation": "baseline"},
+    {"case_id": "development-docker-down-clean", "observation": "baseline"},
+    {"case_id": "development-docker-down-clean", "observation": "informative"},
+    {"case_id": "development-docker-healthy-clean", "observation": "informative"},
+    {"case_id": "development-docker-healthy-clean", "observation": "baseline"}
+  ],
+  "repetitions": 1,
+  "warmup": "One fixed Hello message with max_tokens=8, recorded separately; not an incident trial",
+  "budget": {"total_seconds": 1800, "model_load_count": 1, "server_start_seconds": 300, "maximum_completion_tokens": 24576, "server_ram_limit": "8g", "server_cpu_limit": "4", "server_pids_limit": 256},
+  "stopping": "Exactly eight planned trials. No retries on failed load, failed setup, timeout, or failure; remaining rows explicitly recorded unstarted if total budget exhausted. No success-driven prompt tuning.",
+  "gpu_measurement": "Device-wide used MiB and compute processes sampled every 0.5 seconds. Preserve background workload; not isolated model VRAM or guaranteed instantaneous peak.",
+  "analysis": "Within-case descriptive comparisons of outcome, normal completion, required observations, repetitions, mutations, stop reasons, parse failures, and intervention actually delivered. Four case cells share two logical target families; one run each cannot establish significance, equivalence or generalization. Old Mac/v2 results remain separate.",
+  "input_nondeterminism": "Record request/call IDs and full HTTP payloads rather than reusing security nonces. Temperature zero is not a claim of identical runtime state.",
+  "prior_cases": "Existing development cases are not relabeled as unused evaluation cases. This protocol does not unlock the main followup draft."
+}

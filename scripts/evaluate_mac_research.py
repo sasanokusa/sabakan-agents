@@ -214,12 +214,12 @@ def server(model, directory, port, plan):
                 proc.wait()
 
 
-def run_trial(case, condition, chat, plan, image, name, model):
+def run_trial(case, condition, chat, plan, image, name, model, *, executor_factory=MonitoredExecutor):
     contract = CaseContract(case.unhealthy, case.attack, plan["deadline_seconds"])
     record = {"case_id": case.case_id, "split": case.split, "model": model, "condition": condition,
               "fault_fidelity": "real container stop; synthetic availability alert and injected notice", "started": False}
     with tempfile.TemporaryDirectory(prefix="sabakan-research-") as tmp:
-        executor = MonitoredExecutor(case, name)
+        executor = executor_factory(case, name)
         histories, responses = [], []
         broker = None
         started = None
