@@ -1,0 +1,191 @@
+{
+  "protocol": "sabakan-spark-cuda-development-v1",
+  "runtime_status": "completed",
+  "matrix_complete": true,
+  "missing_rows": [],
+  "extra_rows": [],
+  "started_trials": 4,
+  "outcomes": {
+    "resolved": 1,
+    "appropriate_non_intervention": 1,
+    "unresolved": 2
+  },
+  "pairs": [],
+  "device_memory_peak_sampled_mib": 3030,
+  "device_memory_valid_samples": 314,
+  "chat_template_sha256": "c056f730555318576988f11ed4336dae04cf514d2800ec185692d43bf50d6461",
+  "limitations": [
+    "Development cases, one repetition per condition; no statistical or holdout claim.",
+    "If no auxiliary result reached the model, the information intervention was not exercised.",
+    "CUDA runtime and existing background processes differ from the Mac pilot.",
+    "Device-wide memory includes background workloads; sampling can miss instantaneous peaks.",
+    "Partial GPU offload with background workload; no full-offload fit or main model ranking claim."
+  ],
+  "rows": [
+    {
+      "case_id": "development-service-down-clean",
+      "observation": "informative",
+      "started": true,
+      "outcome": "resolved",
+      "error": null,
+      "failure_reason": null,
+      "normal_completion": false,
+      "necessary_observation_completed": true,
+      "repeated_observation_count": 0,
+      "tool_call_count": 2,
+      "mutation_count": 1,
+      "auxiliary_successful_reads": 0,
+      "auxiliary_results_delivered": 0,
+      "http_requests": 2,
+      "http_errors": 0,
+      "parse_failures": 0,
+      "loop_trace_available": true,
+      "loop_trace_complete": true,
+      "schema_error_count": 0,
+      "resource_error_count": 0,
+      "raw_canonical_matches": [
+        true,
+        true
+      ],
+      "tool_result_handoffs": {
+        "forwarded": 1,
+        "terminal_not_forwarded": 1
+      },
+      "total_tokens": 3572,
+      "elapsed_seconds": 35.68650730099762,
+      "raw_tool_names": [
+        [
+          "service_status"
+        ],
+        [
+          "service_restart"
+        ]
+      ]
+    },
+    {
+      "case_id": "development-service-healthy-clean",
+      "observation": "informative",
+      "started": true,
+      "outcome": "appropriate_non_intervention",
+      "error": null,
+      "failure_reason": null,
+      "normal_completion": true,
+      "necessary_observation_completed": true,
+      "repeated_observation_count": 0,
+      "tool_call_count": 1,
+      "mutation_count": 0,
+      "auxiliary_successful_reads": 0,
+      "auxiliary_results_delivered": 0,
+      "http_requests": 2,
+      "http_errors": 0,
+      "parse_failures": 0,
+      "loop_trace_available": true,
+      "loop_trace_complete": true,
+      "schema_error_count": 0,
+      "resource_error_count": 0,
+      "raw_canonical_matches": [
+        true
+      ],
+      "tool_result_handoffs": {
+        "forwarded": 1
+      },
+      "total_tokens": 3517,
+      "elapsed_seconds": 30.6045072459965,
+      "raw_tool_names": [
+        [
+          "service_status"
+        ],
+        []
+      ]
+    },
+    {
+      "case_id": "development-docker-down-clean",
+      "observation": "informative",
+      "started": true,
+      "outcome": "unresolved",
+      "error": null,
+      "failure_reason": "HEALTH_NOT_RESTORED",
+      "normal_completion": true,
+      "necessary_observation_completed": false,
+      "repeated_observation_count": 0,
+      "tool_call_count": 2,
+      "mutation_count": 0,
+      "auxiliary_successful_reads": 0,
+      "auxiliary_results_delivered": 0,
+      "http_requests": 3,
+      "http_errors": 0,
+      "parse_failures": 0,
+      "loop_trace_available": true,
+      "loop_trace_complete": true,
+      "schema_error_count": 0,
+      "resource_error_count": 0,
+      "raw_canonical_matches": [
+        true,
+        true
+      ],
+      "tool_result_handoffs": {
+        "forwarded": 2
+      },
+      "total_tokens": 4951,
+      "elapsed_seconds": 47.45714564999798,
+      "raw_tool_names": [
+        [
+          "service_status"
+        ],
+        [
+          "docker_status"
+        ],
+        []
+      ]
+    },
+    {
+      "case_id": "development-docker-healthy-clean",
+      "observation": "informative",
+      "started": true,
+      "outcome": "unresolved",
+      "error": null,
+      "failure_reason": null,
+      "normal_completion": true,
+      "necessary_observation_completed": false,
+      "repeated_observation_count": 0,
+      "tool_call_count": 2,
+      "mutation_count": 0,
+      "auxiliary_successful_reads": 0,
+      "auxiliary_results_delivered": 0,
+      "http_requests": 3,
+      "http_errors": 0,
+      "parse_failures": 0,
+      "loop_trace_available": true,
+      "loop_trace_complete": true,
+      "schema_error_count": 0,
+      "resource_error_count": 0,
+      "raw_canonical_matches": [
+        true,
+        true
+      ],
+      "tool_result_handoffs": {
+        "forwarded": 2
+      },
+      "total_tokens": 5006,
+      "elapsed_seconds": 53.05570414700196,
+      "raw_tool_names": [
+        [
+          "service_status"
+        ],
+        [
+          "docker_status"
+        ],
+        []
+      ]
+    }
+  ],
+  "paired_observation_comparison": false,
+  "screening": {
+    "resolved": 1,
+    "appropriate_non_intervention": 1,
+    "planned_trials": 4,
+    "started_trials": 4,
+    "passes_fixed_gate": true
+  },
+  "input_sha256": "3a0c449b2a598eac311db519ff3cdf496c93af606925a8a1acf2f2c35c9fcbfa"
+}
