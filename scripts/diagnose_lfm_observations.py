@@ -74,7 +74,7 @@ def main():
         'source_sha256': {str(p.relative_to(ROOT)): sha256(p)
             for folder in ('src', 'evaluation', 'scripts', 'config') for p in sorted((ROOT / folder).rglob('*'))
             if p.is_file() and p.suffix in {'.py', '.yaml'}},
-        'model': model, 'prompt_sha256': digest(COMMON_SYSTEM_PROMPT),
+        'model': model, 'prompt_sha256': digest(COMMON_SYSTEM_PROMPT + ('\n' + plan['system_prompt_suffix'] if plan.get('system_prompt_suffix') else '')),
         'platform': platform.platform(), 'python': sys.version,
         'gpu': command_output(['nvidia-smi', '--query-gpu=name,memory.total,memory.used,driver_version', '--format=csv']),
         'gpu_processes_before': command_output(['nvidia-smi', '--query-compute-apps=pid,process_name,used_memory', '--format=csv']),

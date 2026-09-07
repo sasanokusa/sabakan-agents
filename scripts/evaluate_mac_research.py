@@ -241,7 +241,8 @@ def run_trial(case, condition, chat, plan, image, name, model, *, executor_facto
                     chat=tracked_chat, postcheck=lambda: snapshot(name)["status"] == "running", model=model,
                     max_turns=plan["max_turns"], research_protocol=True, requires_remediation=case.unhealthy,
                     staged_tools=options["staged_tools"], observation_hints=options["observation_hints"],
-                    deadline_seconds=plan["deadline_seconds"], partial_trace=partial_trace)
+                    deadline_seconds=plan["deadline_seconds"], partial_trace=partial_trace,
+                    system_prompt_suffix=plan.get('system_prompt_suffix', ''))
             record["loop"] = result
         except TrialTimeout:
             result = {"failure_reason": "OUTER_TIMEOUT", "normal_completion": False,

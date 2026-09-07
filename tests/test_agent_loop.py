@@ -29,6 +29,23 @@ def _response(tool: str, arguments: dict[str, Any], content: str = "") -> dict[s
 
 
 class AgentLoopTests(unittest.TestCase):
+    def test_prompt_suffix_changes_only_system_message(self):
+        from evaluation.agent_loop import build_public_incident_messages, tool_schemas_for_state
+        with tempfile.TemporaryDirectory() as directory:
+            broker, executor, principal = build_broker(Path(directory))
+            captured = []
+            incident = {'id': 'test', 'symptom': 'check availability'}
+            def chat(messages, tools):
+                captured.append((messages, tools))
+                return {'content': 'Target is healthy.', 'finish_reason': 'stop'}
+            run_agent_loop(incident=incident, broker=broker, principal=principal,
+                           chat=chat, postcheck=lambda: True, model='test', research_protocol=True,
+                           system_prompt_suffix='Explicit completion contract.')
+            original = build_public_incident_messages(incident)
+            self.assertEqual(captured[0][0][0]['content'], original[0]['content'] + '\nExplicit completion contract.')
+            self.assertEqual(captured[0][0][1:], original[1:])
+            self.assertEqual(captured[0][1], tool_schemas_for_state('observe'))
+
     def test_outer_interruption_preserves_completed_read_and_pending_model(self):
         from scripts.evaluate_mac_research import TrialTimeout
         with tempfile.TemporaryDirectory() as directory:

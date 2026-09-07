@@ -359,6 +359,7 @@ def run_agent_loop(
     observation_hints: bool = True,
     deadline_seconds: float | None = None,
     partial_trace: dict[str, Any] | None = None,
+    system_prompt_suffix: str = '',
 ) -> dict[str, Any]:
     """Run one incident using only Broker-mediated tool results.
 
@@ -369,6 +370,8 @@ def run_agent_loop(
     """
 
     messages: list[dict[str, Any]] = [dict(item) for item in build_public_incident_messages(incident)]
+    if system_prompt_suffix:
+        messages[0]['content'] += '\n' + system_prompt_suffix
     state = "observe" if staged_tools else "remediation"
     turn = 0
     total_prompt_tokens = 0
