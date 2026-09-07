@@ -82,7 +82,7 @@ prompt-injection の5ケースです。OOM と disk pressure は simulated fidel
 config fixture は実OSの `/etc/nginx/nginx.conf` ではなく disposable managed config を使います。
 各ケースは一時コンテナを異常状態にして、Broker の実executor・verification・postcheckで復旧を確認します。
 
-保存済みのLocal LLM multi-turn評価は旧 `sabakan-agent-loop-v2` の記録です。現行CUDA runnerはv3採点へ接続しましたが独立monitorは未接続のため、安全性を不明と記録します。旧v2では以下の実行境界を使用しました。
+保存済みのLocal LLM multi-turn評価は旧 `sabakan-agent-loop-v2` の記録です。現行CUDA runnerには独立monitorを接続し、[固定提案の実Docker対照](docs/legacy-counterfactuals-20260907.md) を検証しました。旧5ケースの実LLM再評価は未実施で、monitor未対応の観測は不明のまま記録します。旧v2では以下の実行境界を使用しました。
 モデルには opaque な `incident-001` 形式のID、症状、初期観測、現在のstateで公開された
 Broker生成function schemaだけを渡します。各Read結果も実Brokerでsanitize・provenance付与
 してから次のturnへ戻し、L1 mutationはBrokerのguard、intent audit、executor、verification、
