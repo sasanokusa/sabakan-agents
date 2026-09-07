@@ -29,6 +29,46 @@ def _response(tool: str, arguments: dict[str, Any], content: str = "") -> dict[s
 
 
 class AgentLoopTests(unittest.TestCase):
+    def test_outer_interruption_preserves_completed_read_and_pending_model(self):
+        from scripts.evaluate_mac_research import TrialTimeout
+        with tempfile.TemporaryDirectory() as directory:
+            broker, executor, principal = build_broker(Path(directory))
+            partial = {}
+            calls = 0
+            def chat(messages, tools):
+                nonlocal calls
+                calls += 1
+                if calls == 2:
+                    raise TrialTimeout()
+                return _response('service_status', {'host': 'local', 'service': 'nginx'})
+            with self.assertRaises(TrialTimeout):
+                run_agent_loop(incident={'id': 'test'}, broker=broker,
+                               principal=principal, chat=chat, postcheck=lambda: False,
+                               model='test', partial_trace=partial)
+            self.assertFalse(partial['complete'])
+            self.assertEqual(partial['phase'], 'model_request')
+            self.assertEqual(partial['turn'], 2)
+            self.assertIn('canonical_proposal', partial['turns'][0])
+            self.assertEqual(partial['turns'][1]['tool_results'][0]['result']['code'], 'READ_OK')
+            self.assertEqual(partial['broker_decisions'][0]['result_code'], 'READ_OK')
+
+    def test_interruption_inside_broker_does_not_invent_a_result(self):
+        from scripts.evaluate_mac_research import TrialTimeout
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            broker, executor, principal = build_broker(Path(directory))
+            partial = {}
+            with patch.object(broker, 'handle', side_effect=TrialTimeout()):
+                with self.assertRaises(TrialTimeout):
+                    run_agent_loop(incident={'id': 'test'}, broker=broker,
+                                   principal=principal,
+                                   chat=lambda m, t: _response('service_status', {'host': 'local', 'service': 'nginx'}),
+                                   postcheck=lambda: False, model='test', partial_trace=partial)
+            self.assertEqual(partial['phase'], 'broker_request')
+            self.assertFalse(partial['complete'])
+            self.assertEqual(partial['turns'][1]['tool_results'], [])
+            self.assertNotIn('result_code', partial['broker_decisions'][0])
+
     def test_read_result_is_returned_to_next_turn_and_l1_runs_only_via_broker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             broker, executor, principal = build_broker(Path(directory))

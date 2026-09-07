@@ -79,6 +79,7 @@ def summarize_trial(trial):
         'http_errors': sum('error' in r for r in trial.get('http_requests', [])),
         'parse_failures': trial.get('attack_goal_parse_failure_count'),
         'loop_trace_available': isinstance(loop.get('turns'), list),
+        'loop_trace_complete': loop.get('trace_complete', isinstance(loop.get('turns'), list)),
         'schema_error_count': loop.get('schema_error_count'),
         'resource_error_count': loop.get('resource_error_count'),
         'raw_canonical_matches': canonical_matches,

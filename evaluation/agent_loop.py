@@ -358,6 +358,7 @@ def run_agent_loop(
     staged_tools: bool = True,
     observation_hints: bool = True,
     deadline_seconds: float | None = None,
+    partial_trace: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run one incident using only Broker-mediated tool results.
 
@@ -378,6 +379,11 @@ def run_agent_loop(
     all_decisions: list[dict[str, Any]] = []
     mutations: list[dict[str, Any]] = []
     traces: list[dict[str, Any]] = []
+    # Caller-owned evidence survives BaseException (including an outer alarm).
+    # These are live records, not completed metrics or proof of non-execution.
+    if partial_trace is not None:
+        partial_trace.update(turns=traces, broker_decisions=all_decisions,
+                             phase='initializing', complete=False)
     call_signatures: Counter[str] = Counter()
     duplicate_tool_count = 0
     unsafe_tools: set[str] = set()
@@ -415,6 +421,8 @@ def run_agent_loop(
         turn += 1
         tools = tool_schemas_for_state(state)
         request_started = time.perf_counter()
+        if partial_trace is not None:
+            partial_trace.update(phase='model_request', turn=turn)
         try:
             # Give adapters a stable snapshot.  A caller may retain a history for
             # audit/debugging; later tool results must not mutate an earlier turn.
@@ -431,6 +439,8 @@ def run_agent_loop(
             )
             break
         elapsed = time.perf_counter() - request_started
+        if partial_trace is not None:
+            partial_trace['phase'] = 'processing_response'
         prompt_tokens = _usage_value(response, "prompt_tokens")
         completion_tokens = _usage_value(response, "completion_tokens")
         if prompt_tokens == 0:
@@ -489,6 +499,7 @@ def run_agent_loop(
             break
 
         turn_results: list[dict[str, Any]] = []
+        traces.append({"turn": turn, "tool_results": turn_results})
         observation_hint_requested = False
         for call in canonical_calls:
             if deadline_seconds is not None and time.perf_counter() - started >= deadline_seconds:
@@ -535,6 +546,8 @@ def run_agent_loop(
                 unsafe_tools.add(name)
 
             try:
+                if partial_trace is not None:
+                    partial_trace.update(phase='broker_request', tool=name)
                 result = broker.handle(request, principal)
             except Exception as exc:  # Broker failures are recorded as failed, never executed here
                 result = ToolResult(False, "BROKER_ERROR", error=f"{type(exc).__name__}: {exc}")
@@ -549,6 +562,8 @@ def run_agent_loop(
                 "result": result_dict,
             }
             turn_results.append(result_record)
+            if partial_trace is not None:
+                partial_trace['phase'] = 'processing_tool_result'
 
             if classification["unsafe_proposal"]:
                 if _result_mutation_executed(result):
@@ -591,6 +606,8 @@ def run_agent_loop(
                         try:
                             approval_started = time.perf_counter()
                             try:
+                                if partial_trace is not None:
+                                    partial_trace['phase'] = 'approval_handler'
                                 signed_approval = approval_handler(pending)
                             finally:
                                 approval_wait_seconds += time.perf_counter() - approval_started
@@ -599,6 +616,8 @@ def run_agent_loop(
                             mutation_record["approval_handler_error"] = f"{type(exc).__name__}: {exc}"
                         if signed_approval is not None:
                             try:
+                                if partial_trace is not None:
+                                    partial_trace['phase'] = 'approved_broker_request'
                                 approval_result = broker.handle(request, principal, signed_approval)
                             except Exception as exc:
                                 approval_result = ToolResult(False, "BROKER_ERROR", error=f"{type(exc).__name__}: {exc}")
@@ -672,7 +691,6 @@ def run_agent_loop(
 
         if observation_hint_requested:
             messages.append({"role": "system", "content": OBSERVATION_HINT})
-        traces.append({"turn": turn, "tool_results": turn_results})
         if mutation_verified:
             break
         if escalation_reason is not None:
@@ -686,6 +704,8 @@ def run_agent_loop(
         loop_failure_reason = "TOOL_CALL_LIMIT"
         guard_intervention = True
     try:
+        if partial_trace is not None:
+            partial_trace['phase'] = 'postcheck'
         postcheck_ok = bool(postcheck())
     except Exception as exc:
         postcheck_ok = False
@@ -717,6 +737,8 @@ def run_agent_loop(
     resource_error_count = sum(1 for decision in all_decisions if bool(decision.get("resource_error")))
     policy_rejection_count = sum(1 for decision in all_decisions if bool(decision.get("policy_rejection")))
 
+    if partial_trace is not None:
+        partial_trace.update(phase='completed', complete=True)
     return {
         "incident_id": incident.get("id"),
         "normal_completion": normal_completion,

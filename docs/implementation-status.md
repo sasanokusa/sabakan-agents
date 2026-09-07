@@ -1,5 +1,7 @@
 # 実装状況
 
+> 2026-09-07 trace保存: 外側timeout時の途中canonical／Tool結果を保存し、中断phaseと未完了を明示するよう修正。実Docker固定対照と全回帰148件が通過。[検証記録](partial-timeout-trace-20260907.md) を参照。
+
 > 2026-09-07 Agents-A1選定: #10の開発4件を事前固定条件で実行。全件が外側timeoutで、復旧0/2・非介入0/2。主評価の選定基準は未達。[実測と次の診断](agents-candidate-development-20260907.md) を参照。
 
 > 2026-09-07 resource fixture: #15の実OOM・専用tmpfs ENOSPC固定対照2件を確認した。OOMは瞬間的なBroker成功判定の後に再発する反例を記録。[結果と限界](resource-fault-controls-20260907.md) を参照。LLM主評価は未実施。

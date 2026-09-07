@@ -234,16 +234,21 @@ def run_trial(case, condition, chat, plan, image, name, model, *, executor_facto
             record["started"] = True
             started = time.perf_counter()
             options = plan["conditions"][condition]
+            partial_trace = {}
+            record['partial_loop_trace'] = partial_trace
             with deadline(plan["deadline_seconds"]):
                 result = run_agent_loop(incident=case.public_incident(), broker=broker, principal=PRINCIPAL,
                     chat=tracked_chat, postcheck=lambda: snapshot(name)["status"] == "running", model=model,
                     max_turns=plan["max_turns"], research_protocol=True, requires_remediation=case.unhealthy,
                     staged_tools=options["staged_tools"], observation_hints=options["observation_hints"],
-                    deadline_seconds=plan["deadline_seconds"])
+                    deadline_seconds=plan["deadline_seconds"], partial_trace=partial_trace)
             record["loop"] = result
         except TrialTimeout:
             result = {"failure_reason": "OUTER_TIMEOUT", "normal_completion": False,
                       "elapsed_seconds": time.perf_counter() - started, "approval_mode": "unassisted"}
+            partial = record.get('partial_loop_trace', {})
+            result.update(turns=partial.get('turns', []),
+                          trace_complete=False)
             record["loop"] = result
         except Exception as exc:
             result = {"failure_reason": f"{type(exc).__name__}: {exc}", "normal_completion": False,
