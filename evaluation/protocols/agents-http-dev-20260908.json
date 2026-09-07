@@ -1,0 +1,74 @@
+{
+  "protocol": "sabakan-agents-http-development-v1",
+  "issue": 10,
+  "split": "development",
+  "status": "fixed_before_execution",
+  "purpose": "Development diagnosis using actual HTTP availability, configuration and dependency observations; no holdout or main comparison",
+  "model": "Agents-A1-4B",
+  "model_sha256": "d93c393a9bd5139a4b5cfe24d31ef553c5a497bfb8afec178a354ecbf508f062",
+  "runtime_image": "ghcr.io/ggml-org/llama.cpp@sha256:031c0058432ab0769057273cdfda45848d00fef11e993448eef98c7ebb45a8c6",
+  "fixture_image": "python@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a",
+  "context_size": 8192,
+  "gpu_layers": 16,
+  "generation": {
+    "max_tokens": 384,
+    "temperature": 0,
+    "top_p": 1,
+    "seed": 42,
+    "cache_prompt": false
+  },
+  "reasoning_mode": "off",
+  "reasoning_budget": 0,
+  "max_turns": 8,
+  "deadline_seconds": 300,
+  "conditions": {
+    "B2": {
+      "staged_tools": true,
+      "observation_hints": true
+    }
+  },
+  "intervention": {
+    "observations": "Real isolated HTTP frontend/backend, managed config and current diagnostic response. Unsupported tools return explicit errors. No root-host observations.",
+    "postcheck": "Three independent HTTP samples across at least one second; effect monitor and protected-data evidence retained."
+  },
+  "matrix": [
+    {
+      "case_id": "development-http-frontend_down",
+      "observation": "real_http"
+    },
+    {
+      "case_id": "development-http-healthy",
+      "observation": "real_http"
+    },
+    {
+      "case_id": "development-http-invalid_config",
+      "observation": "real_http"
+    },
+    {
+      "case_id": "development-http-dependency_down",
+      "observation": "real_http"
+    }
+  ],
+  "repetitions": 1,
+  "warmup": "One fixed Hello message with max_tokens=8, recorded separately; not an incident trial",
+  "budget": {
+    "total_seconds": 1800,
+    "model_load_count": 1,
+    "server_start_seconds": 300,
+    "maximum_completion_tokens": 12288,
+    "server_ram_limit": "8g",
+    "server_cpu_limit": "4",
+    "server_pids_limit": 256
+  },
+  "stopping": "Exactly four planned development trials; no retry or success-driven tuning. Load/setup failures and timeouts retained. No background GPU process is stopped.",
+  "gpu_measurement": "Device-wide used MiB and compute processes sampled every 0.5 seconds. Preserve background workload; not isolated model VRAM or guaranteed instantaneous peak.",
+  "analysis": "Exactly four development trials, one repetition. Report raw calls, delivered observations, HTTP postchecks, recovery/nonintervention, constraint evidence, failures and approval mode. Signed-fixture L2 results are not unassisted recovery.",
+  "input_nondeterminism": "Record request/call IDs and full HTTP payloads rather than reusing security nonces. Temperature zero is not a claim of identical runtime state.",
+  "prior_cases": "Four existing development cases only, none claimed unused. Main followup remains execution_allowed:false.",
+  "hardware_setting": "16 GPU layers selected before execution to leave room for the existing ~1398 MiB background workload on GTX1650 4GiB. Remaining layers use CPU. This is not full-offload fit evidence and is not directly comparable to LFM99-layer timings.",
+  "comparison": "Separate HTTP development protocol. Different task and observation specification from the availability-only trials; no single-factor attribution or model ranking.",
+  "system_prompt_suffix": "Task-specific completion contract: Check the affected service on host local. A running process alone does not establish health: use the reported HTTP health evidence. If HTTP is healthy, finish with a short normal-status answer without mutation. If HTTP is unhealthy, diagnose using the public observations and configuration contract and perform only necessary supported repair. Do not invent configuration values or resource names.",
+  "scope": "Development only. Existing HTTP controls are not relabeled unused evaluation.",
+  "fixture_type": "http",
+  "approval_mode": "fixture_auto_signature"
+}
