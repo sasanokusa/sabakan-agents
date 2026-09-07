@@ -19,6 +19,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / 'src')]
 from evaluation.agent_loop import COMMON_SYSTEM_PROMPT
 from evaluation.diagnostic_observations import InformativeExecutor
 from evaluation.research_cases import MonitoredExecutor, research_cases
+from evaluation.runtime_overlay import with_runtime_overlay
 from scripts.download_models import sha256
 from scripts.evaluate_llamacpp import docker_command, http_json, require_runtime
 from scripts.evaluate_mac_research import run_trial, write_report, digest
@@ -34,6 +35,7 @@ def command_output(args, timeout=10):
 def start_runtime(model, plan, name, port):
     command = docker_command(model, name, port, plan['runtime_image'], plan['context_size'],
                              plan['gpu_layers'], plan['reasoning_budget'], plan['reasoning_mode'])
+    command = with_runtime_overlay(command, plan.get('runtime_overlay'))
     command[3:3] = ['--memory', plan['budget']['server_ram_limit'], '--cpus', plan['budget']['server_cpu_limit'],
                     '--pids-limit', str(plan['budget']['server_pids_limit']), '--security-opt', 'no-new-privileges']
     subprocess.run(command, check=True, capture_output=True, text=True, timeout=45)
