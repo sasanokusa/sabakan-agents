@@ -18,7 +18,8 @@ sys.path[:0] = [str(ROOT), str(ROOT / 'src')]
 
 from evaluation.agent_loop import COMMON_SYSTEM_PROMPT
 from evaluation.diagnostic_observations import InformativeExecutor
-from evaluation.research_cases import MonitoredExecutor, research_cases
+from evaluation.research_cases import MonitoredExecutor, research_cases, playbook
+from evaluation.condition_matrix import validate_matrix
 from evaluation.runtime_overlay import with_runtime_overlay
 from evaluation.http_fixtures import HttpCase, FAULTS
 from evaluation.http_trials import run_http_trial
@@ -69,6 +70,11 @@ def main():
     fixture_type = plan.get('fixture_type', 'availability')
     if fixture_type not in {'availability', 'http'}:
         raise ValueError('unknown development fixture type')
+    cases = ({'development-http-' + fault: HttpCase(fault) for fault in FAULTS}
+             if fixture_type == 'http' else {c.case_id: c for c in research_cases('development')})
+    matrix = validate_matrix(plan, cases)
+    if fixture_type == 'http' and any(r['condition'] == 'B0' for r in matrix):
+        raise ValueError('HTTP playbook requires its separate public observation policy')
     manifest = json.loads((ROOT / 'models/manifest.json').read_text())
     model = next(m for m in manifest['models'] + manifest.get('archived_models', []) if m['label'] == plan['model'])
     if sha256(ROOT / model['path']) != plan['model_sha256']:
@@ -106,8 +112,6 @@ def main():
     sampler.start()
     name = f'sabakan-lfm-diagnostic-{os.getpid()}'
     url = f'http://127.0.0.1:{args.port}'
-    cases = ({'development-http-' + fault: HttpCase(fault) for fault in FAULTS}
-             if fixture_type == 'http' else {c.case_id: c for c in research_cases('development')})
     try:
         load_started = time.monotonic()
         report['server_command'] = start_runtime(model_spec, plan, name, args.port)
@@ -120,7 +124,7 @@ def main():
         warmup = {'model': 'local', 'messages': [{'role': 'user', 'content': 'Hello'}], 'max_tokens': 8, 'temperature': 0, 'stream': False}
         report['warmup'] = {'request': warmup, 'response': http_json(url + '/v1/chat/completions', warmup, timeout=120)}
         report['status'] = 'running'
-        for index, row in enumerate(plan['matrix']):
+        for index, row in enumerate(matrix):
             if time.monotonic() - started >= plan['budget']['total_seconds']:
                 report['trials'].append({**row, 'started': False, 'error': 'TOTAL_BUDGET_EXHAUSTED'})
                 continue
@@ -140,11 +144,13 @@ def main():
                 return {**choice['message'], 'finish_reason': choice.get('finish_reason'),
                         'usage': response.get('usage', {}), 'timings': response.get('timings', {})}
             if fixture_type == 'http':
-                record = run_http_trial(cases[row['case_id']], 'B2', chat, plan, plan['fixture_image'],
+                record = run_http_trial(cases[row['case_id']], row['condition'], chat, plan, plan['fixture_image'],
                                         f'sabakan-http-model-{os.getpid()}-{index}', plan['model'])
             else:
-                record = run_trial(cases[row['case_id']], 'B2', chat, plan, plan['fixture_image'],
-                                   f'sabakan-lfm-case-{os.getpid()}-{index}', plan['model'],
+                record = run_trial(cases[row['case_id']], row['condition'],
+                                   playbook if row['condition'] == 'B0' else chat, plan, plan['fixture_image'],
+                                   f'sabakan-lfm-case-{os.getpid()}-{index}',
+                                   'playbook' if row['condition'] == 'B0' else plan['model'],
                                    executor_factory=InformativeExecutor if row['observation'] == 'informative' else MonitoredExecutor)
             record.update(row)
             record['http_requests'] = requests
@@ -155,7 +161,7 @@ def main():
     except Exception as exc:
         report['status'] = 'runtime_error'
         report['error'] = f'{type(exc).__name__}: {exc}'
-        for row in plan['matrix'][len(report['trials']):]:
+        for row in matrix[len(report['trials']):]:
             report['trials'].append({**row, 'started': False, 'error': 'RUNTIME_UNAVAILABLE'})
     finally:
         report['server_logs'] = command_output(['docker', 'logs', name], timeout=20)
