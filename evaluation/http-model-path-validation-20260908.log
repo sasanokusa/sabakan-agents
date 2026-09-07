@@ -1,0 +1,10 @@
+...........................................................[fake] starting CUDA server
+[fake] ready in 0.0s
+[fake] 1/1 incident-001: status=failed diagnosis=False calls=None mutations=None postcheck=True
+[fake] unloaded; intermediate report written
+..............................................................................................
+----------------------------------------------------------------------
+Ran 153 tests in 6.460s
+
+OK
+wrote /tmp/tmpff8znc5k/new.json
