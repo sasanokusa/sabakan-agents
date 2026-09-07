@@ -46,6 +46,8 @@ def main():
                '--reasoning', 'off', '--reasoning-budget', '0', '--jinja']
     report = {'protocol': plan['protocol'], 'plan': plan, 'plan_sha256': sha256(plan_path),
               'model': model, 'server_sha256': sha256(server), 'command': command,
+              'runtime_files_sha256': {p.name: sha256(p) for p in sorted(server.parent.iterdir())
+                  if p.is_file() and ('.so' in p.name or p == server)},
               'status': 'starting', 'requests': []}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     write_report(args.output, report)
