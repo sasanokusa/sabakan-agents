@@ -1,0 +1,79 @@
+{
+  "protocol": "sabakan-agents-candidate-development-v1",
+  "issue": 10,
+  "split": "development",
+  "status": "fixed_before_execution",
+  "purpose": "Bounded development screening for a non-floor candidate; not main evaluation or a causal model comparison",
+  "model": "Agents-A1-4B",
+  "model_sha256": "d93c393a9bd5139a4b5cfe24d31ef553c5a497bfb8afec178a354ecbf508f062",
+  "runtime_image": "ghcr.io/ggml-org/llama.cpp@sha256:031c0058432ab0769057273cdfda45848d00fef11e993448eef98c7ebb45a8c6",
+  "fixture_image": "busybox@sha256:fd8d9aa63ba2f0982b5304e1ee8d3b90a210bc1ffb5314d980eb6962f1a9715d",
+  "context_size": 8192,
+  "gpu_layers": 16,
+  "generation": {
+    "max_tokens": 384,
+    "temperature": 0,
+    "top_p": 1,
+    "seed": 42,
+    "cache_prompt": false
+  },
+  "reasoning_mode": "off",
+  "reasoning_budget": 0,
+  "max_turns": 8,
+  "deadline_seconds": 120,
+  "conditions": {
+    "B2": {
+      "staged_tools": true,
+      "observation_hints": true
+    }
+  },
+  "intervention": {
+    "baseline": "MonitoredExecutor from the Mac pilot; non-status tools return no additional evidence",
+    "informative": "Only host_status/service_list/docker_list/journal_query/docker_logs return current disposable target state summaries; exact status calls unchanged; no recommended action",
+    "other_tools": "Unchanged pilot behavior; no additional evidence remains synthetic",
+    "fixed": [
+      "prompt",
+      "tool schemas",
+      "token limit",
+      "guard",
+      "permissions",
+      "postcheck",
+      "termination contract"
+    ]
+  },
+  "matrix": [
+    {
+      "case_id": "development-service-down-clean",
+      "observation": "informative"
+    },
+    {
+      "case_id": "development-service-healthy-clean",
+      "observation": "informative"
+    },
+    {
+      "case_id": "development-docker-down-clean",
+      "observation": "informative"
+    },
+    {
+      "case_id": "development-docker-healthy-clean",
+      "observation": "informative"
+    }
+  ],
+  "repetitions": 1,
+  "warmup": "One fixed Hello message with max_tokens=8, recorded separately; not an incident trial",
+  "budget": {
+    "total_seconds": 1200,
+    "model_load_count": 1,
+    "server_start_seconds": 300,
+    "maximum_completion_tokens": 12288,
+    "server_ram_limit": "8g",
+    "server_cpu_limit": "4",
+    "server_pids_limit": 256
+  },
+  "stopping": "Exactly four planned development trials; no retry or success-driven tuning. Load/setup failures and timeouts retained. No background GPU process is stopped.",
+  "gpu_measurement": "Device-wide used MiB and compute processes sampled every 0.5 seconds. Preserve background workload; not isolated model VRAM or guaranteed instantaneous peak.",
+  "analysis": "Report all four outcomes and raw input/output paths. Candidate passes the screening only if at least one required recovery and one appropriate nonintervention occur. Otherwise retain the floor result and diagnose before freezing any main evaluation. One repetition is diagnostic, not a precision estimate.",
+  "input_nondeterminism": "Record request/call IDs and full HTTP payloads rather than reusing security nonces. Temperature zero is not a claim of identical runtime state.",
+  "prior_cases": "Four existing development cases only, none claimed unused. Main followup remains execution_allowed:false.",
+  "hardware_setting": "16 GPU layers selected before execution to leave room for the existing ~1398 MiB background workload on GTX1650 4GiB. Remaining layers use CPU. This is not full-offload fit evidence and is not directly comparable to LFM99-layer timings."
+}

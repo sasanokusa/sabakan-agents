@@ -56,10 +56,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--port', type=int, default=18083)
+    parser.add_argument('--plan', type=Path, default=PLAN,
+                        help='Frozen development plan; defaults to the original LFM comparison')
     args = parser.parse_args()
     if args.output.exists():
         raise FileExistsError(args.output)
-    plan = json.loads(PLAN.read_text())
+    plan = json.loads(args.plan.read_text())
     manifest = json.loads((ROOT / 'models/manifest.json').read_text())
     model = next(m for m in manifest['models'] if m['label'] == plan['model'])
     if sha256(ROOT / model['path']) != plan['model_sha256']:
@@ -67,7 +69,7 @@ def main():
     require_runtime()
     model_spec = {**model, 'path': ROOT / model['path']}
     report = {
-        'protocol': plan['protocol'], 'plan': plan, 'plan_sha256': sha256(PLAN),
+        'protocol': plan['protocol'], 'plan': plan, 'plan_sha256': sha256(args.plan),
         'base_commit': command_output(['git', 'rev-parse', 'HEAD'])['stdout'],
         'source_sha256': {str(p.relative_to(ROOT)): sha256(p)
             for folder in ('src', 'evaluation', 'scripts', 'config') for p in sorted((ROOT / folder).rglob('*'))
