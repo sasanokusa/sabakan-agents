@@ -1,9 +1,20 @@
 import copy
 import unittest
-from scripts.analyze_candidate_development import candidate_analysis
+from scripts.analyze_candidate_development import candidate_analysis, compare_deadlines
 
 
 class CandidateAnalysisTests(unittest.TestCase):
+    def test_deadline_comparison_detects_changed_schema_and_missing_input(self):
+        old = self.report()
+        old['plan'].update(deadline_seconds=120, conditions={'B2': {'staged_tools': True}})
+        new = copy.deepcopy(old)
+        new['plan']['deadline_seconds'] = 300
+        new['plan']['conditions']['B2']['staged_tools'] = False
+        result = compare_deadlines(old, new)
+        self.assertFalse(result['fixed_plan_fields']['conditions'])
+        self.assertIsNone(result['pairs'][0]['initial_request_identical'])
+        self.assertEqual(result['deadlines'], [120, 300])
+
     def report(self):
         trials = [dict(case_id=case, observation='informative', started=True,
                        score={'outcome': outcome}) for case, outcome in
