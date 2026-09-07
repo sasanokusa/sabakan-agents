@@ -2,7 +2,7 @@ import copy
 import json
 import unittest
 
-from evaluation.http_fixtures import HttpCase, HttpExecutor, http_effect, playbook, FAULTS
+from evaluation.http_fixtures import HttpCase, HttpExecutor, configuration_contract, http_effect, playbook, FAULTS
 
 
 class HttpFixtureTests(unittest.TestCase):
@@ -35,7 +35,8 @@ class HttpFixtureTests(unittest.TestCase):
         self.assertEqual(action([status]), 'config_read')
         self.assertEqual(action([status, config]), 'docker_status')
         self.assertEqual(action([status, config, dependency]), 'docker_restart')
-        self.assertEqual(action([status, message('config_read', {'valid': False})]), 'config_patch')
+        self.assertEqual(action([status, message('config_read', {'valid': False, 'configuration_contract': configuration_contract()})]), 'config_patch')
+        self.assertNotIn('tool_calls', playbook([status, message('config_read', {'valid': False})], ()))
         self.assertNotIn('tool_calls', playbook([message('service_status', {'status': 'running', 'http_ok': True})], ()))
 
     def test_independent_effect_detects_unrelated_restart_and_protected_loss(self):

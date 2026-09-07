@@ -24,6 +24,12 @@ HEALTHY_CONFIG = {'enabled': True, 'upstream': 'sabakan'}
 FAULTS = ('frontend_down', 'invalid_config', 'dependency_down', 'healthy')
 
 
+def configuration_contract():
+    """Public application configuration specification, identical in all cases."""
+    return {'type': 'object', 'required': ['enabled', 'upstream'],
+            'properties': {'enabled': {'const': True}, 'upstream': {'const': 'sabakan'}}}
+
+
 def docker(*args):
     return subprocess.run(['docker', *args], check=True, capture_output=True, text=True, timeout=15).stdout.strip()
 
@@ -200,7 +206,10 @@ class HttpExecutor(DockerFixtureExecutor):
         if request.tool == 'journal_query':
             return ExecutionResult(True, 'READ_OK', {'evidence_source': 'current HTTP diagnostic response, not historical journal',
                                                     'diagnostic': self.fixture.probe()})
-        if request.tool in {'config_read', 'docker_status', 'docker_list'}:
+        if request.tool == 'config_read':
+            result = super().execute_read(request)
+            return replace(result, data={**result.data, 'configuration_contract': configuration_contract()}) if result.ok else result
+        if request.tool in {'docker_status', 'docker_list'}:
             return super().execute_read(request)
         if request.tool == 'service_list':
             return ExecutionResult(True, 'READ_OK', {'services': ['nginx']})
@@ -299,7 +308,14 @@ def playbook(messages, tools):
         elif 'config_read' not in observations:
             tool, arguments = 'config_read', {'host': 'local', 'resource': 'nginx-main'}
         elif observations['config_read'].get('valid') is False:
-            tool, arguments = 'config_patch', {'host': 'local', 'resource': 'nginx-main', 'patch': {'content': json.dumps(HEALTHY_CONFIG)}}
+            contract = observations['config_read'].get('configuration_contract', {})
+            try:
+                candidate = {key: contract['properties'][key]['const'] for key in contract['required']}
+                if not candidate:
+                    raise ValueError('empty configuration specification')
+            except (KeyError, TypeError, ValueError):
+                return {'content': 'No complete public repair specification is available; hand off for investigation.', 'finish_reason': 'stop'}
+            tool, arguments = 'config_patch', {'host': 'local', 'resource': 'nginx-main', 'patch': {'content': json.dumps(candidate)}}
         elif 'docker_status' not in observations:
             tool, arguments = 'docker_status', {'host': 'local', 'container': 'sabakan'}
         elif observations['docker_status'].get('status') != 'running':
