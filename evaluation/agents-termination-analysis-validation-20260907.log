@@ -1,0 +1,9 @@
+test_both_task_types_are_required (tests.test_candidate_analysis.CandidateAnalysisTests.test_both_task_types_are_required) ... ok
+test_deadline_comparison_detects_changed_schema_and_missing_input (tests.test_candidate_analysis.CandidateAnalysisTests.test_deadline_comparison_detects_changed_schema_and_missing_input) ... ok
+test_missing_duplicate_and_unstarted_trials_do_not_pass (tests.test_candidate_analysis.CandidateAnalysisTests.test_missing_duplicate_and_unstarted_trials_do_not_pass) ... ok
+test_prompt_comparison_rejects_extra_payload_changes (tests.test_candidate_analysis.CandidateAnalysisTests.test_prompt_comparison_rejects_extra_payload_changes) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.001s
+
+OK

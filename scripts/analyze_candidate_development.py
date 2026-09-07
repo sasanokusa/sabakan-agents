@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Audit the frozen candidate screening without promoting it to holdout evidence."""
 import argparse
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -58,16 +59,35 @@ def compare_deadlines(baseline, followup):
             'interpretation': 'Sequential development diagnosis with changed trace instrumentation; not randomized causal or unused evaluation evidence.'}
 
 
+def compare_prompt_suffix(baseline, followup):
+    result = compare_deadlines(baseline, followup)
+    suffix = followup['plan'].get('system_prompt_suffix')
+    result['fixed_plan_fields']['deadline_seconds'] = baseline['plan']['deadline_seconds'] == followup['plan']['deadline_seconds']
+    for pair in result['pairs']:
+        old = next(t for t in baseline['trials'] if t['case_id'] == pair['case_id'])
+        new = next(t for t in followup['trials'] if t['case_id'] == pair['case_id'])
+        pair['only_declared_suffix_changed'] = None
+        if old.get('http_requests') and new.get('http_requests'):
+            expected = copy.deepcopy(old['http_requests'][0]['request'])
+            if isinstance(suffix, str) and suffix and expected.get('messages') and expected['messages'][0].get('role') == 'system':
+                expected['messages'][0]['content'] += '\n' + suffix
+                pair['only_declared_suffix_changed'] = expected == new['http_requests'][0]['request']
+    result['interpretation'] = 'Sequential development prompt diagnosis; identical non-prompt settings do not establish randomized causality or holdout performance.'
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('input', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--baseline', type=Path)
+    parser.add_argument('--comparison', choices=('deadline', 'prompt_suffix'), default='deadline')
     args = parser.parse_args()
     result = candidate_analysis(json.loads(args.input.read_text()))
     result['input_sha256'] = hashlib.sha256(args.input.read_bytes()).hexdigest()
     if args.baseline:
-        result['deadline_comparison'] = compare_deadlines(
+        compare = compare_deadlines if args.comparison == 'deadline' else compare_prompt_suffix
+        result[args.comparison + '_comparison'] = compare(
             json.loads(args.baseline.read_text()), json.loads(args.input.read_text()))
         result['baseline_sha256'] = hashlib.sha256(args.baseline.read_bytes()).hexdigest()
     with args.output.open('x') as output:

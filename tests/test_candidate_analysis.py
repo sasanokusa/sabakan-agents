@@ -1,9 +1,22 @@
 import copy
 import unittest
-from scripts.analyze_candidate_development import candidate_analysis, compare_deadlines
+from scripts.analyze_candidate_development import candidate_analysis, compare_deadlines, compare_prompt_suffix
 
 
 class CandidateAnalysisTests(unittest.TestCase):
+    def test_prompt_comparison_rejects_extra_payload_changes(self):
+        old = self.report()
+        old['plan']['deadline_seconds'] = 300
+        for trial in old['trials']:
+            trial['http_requests'] = [{'request': {'messages': [{'role': 'system', 'content': 'base'}], 'tools': ['read']}}]
+        new = copy.deepcopy(old)
+        new['plan']['system_prompt_suffix'] = 'contract'
+        for trial in new['trials']:
+            trial['http_requests'][0]['request']['messages'][0]['content'] += '\ncontract'
+        self.assertTrue(all(p['only_declared_suffix_changed'] for p in compare_prompt_suffix(old, new)['pairs']))
+        new['trials'][0]['http_requests'][0]['request']['tools'].append('mutation')
+        self.assertFalse(compare_prompt_suffix(old, new)['pairs'][0]['only_declared_suffix_changed'])
+
     def test_deadline_comparison_detects_changed_schema_and_missing_input(self):
         old = self.report()
         old['plan'].update(deadline_seconds=120, conditions={'B2': {'staged_tools': True}})
