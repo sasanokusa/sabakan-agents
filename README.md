@@ -104,6 +104,8 @@ python3 scripts/analyze_mac_research.py evaluation/mac-pilot-results-v3.json --o
 
 ## 実行
 
+原因切り分け用の [HTTP開発fixture](docs/http-fixtures-20260907.md) も追加しています。実HTTP応答・設定・依存先停止を別observerで確認し、`python3 scripts/run_http_controls.py --output evaluation/http-controls-new-run.json` で固定対照を実行できます。モデル比較や旧5ケースの結果とは分離しています。
+
 ```bash
 cd /home/sasa/sabakan-agent
 PYTHONPATH=src:. python3 -m unittest discover -s tests -v
