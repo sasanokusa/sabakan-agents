@@ -1,5 +1,7 @@
 # 実装状況
 
+> 2026-09-07 時間上限診断: Agents-A1の上限を300秒に変更した開発4件は復旧2/2・非介入0/2。正常系は8ターン上限で、選定基準は未達。[比較と残る課題](agents-deadline-development-20260907.md) を参照。
+
 > 2026-09-07 trace保存: 外側timeout時の途中canonical／Tool結果を保存し、中断phaseと未完了を明示するよう修正。実Docker固定対照と全回帰148件が通過。[検証記録](partial-timeout-trace-20260907.md) を参照。
 
 > 2026-09-07 Agents-A1選定: #10の開発4件を事前固定条件で実行。全件が外側timeoutで、復旧0/2・非介入0/2。主評価の選定基準は未達。[実測と次の診断](agents-candidate-development-20260907.md) を参照。
