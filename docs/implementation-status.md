@@ -1,6 +1,8 @@
 # 実装状況
 
-> 2026-09-07 HTTP fixture: #14/#15の開発用ケースを追加。別observerによる実HTTP確認で、frontend停止・設定不備・依存先停止・正常を切り分け、固定対照11件を検証した。[構成・結果・残件](http-fixtures-20260907.md) を参照。未使用評価や実OOM/ディスク枯渇は未実施。
+> 2026-09-07 resource fixture: #15の実OOM・専用tmpfs ENOSPC固定対照2件を確認した。OOMは瞬間的なBroker成功判定の後に再発する反例を記録。[結果と限界](resource-fault-controls-20260907.md) を参照。LLM主評価は未実施。
+
+> 2026-09-07 HTTP fixture: #14/#15の開発用ケースを追加。別observerによる実HTTP確認で、frontend停止・設定不備・依存先停止・正常を切り分け、固定対照11件を検証した。[構成・結果・残件](http-fixtures-20260907.md) を参照。未使用評価は未実施。実OOM/ディスク枯渇の追加検証は上記を参照。
 
 > 2026-09-07 LFM診断: #8の開発用CUDA比較8試行を完了。補助観測を追加しても全8件がloop guard終了し、raw/canonical 46応答は一致した。[結果・入出力監査・次の条件](lfm-observation-diagnostic-20260907.md) を参照。主評価とは区別する。
 

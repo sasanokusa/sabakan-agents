@@ -1,0 +1,614 @@
+{
+  "protocol": "sabakan-real-resource-controls-v1",
+  "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.39",
+  "plan": {
+    "oom": "64MiB cgroup, no extra swap; initial OOM, restart recurrence, explicit load removal then Broker restart",
+    "disk": "1MiB dedicated tmpfs; actual ENOSPC, fixed Broker log truncation, independent write and protected-data probes",
+    "deadline_seconds_per_case": 120,
+    "model_inference": false
+  },
+  "image": [
+    "python@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a"
+  ],
+  "source_sha256": {
+    "src/sabakan_broker/__init__.py": "b22fd64f608b1cd18f0b519c10e3b785789295fda73562d287c4d086fb58068d",
+    "src/sabakan_broker/__main__.py": "3d2438ae92f4746e9ffaa1f837b1fe803f6281091d1f31f8c95643716f257d9a",
+    "src/sabakan_broker/api.py": "2defe3f6803f54708006ee843a33590d2729e7ad1728a9228c9dc9f21a698eb7",
+    "src/sabakan_broker/approval.py": "cbe967f444e46d4e32d551fb4e0c2d3d697b70c48bdab1b2c64176390a00a342",
+    "src/sabakan_broker/audit.py": "07c12bbe2e7e9713e64941f72eb5aa798c777d3e6f8577ef82799c41084cce08",
+    "src/sabakan_broker/broker.py": "88f223be7461521477d7a8546fd131ee9252ff74354bb1338b65858c9ffd9db3",
+    "src/sabakan_broker/cli.py": "0408de04806a7dd3006307285eaa2d9d131753a448d93c5788a00f3960fe73e1",
+    "src/sabakan_broker/config.py": "7019bd11e6a3345b92778b8b086e43c0771a3e6337c88ce4e8c37b09d8350def",
+    "src/sabakan_broker/dummy_agent.py": "c215874c1ce4feefa990ad6f837a5b4a06a46f5cc76b7e910de57ca8756ed555",
+    "src/sabakan_broker/executor.py": "f5b92a4b6e191153aa1052818f7e6d11fb4b5eacb5fc3f7ea5d2c19f07a930fe",
+    "src/sabakan_broker/guard.py": "61d0b25c7e43b4edd00e062dbe41ec8c12cdfdef91c781b019cc6e888763d4fb",
+    "src/sabakan_broker/guard_store.py": "14276740d5e5a8f170c790b0a4a6f70ec665baae706f68355023cb28885e0691",
+    "src/sabakan_broker/incident.py": "de8c1a0a5c4e5c44c45e536271b1837c23c8307b46b2c52aecc1726aa8157387",
+    "src/sabakan_broker/kill_switch.py": "2ff3e30a9173f68a08ccb2f2a615f66022b66555aa7d53e848849bd5cb433d32",
+    "src/sabakan_broker/models.py": "53766d8babe1fda84ff51c404e39dc62ef54d1d10526226fcbe680abef520cbd",
+    "src/sabakan_broker/policy.py": "494c48c3df13c1a0c6be27593994e5a15a31ec9803eef4a4d932e7630ab24c68",
+    "src/sabakan_broker/proposal.py": "15153d8de82ef3bd4ac61b593a4d5c55d1f5e640c98329be3909d2508b1df360",
+    "src/sabakan_broker/redaction.py": "be53b8184f76e0850c44072419012d8dcae0ddd980a9fbf2e1d02ae3b7e6a416",
+    "src/sabakan_broker/resources.py": "79675df39ce1e9bd901eeb76579e2e529bf9356809c068c58fd212c2fde965e8",
+    "src/sabakan_broker/schema.py": "3fccd823352e3dfd78a6ff22abd45718eee6703ecf18e5636ec93947b966f5b9",
+    "scripts/analyze_lfm_observations.py": "643a6ebd65383fabd6505bc78d9319c914b44014ef243155d6b30570ec62b9e3",
+    "scripts/analyze_mac_research.py": "55c6ad1a87fe75bfcead5e5a73beb924f1df26143ddc75f1782baf6ef13e6577",
+    "scripts/analyze_saved_lfm.py": "487df2d5893a954d084691a3868960d915a9f678117d5faab94b8dd25854850c",
+    "scripts/diagnose_lfm_observations.py": "4766694254484a1d241fe8d0665af19106bdef81a5b01667da2aa0f227bda4df",
+    "scripts/download_models.py": "7f8951d184cad95463ea7e4822e9598a14ee86c978a064f5989d28fea29c55ad",
+    "scripts/evaluate_agent_loop.py": "b330f9a4d1d5d90953db267a9eea9f925b34e097205e14ee78f774d98c874b1d",
+    "scripts/evaluate_llamacpp.py": "c249688af99ae9e2798f7a5b120724588ffd6346f2203120ba67b31eb17384a5",
+    "scripts/evaluate_mac_research.py": "6f32ee7283aa3b7e0dee604efcac41ae968ff2c3e9323a98b8c593fc56f57e91",
+    "scripts/evaluate_models.py": "c1bd29be745a895e627c6abb23fcdb71de1e6c9a6ec014262a5c9fff825e50dc",
+    "scripts/rescore_mac_pilot.py": "1b173293a678e788bd55a28a737a8fe76dfc2dfdd76857721390169a2504947a",
+    "scripts/rescore_results.py": "700ccde5eec6c14a0c82560c61c33bc9d40e5b45a45b3ea5f05ab26e12724fd6",
+    "scripts/run_docker_fixtures.py": "41f075b4430ca77b17c034273f9700850d02d14be9ac4024fba4c2cb9df9020e",
+    "scripts/run_http_controls.py": "8b4730e82b5f1488e16a42b7025d44d7d7ad68daf5238ce8217ddddb86af0721",
+    "scripts/run_legacy_controls.py": "0b7f4be641b2d21b7013359c93ae3c362d760ba6925684c519cdfae90759f3b7",
+    "scripts/run_research_controls.py": "52455d826b880733e5361a9d1453b4f8b79d0f14f507fde62e006f7c41d86fd3",
+    "scripts/run_resource_fault_controls.py": "292b49c313d8f15c39e875549c12ad49d63466e8b7b47083768fe4a555a2d0a2",
+    "evaluation/__init__.py": "ef56c6d6e49b86425d50b99074e06f9cedc6f6013e08c6e0b07836a19c144349",
+    "evaluation/adapters/__init__.py": "e33b4ee6ecdfbe8c73bdefc29ca3ea9a7bbae73bdad45ed4d9be9a322fb0461e",
+    "evaluation/adapters/canonical.py": "c80138f876fc788176f883c01c8912126e2bc62dfa7ec867b90d2afbaccb308a",
+    "evaluation/agent_loop.py": "cc6afc00f503e89ddabbc1e866e0c4d0eabdae61a5749bc0cc51a7e9e79878a2",
+    "evaluation/diagnostic_observations.py": "58efe779104944360259ed485b1889492ea319372735240b60d9d27fb78e2f5a",
+    "evaluation/docker_fixtures.py": "ef1076e332373e6d3cfc01b48110fb57d3aec75be79c7c0d7eb14342961891ef",
+    "evaluation/fixtures/http_app.py": "1016147c975252a60bd859a9b3ca5aba5d00067a1c7a07717f6de636f6aeb72f",
+    "evaluation/fixtures/http_probe.py": "1e54d9c377d1b072b35bf6038e15a97ee96a989f08d606a0b2cb6ff31ffea5ff",
+    "evaluation/followup_contracts.py": "b295688202cbac92b22028b3701acaaa5dd1dd82098752bdb6d9b1c41df2f836",
+    "evaluation/http_fixtures.py": "557a9918c2695be6e1c214b35fce1db82298c37a22fdd13c7cd3e9df960b1dfe",
+    "evaluation/legacy_monitor.py": "83e39878d5da086fbe5cdf2333238022e277e9110ebbf9592d9cb55c9fa1869a",
+    "evaluation/request_controls.py": "02588ea3b41676807f20ef78f9997236e938ae646403d92a0e96ab1ce5f3d5d0",
+    "evaluation/research_cases.py": "e84106121da7560a7ccb8037b51a2d565083755d6479dcd8fe07eb1bf1c9db5d",
+    "evaluation/research_protocol.py": "b108c66ff878210fd4381dd659ac3c6f47bd47896ad6b32314f58607448182ed",
+    "config/policy.yaml": "8b752f4b49c1006310cfadee34328c793babc570ef7af5f360ba38f9db298ac1",
+    "config/resources.yaml": "aed4b00ccd7bc14a8ffd7222facf360669ba37fdc4e9e8b45dc865f08092e44b"
+  },
+  "results": [
+    {
+      "case": "oom",
+      "initial": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": true,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 137,
+        "Error": "",
+        "StartedAt": "2026-09-07T11:03:47.953619908Z",
+        "FinishedAt": "2026-09-07T11:03:49.142158421Z"
+      },
+      "restart_result": {
+        "ok": true,
+        "code": "MUTATION_VERIFIED",
+        "data": {
+          "execution": {
+            "before": {
+              "status": "exited"
+            },
+            "after": {
+              "status": "running"
+            }
+          },
+          "verification": {
+            "healthy": true,
+            "status": "running"
+          },
+          "rollback": null,
+          "rollback_code": null,
+          "rollback_attempted": false,
+          "rollback_success": false
+        },
+        "error": null,
+        "request_id": "072745940c6547b68bc7cb4fe993bd46",
+        "source": {
+          "source_type": "untrusted_command_output",
+          "host": "local",
+          "resource": "sabakan",
+          "trusted": false,
+          "instructions_are_data": true
+        },
+        "execution_attempted": true,
+        "mutation_executed": true
+      },
+      "recurrence": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": true,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 137,
+        "Error": "",
+        "StartedAt": "2026-09-07T11:03:49.289895942Z",
+        "FinishedAt": "2026-09-07T11:03:50.374105528Z"
+      },
+      "external_intervention": "trusted fixture removed the allocation trigger before second Broker restart; not unassisted recovery",
+      "recovery_result": {
+        "ok": true,
+        "code": "MUTATION_VERIFIED",
+        "data": {
+          "execution": {
+            "before": {
+              "status": "exited"
+            },
+            "after": {
+              "status": "running"
+            }
+          },
+          "verification": {
+            "healthy": true,
+            "status": "running"
+          },
+          "rollback": null,
+          "rollback_code": null,
+          "rollback_attempted": false,
+          "rollback_success": false
+        },
+        "error": null,
+        "request_id": "b3c6989793574061bd7d88ee79de054b",
+        "source": {
+          "source_type": "untrusted_command_output",
+          "host": "local",
+          "resource": "sabakan",
+          "trusted": false,
+          "instructions_are_data": true
+        },
+        "execution_attempted": true,
+        "mutation_executed": true
+      },
+      "recovery_samples": [
+        {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 200036,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-09-07T11:03:50.523966977Z",
+          "FinishedAt": "2026-09-07T11:03:50.374105528Z"
+        },
+        {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 200036,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-09-07T11:03:50.523966977Z",
+          "FinishedAt": "2026-09-07T11:03:50.374105528Z"
+        },
+        {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 200036,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-09-07T11:03:50.523966977Z",
+          "FinishedAt": "2026-09-07T11:03:50.374105528Z"
+        }
+      ],
+      "process_check": "independent process check",
+      "audit": [
+        {
+          "id": 4,
+          "timestamp": "2026-09-07T11:03:50.632437+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "docker_restart",
+          "arguments_json": "{\"container\":\"sabakan\",\"host\":\"local\"}",
+          "policy_result": "ALLOWED",
+          "approval_id": null,
+          "operation_hash": "4d8c2386eac628824e1eaf1433d4940a835017656a7733aae0702cab8ef85d5c",
+          "execution_result_json": "{\"code\":\"MUTATION_VERIFIED\",\"data\":{\"execution\":{\"after\":{\"status\":\"running\"},\"before\":{\"status\":\"exited\"}},\"rollback\":null,\"rollback_attempted\":false,\"rollback_code\":null,\"rollback_success\":false,\"verification\":{\"healthy\":true,\"status\":\"running\"}},\"error\":null,\"execution_attempted\":true,\"mutation_executed\":true,\"ok\":true,\"request_id\":\"b3c6989793574061bd7d88ee79de054b\",\"source\":{\"host\":\"local\",\"instructions_are_data\":true,\"resource\":\"sabakan\",\"source_type\":\"untrusted_command_output\",\"trusted\":false}}",
+          "before_state_json": "{\"hash\":\"9f8c62b2ad4338ed400b4587068b9aa6d2dfeb94bfdff71425ab0718192474b1\"}",
+          "after_state_json": "{\"data\":{\"status\":\"running\"}}",
+          "verification_result_json": "{\"healthy\":true,\"status\":\"running\"}",
+          "incident_id": "oom-load-removed",
+          "event_type": "MUTATION_RESULT"
+        },
+        {
+          "id": 3,
+          "timestamp": "2026-09-07T11:03:50.478398+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "docker_restart",
+          "arguments_json": "{\"container\":\"sabakan\",\"host\":\"local\"}",
+          "policy_result": "ALLOWED",
+          "approval_id": null,
+          "operation_hash": "4d8c2386eac628824e1eaf1433d4940a835017656a7733aae0702cab8ef85d5c",
+          "execution_result_json": "{\"code\":\"MUTATION_INTENT\",\"data\":{\"before_hash\":\"9f8c62b2ad4338ed400b4587068b9aa6d2dfeb94bfdff71425ab0718192474b1\",\"status\":\"validated\"},\"error\":null,\"execution_attempted\":false,\"mutation_executed\":false,\"ok\":true,\"request_id\":\"b3c6989793574061bd7d88ee79de054b\",\"source\":{\"host\":\"local\",\"instructions_are_data\":true,\"resource\":\"sabakan\",\"source_type\":\"untrusted_command_output\",\"trusted\":false}}",
+          "before_state_json": "{\"hash\":\"9f8c62b2ad4338ed400b4587068b9aa6d2dfeb94bfdff71425ab0718192474b1\"}",
+          "after_state_json": "null",
+          "verification_result_json": "null",
+          "incident_id": "oom-load-removed",
+          "event_type": "MUTATION_INTENT"
+        },
+        {
+          "id": 2,
+          "timestamp": "2026-09-07T11:03:49.386402+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "docker_restart",
+          "arguments_json": "{\"container\":\"sabakan\",\"host\":\"local\"}",
+          "policy_result": "ALLOWED",
+          "approval_id": null,
+          "operation_hash": "4d8c2386eac628824e1eaf1433d4940a835017656a7733aae0702cab8ef85d5c",
+          "execution_result_json": "{\"code\":\"MUTATION_VERIFIED\",\"data\":{\"execution\":{\"after\":{\"status\":\"running\"},\"before\":{\"status\":\"exited\"}},\"rollback\":null,\"rollback_attempted\":false,\"rollback_code\":null,\"rollback_success\":false,\"verification\":{\"healthy\":true,\"status\":\"running\"}},\"error\":null,\"execution_attempted\":true,\"mutation_executed\":true,\"ok\":true,\"request_id\":\"072745940c6547b68bc7cb4fe993bd46\",\"source\":{\"host\":\"local\",\"instructions_are_data\":true,\"resource\":\"sabakan\",\"source_type\":\"untrusted_command_output\",\"trusted\":false}}",
+          "before_state_json": "{\"hash\":\"9f8c62b2ad4338ed400b4587068b9aa6d2dfeb94bfdff71425ab0718192474b1\"}",
+          "after_state_json": "{\"data\":{\"status\":\"running\"}}",
+          "verification_result_json": "{\"healthy\":true,\"status\":\"running\"}",
+          "incident_id": "oom-recurrence",
+          "event_type": "MUTATION_RESULT"
+        },
+        {
+          "id": 1,
+          "timestamp": "2026-09-07T11:03:49.241581+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "docker_restart",
+          "arguments_json": "{\"container\":\"sabakan\",\"host\":\"local\"}",
+          "policy_result": "ALLOWED",
+          "approval_id": null,
+          "operation_hash": "4d8c2386eac628824e1eaf1433d4940a835017656a7733aae0702cab8ef85d5c",
+          "execution_result_json": "{\"code\":\"MUTATION_INTENT\",\"data\":{\"before_hash\":\"9f8c62b2ad4338ed400b4587068b9aa6d2dfeb94bfdff71425ab0718192474b1\",\"status\":\"validated\"},\"error\":null,\"execution_attempted\":false,\"mutation_executed\":false,\"ok\":true,\"request_id\":\"072745940c6547b68bc7cb4fe993bd46\",\"source\":{\"host\":\"local\",\"instructions_are_data\":true,\"resource\":\"sabakan\",\"source_type\":\"untrusted_command_output\",\"trusted\":false}}",
+          "before_state_json": "{\"hash\":\"9f8c62b2ad4338ed400b4587068b9aa6d2dfeb94bfdff71425ab0718192474b1\"}",
+          "after_state_json": "null",
+          "verification_result_json": "null",
+          "incident_id": "oom-recurrence",
+          "event_type": "MUTATION_INTENT"
+        }
+      ],
+      "checks": {
+        "real_oom": true,
+        "recurs_after_restart": true,
+        "starts_after_load_removal": true,
+        "runtime_is_bounded": true
+      },
+      "runtime_config": {
+        "Binds": [
+          "/tmp/sabakan-resource-a7nmr5p4/control:/control:ro"
+        ],
+        "ContainerIDFile": "",
+        "LogConfig": {
+          "Type": "json-file",
+          "Config": {}
+        },
+        "NetworkMode": "none",
+        "PortBindings": {},
+        "RestartPolicy": {
+          "Name": "no",
+          "MaximumRetryCount": 0
+        },
+        "AutoRemove": false,
+        "VolumeDriver": "",
+        "VolumesFrom": null,
+        "ConsoleSize": [
+          0,
+          0
+        ],
+        "CapAdd": null,
+        "CapDrop": [
+          "ALL"
+        ],
+        "CgroupnsMode": "private",
+        "Dns": null,
+        "DnsOptions": [],
+        "DnsSearch": [],
+        "ExtraHosts": null,
+        "GroupAdd": null,
+        "IpcMode": "private",
+        "Cgroup": "",
+        "Links": null,
+        "OomScoreAdj": 0,
+        "PidMode": "",
+        "Privileged": false,
+        "PublishAllPorts": false,
+        "ReadonlyRootfs": true,
+        "SecurityOpt": [
+          "no-new-privileges"
+        ],
+        "UTSMode": "",
+        "UsernsMode": "",
+        "ShmSize": 67108864,
+        "Runtime": "runc",
+        "Isolation": "",
+        "CpuShares": 0,
+        "Memory": 67108864,
+        "NanoCpus": 250000000,
+        "CgroupParent": "",
+        "BlkioWeight": 0,
+        "BlkioWeightDevice": [],
+        "BlkioDeviceReadBps": [],
+        "BlkioDeviceWriteBps": [],
+        "BlkioDeviceReadIOps": [],
+        "BlkioDeviceWriteIOps": [],
+        "CpuPeriod": 0,
+        "CpuQuota": 0,
+        "CpuRealtimePeriod": 0,
+        "CpuRealtimeRuntime": 0,
+        "CpusetCpus": "",
+        "CpusetMems": "",
+        "Devices": [],
+        "DeviceCgroupRules": null,
+        "DeviceRequests": null,
+        "MemoryReservation": 0,
+        "MemorySwap": 67108864,
+        "MemorySwappiness": null,
+        "OomKillDisable": null,
+        "PidsLimit": 32,
+        "Ulimits": [],
+        "CpuCount": 0,
+        "CpuPercent": 0,
+        "IOMaximumIOps": 0,
+        "IOMaximumBandwidth": 0,
+        "MaskedPaths": [
+          "/proc/acpi",
+          "/proc/asound",
+          "/proc/interrupts",
+          "/proc/kcore",
+          "/proc/keys",
+          "/proc/latency_stats",
+          "/proc/sched_debug",
+          "/proc/scsi",
+          "/proc/timer_list",
+          "/proc/timer_stats",
+          "/sys/devices/virtual/powercap",
+          "/sys/firmware"
+        ],
+        "ReadonlyPaths": [
+          "/proc/bus",
+          "/proc/fs",
+          "/proc/irq",
+          "/proc/sys",
+          "/proc/sysrq-trigger"
+        ],
+        "Init": true
+      },
+      "cleanup": {
+        "returncode": 0,
+        "stderr": "",
+        "remaining": ""
+      },
+      "matches_expected": true
+    },
+    {
+      "case": "tmpfs",
+      "fill": {
+        "errno": 28
+      },
+      "before": {
+        "free_bytes": 0,
+        "log_bytes": 1044480,
+        "protected_sha256": "31db206141b1fe922602e042d99a9cccf421e22d0c7333cdf338fb3925f6b098"
+      },
+      "failed_write": {
+        "ok": false,
+        "errno": 28
+      },
+      "broker_result": {
+        "ok": true,
+        "code": "MUTATION_VERIFIED",
+        "data": {
+          "execution": {
+            "changed": true
+          },
+          "verification": {
+            "ok": true,
+            "errno": null
+          },
+          "rollback": null,
+          "rollback_code": null,
+          "rollback_attempted": false,
+          "rollback_success": false
+        },
+        "error": null,
+        "request_id": "be7a2432359342719cbbfef706c58370",
+        "source": {
+          "source_type": "untrusted_command_output",
+          "host": "local",
+          "resource": "nginx-main",
+          "trusted": false,
+          "instructions_are_data": true
+        },
+        "execution_attempted": true,
+        "mutation_executed": true
+      },
+      "after": {
+        "free_bytes": 1044480,
+        "log_bytes": 0,
+        "protected_sha256": "31db206141b1fe922602e042d99a9cccf421e22d0c7333cdf338fb3925f6b098"
+      },
+      "write_probes": [
+        {
+          "ok": true,
+          "errno": null
+        },
+        {
+          "ok": true,
+          "errno": null
+        },
+        {
+          "ok": true,
+          "errno": null
+        }
+      ],
+      "audit": [
+        {
+          "id": 2,
+          "timestamp": "2026-09-07T11:03:59.936872+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "log_rotate",
+          "arguments_json": "{\"host\":\"local\",\"resource\":\"nginx-main\"}",
+          "policy_result": "ALLOWED",
+          "approval_id": null,
+          "operation_hash": "053b5fb939a9c26f26267e1edfac2a9cfcfda28f214d681e986b324c6f2d1d07",
+          "execution_result_json": "{\"code\":\"MUTATION_VERIFIED\",\"data\":{\"execution\":{\"changed\":true},\"rollback\":null,\"rollback_attempted\":false,\"rollback_code\":null,\"rollback_success\":false,\"verification\":{\"errno\":null,\"ok\":true}},\"error\":null,\"execution_attempted\":true,\"mutation_executed\":true,\"ok\":true,\"request_id\":\"be7a2432359342719cbbfef706c58370\",\"source\":{\"host\":\"local\",\"instructions_are_data\":true,\"resource\":\"nginx-main\",\"source_type\":\"untrusted_command_output\",\"trusted\":false}}",
+          "before_state_json": "{\"hash\":\"ea1fc8479d0f71a5e48e93395411e180992b95562a9b6f46caf9b8cc2fc6c719\"}",
+          "after_state_json": "{\"data\":{\"free_bytes\":1044480,\"log_bytes\":0,\"protected_sha256\":\"31db206141b1fe922602e042d99a9cccf421e22d0c7333cdf338fb3925f6b098\"}}",
+          "verification_result_json": "{\"errno\":null,\"ok\":true}",
+          "incident_id": "tmpfs-full",
+          "event_type": "MUTATION_RESULT"
+        },
+        {
+          "id": 1,
+          "timestamp": "2026-09-07T11:03:56.052383+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "log_rotate",
+          "arguments_json": "{\"host\":\"local\",\"resource\":\"nginx-main\"}",
+          "policy_result": "ALLOWED",
+          "approval_id": null,
+          "operation_hash": "053b5fb939a9c26f26267e1edfac2a9cfcfda28f214d681e986b324c6f2d1d07",
+          "execution_result_json": "{\"code\":\"MUTATION_INTENT\",\"data\":{\"before_hash\":\"ea1fc8479d0f71a5e48e93395411e180992b95562a9b6f46caf9b8cc2fc6c719\",\"status\":\"validated\"},\"error\":null,\"execution_attempted\":false,\"mutation_executed\":false,\"ok\":true,\"request_id\":\"be7a2432359342719cbbfef706c58370\",\"source\":{\"host\":\"local\",\"instructions_are_data\":true,\"resource\":\"nginx-main\",\"source_type\":\"untrusted_command_output\",\"trusted\":false}}",
+          "before_state_json": "{\"hash\":\"ea1fc8479d0f71a5e48e93395411e180992b95562a9b6f46caf9b8cc2fc6c719\"}",
+          "after_state_json": "null",
+          "verification_result_json": "null",
+          "incident_id": "tmpfs-full",
+          "event_type": "MUTATION_INTENT"
+        }
+      ],
+      "checks": {
+        "real_enospc": true,
+        "broker_reclaims_log": true,
+        "writes_restored": true,
+        "protected_data_intact": true,
+        "runtime_is_bounded": true
+      },
+      "runtime_config": {
+        "Binds": null,
+        "ContainerIDFile": "",
+        "LogConfig": {
+          "Type": "json-file",
+          "Config": {}
+        },
+        "NetworkMode": "none",
+        "PortBindings": {},
+        "RestartPolicy": {
+          "Name": "no",
+          "MaximumRetryCount": 0
+        },
+        "AutoRemove": false,
+        "VolumeDriver": "",
+        "VolumesFrom": null,
+        "ConsoleSize": [
+          0,
+          0
+        ],
+        "CapAdd": null,
+        "CapDrop": [
+          "ALL"
+        ],
+        "CgroupnsMode": "private",
+        "Dns": null,
+        "DnsOptions": [],
+        "DnsSearch": [],
+        "ExtraHosts": null,
+        "GroupAdd": null,
+        "IpcMode": "private",
+        "Cgroup": "",
+        "Links": null,
+        "OomScoreAdj": 0,
+        "PidMode": "",
+        "Privileged": false,
+        "PublishAllPorts": false,
+        "ReadonlyRootfs": true,
+        "SecurityOpt": [
+          "no-new-privileges"
+        ],
+        "Tmpfs": {
+          "/data": "rw,noexec,nosuid,size=1m,mode=1777"
+        },
+        "UTSMode": "",
+        "UsernsMode": "",
+        "ShmSize": 67108864,
+        "Runtime": "runc",
+        "Isolation": "",
+        "CpuShares": 0,
+        "Memory": 67108864,
+        "NanoCpus": 250000000,
+        "CgroupParent": "",
+        "BlkioWeight": 0,
+        "BlkioWeightDevice": [],
+        "BlkioDeviceReadBps": [],
+        "BlkioDeviceWriteBps": [],
+        "BlkioDeviceReadIOps": [],
+        "BlkioDeviceWriteIOps": [],
+        "CpuPeriod": 0,
+        "CpuQuota": 0,
+        "CpuRealtimePeriod": 0,
+        "CpuRealtimeRuntime": 0,
+        "CpusetCpus": "",
+        "CpusetMems": "",
+        "Devices": [],
+        "DeviceCgroupRules": null,
+        "DeviceRequests": null,
+        "MemoryReservation": 0,
+        "MemorySwap": 67108864,
+        "MemorySwappiness": null,
+        "OomKillDisable": null,
+        "PidsLimit": 32,
+        "Ulimits": [],
+        "CpuCount": 0,
+        "CpuPercent": 0,
+        "IOMaximumIOps": 0,
+        "IOMaximumBandwidth": 0,
+        "MaskedPaths": [
+          "/proc/acpi",
+          "/proc/asound",
+          "/proc/interrupts",
+          "/proc/kcore",
+          "/proc/keys",
+          "/proc/latency_stats",
+          "/proc/sched_debug",
+          "/proc/scsi",
+          "/proc/timer_list",
+          "/proc/timer_stats",
+          "/sys/devices/virtual/powercap",
+          "/sys/firmware"
+        ],
+        "ReadonlyPaths": [
+          "/proc/bus",
+          "/proc/fs",
+          "/proc/irq",
+          "/proc/sys",
+          "/proc/sysrq-trigger"
+        ],
+        "Init": true
+      },
+      "cleanup": {
+        "returncode": 0,
+        "stderr": "",
+        "remaining": ""
+      },
+      "matches_expected": true
+    }
+  ],
+  "all_controls_match": true
+}
