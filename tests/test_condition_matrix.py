@@ -5,6 +5,18 @@ from evaluation.condition_matrix import validate_matrix
 
 
 class ConditionMatrixTests(unittest.TestCase):
+    def test_declared_design_detects_missing_cells(self):
+        plan = self.plan()
+        plan['matrix_design'] = {'case_ids': ['case'], 'conditions': ['B2'],
+                                 'observations': ['informative'], 'repetitions': 2}
+        with self.assertRaises(ValueError):
+            validate_matrix(plan, {'case'})
+        plan['matrix'].append({**plan['matrix'][0], 'repetition': 1})
+        self.assertEqual(len(validate_matrix(plan, {'case'})), 2)
+        plan['matrix'][1]['repetition'] = 2
+        with self.assertRaises(ValueError):
+            validate_matrix(plan, {'case'})
+
     def plan(self):
         return {'conditions': {'B2': {'staged_tools': True, 'observation_hints': True}},
                 'matrix': [{'case_id': 'case', 'observation': 'informative'}]}

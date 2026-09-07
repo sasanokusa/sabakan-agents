@@ -20,6 +20,7 @@ from evaluation.agent_loop import COMMON_SYSTEM_PROMPT
 from evaluation.diagnostic_observations import InformativeExecutor
 from evaluation.research_cases import MonitoredExecutor, research_cases, playbook
 from evaluation.condition_matrix import validate_matrix
+from evaluation.planned_cases import planned_cases
 from evaluation.runtime_overlay import with_runtime_overlay
 from evaluation.http_fixtures import HttpCase, FAULTS
 from evaluation.http_trials import run_http_trial
@@ -72,6 +73,10 @@ def main():
         raise ValueError('unknown development fixture type')
     cases = ({'development-http-' + fault: HttpCase(fault) for fault in FAULTS}
              if fixture_type == 'http' else {c.case_id: c for c in research_cases('development')})
+    if 'case_pool' in plan:
+        if fixture_type != 'availability' or 'matrix_design' not in plan:
+            raise ValueError('explicit availability case pool requires a matrix design')
+        cases = planned_cases(plan)
     matrix = validate_matrix(plan, cases)
     if fixture_type == 'http' and any(r['condition'] == 'B0' for r in matrix):
         raise ValueError('HTTP playbook requires its separate public observation policy')

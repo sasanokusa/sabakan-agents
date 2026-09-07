@@ -28,4 +28,17 @@ def validate_matrix(plan, case_ids):
     keys = Counter((r['case_id'], r['condition'], r['observation'], r['repetition']) for r in rows)
     if not rows or any(count != 1 for count in keys.values()):
         raise ValueError('empty or duplicate matrix')
+    if 'matrix_design' in plan:
+        design = plan['matrix_design']
+        axes = [design[key] for key in ('case_ids', 'conditions', 'observations')]
+        if any(not axis or len(set(axis)) != len(axis) for axis in axes):
+            raise ValueError('empty or duplicate design axis')
+        repetitions = design['repetitions']
+        if type(repetitions) is not int or repetitions < 1:
+            raise ValueError('invalid design repetitions')
+        expected = Counter((case, condition, observation, repetition)
+                           for case in axes[0] for condition in axes[1]
+                           for observation in axes[2] for repetition in range(repetitions))
+        if expected != keys:
+            raise ValueError('matrix differs from declared factorial design')
     return rows
