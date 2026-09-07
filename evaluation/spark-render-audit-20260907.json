@@ -1,0 +1,122 @@
+{
+  "protocol": "spark-saved-request-render-audit-v1",
+  "inference": false,
+  "requests": [
+    {
+      "source": "evaluation/spark-cpu-preflight-20260907.json",
+      "request": {
+        "model": "local",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Use the service_status function to inspect service nginx on host local. If the result is running, answer briefly that it is healthy and finish."
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "service_status",
+              "description": "Typed Sabakan operation. The Broker validates authorization and resources.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "type": "string"
+                  },
+                  "service": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "host",
+                  "service"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        ],
+        "tool_choice": "auto",
+        "max_tokens": 128,
+        "temperature": 0,
+        "seed": 42,
+        "stream": false
+      },
+      "rendered": {
+        "prompt": "<\uff5cstart\u2581of\u2581sentence\uff5c><|System|>\nyou are a helpful assistant.## Tools\nYou have access to the following functions:\n<tools>\n{\"name\": \"service_status\", \"description\": \"Typed Sabakan operation. The Broker validates authorization and resources.\", \"parameters\": {\"type\": \"object\", \"properties\": {\"host\": {\"type\": \"string\"}, \"service\": {\"type\": \"string\"}}, \"required\": [\"host\", \"service\"], \"additionalProperties\": false}}\n</tools><\uff5cend\u2581of\u2581sentence\uff5c><\uff5cstart\u2581of\u2581sentence\uff5c><|User|>Use the service_status function to inspect service nginx on host local. If the result is running, answer briefly that it is healthy and finish.<\uff5cend\u2581of\u2581sentence\uff5c><\uff5cstart\u2581of\u2581sentence\uff5c><|Bot|></think>"
+      }
+    },
+    {
+      "source": "evaluation/spark-cpu-required-tool-20260907.json",
+      "request": {
+        "model": "local",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Use the service_status function to inspect service nginx on host local. If the result is running, answer briefly that it is healthy and finish."
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "service_status",
+              "description": "Typed Sabakan operation. The Broker validates authorization and resources.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "type": "string"
+                  },
+                  "service": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "host",
+                  "service"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        ],
+        "tool_choice": "required",
+        "max_tokens": 128,
+        "temperature": 0,
+        "seed": 42,
+        "stream": false
+      },
+      "rendered": {
+        "prompt": "<\uff5cstart\u2581of\u2581sentence\uff5c><|System|>\nyou are a helpful assistant.## Tools\nYou have access to the following functions:\n<tools>\n{\"name\": \"service_status\", \"description\": \"Typed Sabakan operation. The Broker validates authorization and resources.\", \"parameters\": {\"type\": \"object\", \"properties\": {\"host\": {\"type\": \"string\"}, \"service\": {\"type\": \"string\"}}, \"required\": [\"host\", \"service\"], \"additionalProperties\": false}}\n</tools><\uff5cend\u2581of\u2581sentence\uff5c><\uff5cstart\u2581of\u2581sentence\uff5c><|User|>Use the service_status function to inspect service nginx on host local. If the result is running, answer briefly that it is healthy and finish.<\uff5cend\u2581of\u2581sentence\uff5c><\uff5cstart\u2581of\u2581sentence\uff5c><|Bot|></think>"
+      }
+    }
+  ],
+  "command": [
+    "/mnt/ssd/sabakan-runtimes/spark-cpu-build/bin/llama-server",
+    "-m",
+    "/mnt/ssd/sabakan-models/Spark-X2.5-4B-Q4_K_M/Spark-X2.5-4B-Q4_K_M.gguf",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "18085",
+    "-c",
+    "2048",
+    "-ngl",
+    "0",
+    "-np",
+    "1",
+    "-t",
+    "4",
+    "-tb",
+    "4",
+    "--reasoning",
+    "off",
+    "--reasoning-budget",
+    "0",
+    "--jinja"
+  ],
+  "logs": "warning: no usable GPU found, --gpu-layers option will be ignored\nwarning: one possible reason is that llama.cpp was compiled without GPU support\nwarning: consult docs/build.md for compilation instructions\n0.00.003.680 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)\n0.00.004.275 W srv  llama_server: -----------------\n0.00.004.278 W srv  llama_server: CORS is set to allow all origins ('*') and no API key is set\n0.00.004.278 W srv  llama_server: this can be a security risk (cross-origin attacks)\n0.00.004.279 W srv  llama_server: more info: https://github.com/ggml-org/llama.cpp/pull/25655\n0.00.004.279 W srv  llama_server: -----------------\n0.00.005.574 I srv    load_model: loading model '/mnt/ssd/sabakan-models/Spark-X2.5-4B-Q4_K_M/Spark-X2.5-4B-Q4_K_M.gguf'\n0.02.465.013 I cmn          init: llama threadpool init, n_threads = 4\n0.02.748.120 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 2048, kv_unified = 'false'\n0.02.760.398 I srv          init: chat template supports preserving reasoning, consider enabling it via --reasoning-preserve\n0.02.760.437 I srv  llama_server: model loaded\n0.02.760.443 I srv  llama_server: listening on http://127.0.0.1:18085\n0.03.244.853 I srv    operator(): operator(): cleaning up before exit...\n",
+  "returncode": 0
+}

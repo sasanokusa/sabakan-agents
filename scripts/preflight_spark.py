@@ -74,6 +74,8 @@ def main():
                 report['props'] = http_json(base + '/props', None, timeout=10)
                 tools = [s for s in openai_tool_schemas() if s['function']['name'] == 'service_status']
                 messages = [{'role': 'user', 'content': 'Use the service_status function to inspect service nginx on host local. If the result is running, answer briefly that it is healthy and finish.'}]
+                if plan.get('system_prompt'):
+                    messages.insert(0, {'role': 'system', 'content': plan['system_prompt']})
                 def query():
                     payload = {'model': 'local', 'messages': messages, 'tools': tools, 'tool_choice': 'auto',
                                'max_tokens': 128, 'temperature': 0, 'seed': 42, 'stream': False}
