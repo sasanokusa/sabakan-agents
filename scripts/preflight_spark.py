@@ -31,10 +31,11 @@ def main():
     parser.add_argument('--server', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--port', type=int, default=18085)
+    parser.add_argument('--plan', type=Path, default=ROOT / 'evaluation/protocols/spark-cpu-preflight-20260907.json')
     args = parser.parse_args()
     if args.output.exists():
         raise FileExistsError(args.output)
-    plan_path = ROOT / 'evaluation/protocols/spark-cpu-preflight-20260907.json'
+    plan_path = args.plan
     plan = json.loads(plan_path.read_text())
     model = next(m for m in json.loads((ROOT / 'models/manifest.json').read_text())['models'] if m['label'] == plan['model'])
     weight = ROOT / model['path']
@@ -76,6 +77,8 @@ def main():
                 def query():
                     payload = {'model': 'local', 'messages': messages, 'tools': tools, 'tool_choice': 'auto',
                                'max_tokens': 128, 'temperature': 0, 'seed': 42, 'stream': False}
+                    if not report['requests']:
+                        payload['tool_choice'] = plan.get('first_tool_choice', 'auto')
                     record = {'request': json.loads(json.dumps(payload))}
                     report['requests'].append(record)
                     try:

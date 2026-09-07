@@ -1,0 +1,290 @@
+{
+  "protocol": "sabakan-spark-cpu-format-preflight-v1",
+  "plan": {
+    "protocol": "sabakan-spark-cpu-format-preflight-v1",
+    "model": "Spark-X2.5-4B",
+    "purpose": "CPU architecture, template and typed-output compatibility only; no Broker execution, no recovery claim, no CUDA fit claim",
+    "runtime_repository": "https://github.com/XHToken/llama.cpp",
+    "runtime_revision": "4a3635c32fc9f044c2bde9ebeabf50c7e1ec5991",
+    "build": "Release, GGML_CUDA=OFF, LLAMA_OPENSSL=OFF; server target, two compilation jobs",
+    "runtime": {
+      "context": 2048,
+      "gpu_layers": 0,
+      "parallel_slots": 1,
+      "threads": 4,
+      "batch_threads": 4,
+      "reasoning": "off",
+      "reasoning_budget": 0,
+      "jinja": true
+    },
+    "generation": {
+      "max_tokens": 128,
+      "temperature": 0,
+      "seed": 42
+    },
+    "limits": {
+      "virtual_memory_gib": 12,
+      "cpu_seconds": 1800,
+      "outer_wall_seconds": 600,
+      "startup_seconds": 180,
+      "request_seconds": 180
+    },
+    "cases": [
+      "ask for service_status(local, nginx)",
+      "if the call is correct, deliver synthetic READ_OK/running and request continuation"
+    ],
+    "stopping": "One preflight, no retries on errors or incorrect output. No model adjustment based on output. Preserve logs and raw requests even on failure.",
+    "measurement": "Model and server hashes, command, props/template, raw requests/responses, canonical proposal, phase failure, cleanup and elapsed time. GPU VRAM is not a CPU measurement."
+  },
+  "plan_sha256": "2af3083cc21ab2c52a101d97e96fc5b05a50f569aee9c818fa4798e5626dc1a5",
+  "model": {
+    "label": "Spark-X2.5-4B",
+    "base_model": "XHToken/Spark-X2.5-4B",
+    "base_revision": "5e10fcc0286756aebf7c41dc52c1e42d95c70281",
+    "repository": "XHToken/Spark-X2.5-4B-GGUF",
+    "revision": "d313463f1ff7dc29db20193fddc4ad8386d16261",
+    "file": "Spark-X2.5-4B-Q4_K_M.gguf",
+    "bytes": 2600224352,
+    "sha256": "adfcfa19a4ed6a5985da8bf565fe15f8e1a7e131d79bae2d19d48d1c40109428",
+    "path": "models/Spark-X2.5-4B-Q4_K_M/Spark-X2.5-4B-Q4_K_M.gguf",
+    "runtime_note": "Official card recommends XHToken/llama.cpp; compatibility and CUDA preflight pending."
+  },
+  "server_sha256": "627839ae443f4a28d603751fa80c1e8a374dbf0fd4e73063eb04b927d55471ee",
+  "command": [
+    "/mnt/ssd/sabakan-runtimes/spark-cpu-build/bin/llama-server",
+    "-m",
+    "/mnt/ssd/sabakan-models/Spark-X2.5-4B-Q4_K_M/Spark-X2.5-4B-Q4_K_M.gguf",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "18085",
+    "-c",
+    "2048",
+    "-ngl",
+    "0",
+    "-np",
+    "1",
+    "-t",
+    "4",
+    "-tb",
+    "4",
+    "--reasoning",
+    "off",
+    "--reasoning-budget",
+    "0",
+    "--jinja"
+  ],
+  "runtime_files_sha256": {
+    "libggml-base.so": "4b236af39a4f93fbf859d3ad58a928fd6f484e6c0db0b80820c9f5b63ed13f35",
+    "libggml-base.so.0": "4b236af39a4f93fbf859d3ad58a928fd6f484e6c0db0b80820c9f5b63ed13f35",
+    "libggml-base.so.0.20.2": "4b236af39a4f93fbf859d3ad58a928fd6f484e6c0db0b80820c9f5b63ed13f35",
+    "libggml-cpu.so": "fc985382f93b2e6406ce56fdad0d84835e3e90014cb35057f44b835a8d8b119a",
+    "libggml-cpu.so.0": "fc985382f93b2e6406ce56fdad0d84835e3e90014cb35057f44b835a8d8b119a",
+    "libggml-cpu.so.0.20.2": "fc985382f93b2e6406ce56fdad0d84835e3e90014cb35057f44b835a8d8b119a",
+    "libggml.so": "ff0c7448ef7cefcc90d24d7a1a463229d8674eaa666a87ca0502724809aba0f6",
+    "libggml.so.0": "ff0c7448ef7cefcc90d24d7a1a463229d8674eaa666a87ca0502724809aba0f6",
+    "libggml.so.0.20.2": "ff0c7448ef7cefcc90d24d7a1a463229d8674eaa666a87ca0502724809aba0f6",
+    "libllama-common.so": "119250d41538d91ef1c068cdcbba5e4a31a8fb49644592967018632bebb32435",
+    "libllama-common.so.0": "119250d41538d91ef1c068cdcbba5e4a31a8fb49644592967018632bebb32435",
+    "libllama-common.so.0.1.2": "119250d41538d91ef1c068cdcbba5e4a31a8fb49644592967018632bebb32435",
+    "libllama-server-impl.so": "ac8c37104cc329ac7acb42756a3a60fc4543cdc5b2f4209e80b9d175e491d6de",
+    "libllama.so": "0ab24ac8606a577f8911fdb14120e0a678a04eee28ef44fc1cfc71f34656e4e4",
+    "libllama.so.0": "0ab24ac8606a577f8911fdb14120e0a678a04eee28ef44fc1cfc71f34656e4e4",
+    "libllama.so.0.1.2": "0ab24ac8606a577f8911fdb14120e0a678a04eee28ef44fc1cfc71f34656e4e4",
+    "libmtmd.so": "842f8f7f89b50344656b372a7d4ab897e6a6d18258fc654ffc3435e6249110ee",
+    "libmtmd.so.0": "842f8f7f89b50344656b372a7d4ab897e6a6d18258fc654ffc3435e6249110ee",
+    "libmtmd.so.0.1.2": "842f8f7f89b50344656b372a7d4ab897e6a6d18258fc654ffc3435e6249110ee",
+    "llama-server": "627839ae443f4a28d603751fa80c1e8a374dbf0fd4e73063eb04b927d55471ee"
+  },
+  "status": "completed",
+  "requests": [
+    {
+      "request": {
+        "model": "local",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Use the service_status function to inspect service nginx on host local. If the result is running, answer briefly that it is healthy and finish."
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "service_status",
+              "description": "Typed Sabakan operation. The Broker validates authorization and resources.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "type": "string"
+                  },
+                  "service": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "host",
+                  "service"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        ],
+        "tool_choice": "auto",
+        "max_tokens": 128,
+        "temperature": 0,
+        "seed": 42,
+        "stream": false
+      },
+      "response": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "The service nginx on host local is healthy."
+            }
+          }
+        ],
+        "created": 1788782539,
+        "model": "/mnt/ssd/sabakan-models/Spark-X2.5-4B-Q4_K_M/Spark-X2.5-4B-Q4_K_M.gguf",
+        "system_fingerprint": "b1-4a3635c",
+        "object": "chat.completion",
+        "usage": {
+          "completion_tokens": 11,
+          "prompt_tokens": 138,
+          "total_tokens": 149,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "id": "chatcmpl-ZsSt4SkIFMRz0HtqT7MTlimNvzlKM896",
+        "timings": {
+          "cache_n": 0,
+          "prompt_n": 138,
+          "prompt_ms": 3490.479,
+          "prompt_per_token_ms": 25.29332608695652,
+          "prompt_per_second": 39.536120973654334,
+          "predicted_n": 11,
+          "predicted_ms": 999.284,
+          "predicted_per_token_ms": 99.9284,
+          "predicted_per_second": 10.007165130233247
+        }
+      }
+    }
+  ],
+  "load_seconds": 3.1097776589740533,
+  "props": {
+    "default_generation_settings": {
+      "params": {
+        "seed": 4294967295,
+        "temperature": 1.0,
+        "dynatemp_range": 0.0,
+        "dynatemp_exponent": 1.0,
+        "top_k": -1,
+        "top_p": 0.949999988079071,
+        "min_p": 0.05000000074505806,
+        "top_n_sigma": -1.0,
+        "xtc_probability": 0.0,
+        "xtc_threshold": 0.10000000149011612,
+        "typical_p": 1.0,
+        "repeat_last_n": 64,
+        "repeat_penalty": 1.0,
+        "presence_penalty": 0.0,
+        "frequency_penalty": 0.0,
+        "dry_multiplier": 0.0,
+        "dry_base": 1.75,
+        "dry_allowed_length": 2,
+        "dry_penalty_last_n": 64,
+        "mirostat": 0,
+        "mirostat_tau": 5.0,
+        "mirostat_eta": 0.10000000149011612,
+        "adaptive_target": -1.0,
+        "adaptive_decay": 0.8999999761581421,
+        "max_tokens": -1,
+        "n_predict": -1,
+        "n_keep": 0,
+        "n_discard": 0,
+        "ignore_eos": false,
+        "stream": false,
+        "n_probs": 0,
+        "min_keep": 0,
+        "chat_format": "Content-only",
+        "reasoning_format": "none",
+        "reasoning_in_content": false,
+        "generation_prompt": "",
+        "samplers": [
+          "penalties",
+          "dry",
+          "top_n_sigma",
+          "top_k",
+          "typ_p",
+          "top_p",
+          "min_p",
+          "xtc",
+          "temperature"
+        ],
+        "speculative.types": "none",
+        "timings_per_token": "[REDACTED]",
+        "post_sampling_probs": false,
+        "backend_sampling": false,
+        "lora": []
+      },
+      "n_ctx": 2048
+    },
+    "total_slots": 1,
+    "model_alias": "/mnt/ssd/sabakan-models/Spark-X2.5-4B-Q4_K_M/Spark-X2.5-4B-Q4_K_M.gguf",
+    "model_ftype": "Q4_K - Medium",
+    "model_path": "/mnt/ssd/sabakan-models/Spark-X2.5-4B-Q4_K_M/Spark-X2.5-4B-Q4_K_M.gguf",
+    "modalities": {
+      "vision": false,
+      "video": false,
+      "audio": false
+    },
+    "media_marker": "<__media_ZsSt4SkIFMRz0HtqT7MTlimNvzlKM896__>",
+    "endpoint_slots": true,
+    "endpoint_props": false,
+    "endpoint_metrics": false,
+    "ui": true,
+    "ui_settings": {},
+    "chat_template": "{#- 0826版本 -#}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- set enable_thinking = enable_thinking | default(true) %}\n\n{#- Render a string or a list of text blocks. -#}\n{%- macro render_content(content, context_name) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for block in content %}\n            {%- if block.type == 'text' %}\n                {{- block.text }}\n            {%- else %}\n                {{- raise_exception('Unsupported ' ~ context_name ~ ' content block type: ' ~ (block.type | string)) }}\n            {%- endif %}\n        {%- endfor %}\n    {%- else %}\n        {{- raise_exception(context_name ~ ' content must be a string or a list of text blocks') }}\n    {%- endif %}\n{%- endmacro %}\n\n{#- Default system prompt -#}\n{%- set default_system = \"you are a helpful assistant.\" %}\n\n{#- The first message-level system is placed in the initial system block. -#}\n{%- set ns = namespace(initial_system='') %}\n{%- if messages[0].role == \"system\" %}\n    {%- set ns.initial_system = render_content(messages[0].content, 'system') %}\n{%- endif %}\n\n{#- System block -#}\n{{- '<｜start▁of▁sentence｜><|System|>' + '\\n' + default_system }}\n{%- if tools %}\n    {{- '## Tools' + '\\n' + 'You have access to the following functions:' + '\\n' + '<tools>' }}\n    {%- for tool in tools %}\n        {{- '\\n' + tool.function | tojson}}\n    {%- endfor %}\n    {{- '\\n' + '</tools>' }}\n{%- endif %}\n{%- if ns.initial_system %}\n    {{- '\\n\\n' + ns.initial_system }}\n{%- endif %}\n{{- '<｜end▁of▁sentence｜>'}}\n\n{#- Conversation turns -#}\n{%- for message in messages %}\n    {%- if message.role == \"system\" %}\n        {#- The first system message was consumed by the initial block. -#}\n        {%- if not loop.first %}\n            {{- '<｜start▁of▁sentence｜><|System|>\\n' + render_content(message.content, 'system') + '<｜end▁of▁sentence｜>' }}\n        {%- endif %}\n    {%- elif message.role == \"user\" %}\n        {{- '<｜start▁of▁sentence｜><|User|>' + render_content(message.content, 'user') + '<｜end▁of▁sentence｜>' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set assistant_content = render_content(message.content, 'assistant') %}\n        {%- if message.reasoning_content is defined and message.reasoning_content %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- set reasoning_content = '' %}\n        {%- endif %}\n        {{- '<｜start▁of▁sentence｜><|Bot|>'}}\n        {%- if reasoning_content %}\n            {{- '<think>' + reasoning_content + '</think>'}}\n        {%- else %}\n            {{- '</think>' }}\n        {%- endif %}\n        {%- if assistant_content %}\n            {{- assistant_content }}\n        {%- endif %}\n        {%- if message.tool_calls is defined and message.tool_calls is not none %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function.arguments is not mapping %}\n                    {{- raise_exception('tool_call.function.arguments must be a dictionary; normalize JSON strings before apply_chat_template') }}\n                {%- endif %}\n                {%- set args = tool_call.function.arguments %}\n                {{- '<tool_call>' + tool_call.function.name }}\n                {%- for k, v in args.items() %}\n                    {{- '<arg_key>' ~ k ~ '</arg_key><arg_value>' ~ (v if v is string else v | tojson) ~ '</arg_value>' }}\n                {%- endfor %}\n                {{- '</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<｜end▁of▁sentence｜>' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem is undefined or loop.previtem.role != \"tool\" %}\n            {{- '<｜start▁of▁sentence｜><|Tool|>' }}\n        {%- endif %}\n        {{- '<tool_response>' ~ message.content ~ '</tool_response>' }}\n        {%- if loop.nextitem is undefined or loop.nextitem.role != \"tool\" %}\n            {{- '<｜end▁of▁sentence｜>' }}\n        {%- endif %}\n    {%- else %}\n        {{- raise_exception('Unsupported message role: ' ~ message.role) }}\n    {%- endif %}\n{%- endfor %}\n\n{#- Generation prompt -#}\n{%- if add_generation_prompt %}\n    {{- '<｜start▁of▁sentence｜><|Bot|>' }}\n    {%- if enable_thinking is defined and enable_thinking %}\n        {{- '<think>' }}\n    {%- endif %}\n    {%- if enable_thinking is defined and not enable_thinking %}\n        {{- '</think>' }}\n    {%- endif %}\n{%- endif %}",
+    "chat_template_caps": {
+      "supports_object_arguments": true,
+      "supports_parallel_tool_calls": true,
+      "supports_preserve_reasoning": true,
+      "supports_reasoning_effort": false,
+      "supports_string_content": true,
+      "supports_system_role": true,
+      "supports_tool_calls": true,
+      "supports_tools": true,
+      "supports_typed_content": false
+    },
+    "bos_token": "[REDACTED]",
+    "eos_token": "[REDACTED]",
+    "build_info": "b1-4a3635c",
+    "is_sleeping": false,
+    "cors_proxy_enabled": false
+  },
+  "canonical": {
+    "proposal": {
+      "hypothesis": "The service nginx on host local is healthy.",
+      "tool_calls": []
+    },
+    "envelope_valid": true,
+    "source_format": "llama_cpp_message",
+    "llm_approval_signal": null,
+    "raw_envelope": null,
+    "errors": []
+  },
+  "checks": {
+    "typed_call_correct": false,
+    "canonical_call_correct": false,
+    "normal_text_after_synthetic_result": false
+  },
+  "server_returncode": 0,
+  "server_logs": "warning: no usable GPU found, --gpu-layers option will be ignored\nwarning: one possible reason is that llama.cpp was compiled without GPU support\nwarning: consult docs/build.md for compilation instructions\n0.00.003.586 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)\n0.00.004.177 W srv  llama_server: -----------------\n0.00.004.179 W srv  llama_server: CORS is set to allow all origins ('*') and no API key is set\n0.00.004.179 W srv  llama_server: this can be a security risk (cross-origin attacks)\n0.00.004.179 W srv  llama_server: more info: https://github.com/ggml-org/llama.cpp/pull/25655\n0.00.004.180 W srv  llama_server: -----------------\n0.00.005.474 I srv    load_model: loading model '/mnt/ssd/sabakan-models/Spark-X2.5-4B-Q4_K_M/Spark-X2.5-4B-Q4_K_M.gguf'\n0.02.543.518 I cmn          init: llama threadpool init, n_threads = 4\n0.02.835.650 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 2048, kv_unified = 'false'\n0.02.847.896 I srv          init: chat template supports preserving reasoning, consider enabling it via --reasoning-preserve\n0.02.847.937 I srv  llama_server: model loaded\n0.02.847.942 I srv  llama_server: listening on http://127.0.0.1:18085\n0.03.125.938 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = -1\n0.03.126.254 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0\n0.06.456.370 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    134, progress = 0.97, t =   3.33 s / 40.24 tokens per second\n0.07.616.051 I slot print_timing: id  0 | task 0 | prompt eval time =    3490.48 ms /   138 tokens (   25.29 ms per token,    39.54 tokens per second)\n0.07.616.055 I slot print_timing: id  0 | task 0 |        eval time =     999.28 ms /    11 tokens (   99.93 ms per token,    10.01 tokens per second)\n0.07.616.055 I slot print_timing: id  0 | task 0 |       total time =    4489.76 ms /   149 tokens\n0.07.616.060 I slot print_timing: id  0 | task 0 |    graphs reused =         10\n0.07.616.107 I slot      release: id  0 | task 0 | stop processing: n_tokens = 148, truncated = 0\n0.07.617.630 I srv    operator(): operator(): cleaning up before exit...\n",
+  "elapsed_seconds": 7.939515516976826
+}
