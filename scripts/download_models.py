@@ -35,7 +35,8 @@ def download(item: dict[str, str], *, force: bool) -> None:
         raise RuntimeError(f"existing file has the wrong SHA-256: {destination}")
 
     destination.parent.mkdir(parents=True, exist_ok=True)
-    url = f"https://huggingface.co/{item['repository']}/resolve/main/{item['file']}?download=true"
+    revision = item.get('revision', 'main')
+    url = f"https://huggingface.co/{item['repository']}/resolve/{revision}/{item['file']}?download=true"
     partial = destination.with_name(destination.name + ".part")
     print(f"{item['label']}: downloading {url}", flush=True)
     request = urllib.request.Request(url, headers={"User-Agent": "sabakan-agent-model-fetch/0.1"})

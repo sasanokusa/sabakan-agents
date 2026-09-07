@@ -42,6 +42,8 @@ Hermes、Discord、SSH の unrestricted shell はまだ接続していません�
 
 モデルは [`models/manifest.json`](models/manifest.json) に記録しています。全モデルを同時にロードせず、次のコマンドで1つずつロード・評価・CUDA解放します。
 
+現行候補は **Spark-X2.5-4B、Agents-A1-4B、Granite-4.2-3B** です。2026-09-07のユーザー指定でLFMを候補から外し、履歴用の `archived_models` に移しました。旧結果・重みは保持しています。Sparkの公式Q4_K_MはrevisionとSHAを固定していますが、公式カードは専用の `XHToken/llama.cpp` を案内しており、既存CUDAイメージでの互換性・収容・復旧性能は未検証です。以下の既存CUDA runnerでSparkも動くと仮定しないでください。
+
 ```bash
 # GGUF本体はGitHubへ含めず、manifestのURLとSHA-256から取得
 python3 scripts/download_models.py

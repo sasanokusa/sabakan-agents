@@ -4,15 +4,6 @@
   "hardware_target": "NVIDIA GeForce GTX 1650 4GiB",
   "models": [
     {
-      "label": "LFM2.5-2.6B",
-      "base_model": "LiquidAI/LFM2.5-2.6B",
-      "repository": "LiquidAI/LFM2.5-2.6B-GGUF",
-      "file": "LFM2.5-2.6B-Q4_K_M.gguf",
-      "bytes": 1674455040,
-      "sha256": "02a8b7e17487d326e46d68ce0ba24211e1b80a14c4cd0597fa73c1cd697f52ed",
-      "path": "models/LFM2.5-2.6B-Q4_K_M/LFM2.5-2.6B-Q4_K_M.gguf"
-    },
-    {
       "label": "Agents-A1-4B",
       "base_model": "InternScience/Agents-A1-4B",
       "repository": "InternScience/Agents-A1-4B-Q4_K_M-GGUF",
@@ -30,6 +21,32 @@
       "sha256": "d8c0c39e0b775ff4e7ed1ed7f0593d27158acb063b07b132fa4f134b2075567f",
       "path": "models/Granite-4.2-3B-Q4_K_M/granite-4.2-3b-Q4_K_M.gguf",
       "note": "Q4 conversion of the IBM Granite 4.2 3B checkpoint"
+    },
+    {
+      "label": "Spark-X2.5-4B",
+      "base_model": "XHToken/Spark-X2.5-4B",
+      "base_revision": "5e10fcc0286756aebf7c41dc52c1e42d95c70281",
+      "repository": "XHToken/Spark-X2.5-4B-GGUF",
+      "revision": "d313463f1ff7dc29db20193fddc4ad8386d16261",
+      "file": "Spark-X2.5-4B-Q4_K_M.gguf",
+      "bytes": 2600224352,
+      "sha256": "adfcfa19a4ed6a5985da8bf565fe15f8e1a7e131d79bae2d19d48d1c40109428",
+      "path": "models/Spark-X2.5-4B-Q4_K_M/Spark-X2.5-4B-Q4_K_M.gguf",
+      "runtime_note": "Official card recommends XHToken/llama.cpp; compatibility and CUDA preflight pending."
     }
-  ]
+  ],
+  "archived_models": [
+    {
+      "label": "LFM2.5-2.6B",
+      "base_model": "LiquidAI/LFM2.5-2.6B",
+      "repository": "LiquidAI/LFM2.5-2.6B-GGUF",
+      "file": "LFM2.5-2.6B-Q4_K_M.gguf",
+      "bytes": 1674455040,
+      "sha256": "02a8b7e17487d326e46d68ce0ba24211e1b80a14c4cd0597fa73c1cd697f52ed",
+      "path": "models/LFM2.5-2.6B-Q4_K_M/LFM2.5-2.6B-Q4_K_M.gguf",
+      "retired_from_default_candidates": "2026-09-07",
+      "reason": "User requested Spark replacement; LFM current development and prior pilot remain floor results. Historical evidence and weights retained."
+    }
+  ],
+  "candidate_set_updated_at": "2026-09-07"
 }

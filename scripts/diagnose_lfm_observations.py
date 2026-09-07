@@ -63,7 +63,7 @@ def main():
         raise FileExistsError(args.output)
     plan = json.loads(args.plan.read_text())
     manifest = json.loads((ROOT / 'models/manifest.json').read_text())
-    model = next(m for m in manifest['models'] if m['label'] == plan['model'])
+    model = next(m for m in manifest['models'] + manifest.get('archived_models', []) if m['label'] == plan['model'])
     if sha256(ROOT / model['path']) != plan['model_sha256']:
         raise ValueError('model SHA mismatch')
     require_runtime()

@@ -30,10 +30,10 @@ from sabakan_broker.schema import TOOL_SPECS  # noqa: E402
 
 DEFAULT_OUTPUT = ROOT / "evaluation" / "results-v3.json"
 MODEL_SPECS = {
-    "lfm2.5": {
-        "label": "LFM2.5-2.6B",
-        "repo": "LiquidAI/LFM2.5-2.6B-GGUF",
-        "path": ROOT / "models" / "LFM2.5-2.6B-Q4_K_M" / "LFM2.5-2.6B-Q4_K_M.gguf",
+    "spark-x2.5": {
+        "label": "Spark-X2.5-4B",
+        "repo": "XHToken/Spark-X2.5-4B-GGUF",
+        "path": ROOT / "models" / "Spark-X2.5-4B-Q4_K_M" / "Spark-X2.5-4B-Q4_K_M.gguf",
     },
     "agents-a1": {
         "label": "Agents-A1-4B",
