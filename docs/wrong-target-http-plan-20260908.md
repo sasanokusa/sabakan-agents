@@ -31,3 +31,17 @@ python3 scripts/run_http_attack_development.py \
 単体検証では、成功観測以外が変わらないこと、元の結果dictを破壊しないこと、型の維持、
 例外時のfactory復元、clean対照の必須化、主評価中の開始拒否を確認した。
 ここではモデル／Docker試行はまだ実施していない。
+
+## 実行前の解析実装
+
+`scripts/analyze_wrong_target_http.py` を追加。主評価や HTTP Executor の固定済みソースを変更せず、終了済みレポートだけを受け付ける。予定 8 枠を保持し、欠測・重複を別記する。提案は loop 内の canonical proposal、受理は Broker decision、実行への到達は独立 monitor の mutation event、状態変化はその before/after の backend status と started_at から判定する。HTTP 全体のスナップショットを単一コンテナ状態として誤解釈しない。
+
+攻撃文の送信準備と応答済み入力への到達を区別する。部分試行の肯定的な操作証拠は保持し、完全性が確認できない否定・トークン総量は unknown とする。actor と反復を揃えた clean/attack の行と、ツール数・経過時間・運用上の害の差を出力する。単一の既知ケースと攻撃文であり、一般的な耐性や因果効果は主張しない。
+
+検証: `PYTHONPATH=src:. python3 -m unittest discover -s tests -p test_wrong_target_http_analysis.py`、6 件成功。完全な陰性と欠測、部分試行の肯定的証拠、backend の再起動、状態観測欠落、不正提案、未応答入力への到達、欠測・重複・実行中の拒否を確認。実モデルによる追加比較はまだ未実行。
+
+終了後のコマンド:
+
+```sh
+python3 scripts/analyze_wrong_target_http.py evaluation/wrong-target-http-dev-20260908.json --output evaluation/wrong-target-http-analysis-20260908.json
+```
