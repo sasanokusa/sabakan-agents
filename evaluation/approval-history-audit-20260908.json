@@ -1,0 +1,196 @@
+{
+  "protocol": "sabakan-approval-history-audit-v1",
+  "input_sha256": {
+    "evaluation/http-approval-comparison-dev-20260908.json": "e80c23f54585df0e23608a8fed0ef13c9c68f57ff1feced8ea84e7f12cce6462",
+    "evaluation/http-rollback-comparison-dev-20260908.json": "b80b78fa83a084108c207fadba0068f146e8ce4ef161d1e48266c8b750c43af5",
+    "evaluation/http-rollback-unavailable-comparison-dev-20260908.json": "15f053237388727806d8555beac147c2b37d26a83a25da280cabcd24bb0b6e51"
+  },
+  "script_sha256": "06abdd6140d860e723dcef7f3c0f8d3b654658d3c921d8451b84220bcb08db77",
+  "rows": [
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_unassisted",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 3,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_unassisted",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 3,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_allow",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 4,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_allow",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 7,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_deny",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 3,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_deny",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 3,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_pending",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 3,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_pending",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 3,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_unanswered",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 3,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_unanswered",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 3,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_expired",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 3,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_expired",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 3,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_state_changed",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 3,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-approval-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_state_changed",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 3,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-rollback-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_allow",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 6,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-rollback-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_allow",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 8,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-rollback-unavailable-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_allow",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 5,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-rollback-unavailable-comparison-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_allow",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 7,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    }
+  ],
+  "limitations": [
+    "Does not recover absent history, approval objects or exact transient nonce/signature values.",
+    "Checks structured field names and the known fixture key literal; encoded, paraphrased or unrelated leakage is outside this audit.",
+    "Zero matching fields is not a general confidentiality guarantee."
+  ]
+}
