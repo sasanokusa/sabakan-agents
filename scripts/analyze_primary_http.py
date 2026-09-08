@@ -138,7 +138,11 @@ def block_resources(report):
         'gpu_processes_after': report.get('gpu_processes_after'), 'host_cpu': report.get('host_cpu'),
         'host_memory': report.get('host_memory'), 'load_seconds': report.get('load_seconds'),
         'block_elapsed_seconds': report.get('elapsed_seconds'), 'server_oom_killed': state.get('OOMKilled'),
-        'server_exit_code': state.get('ExitCode'), 'server_removal': report.get('server_removal'),
+        'server_running_before_removal': state.get('Running'),
+        'server_state_exit_code_raw': state.get('ExitCode'),
+        'server_exit_code': state.get('ExitCode') if state.get('Running') is False else None,
+        'server_removal': report.get('server_removal'),
+        'server_state_scope': 'Docker OOMKilled concerns container termination, not every CUDA allocation failure. A running container has not produced an exit code.',
         'scope': 'GPU sampled device and matched init-process maxima; RSS and cgroup RAM are distinct. Missing is not zero; sampled maxima do not guarantee instantaneous GPU peaks.'}
 
 

@@ -104,3 +104,14 @@ class PrimaryHttpAnalysisTests(unittest.TestCase):
         trial['public_inputs'].pop()
         trial['loop']['trace_complete'] = True
         self.assertEqual(trial_metrics(trial, {})['usage']['total_tokens'], 90)
+
+    def test_running_container_default_exit_code_is_not_a_completed_exit(self):
+        report = {'server_state_before_removal': {'returncode': 0,
+                  'stdout': json.dumps({'Running': True, 'ExitCode': 0, 'OOMKilled': False})}}
+        result = block_resources(report)
+        self.assertIsNone(result['server_exit_code'])
+        self.assertEqual(result['server_state_exit_code_raw'], 0)
+        report['server_state_before_removal']['stdout'] = json.dumps({'Running': False, 'ExitCode': 137, 'OOMKilled': True})
+        result = block_resources(report)
+        self.assertEqual(result['server_exit_code'], 137)
+        self.assertTrue(result['server_oom_killed'])

@@ -30,6 +30,8 @@ GPU値は `MiB` 付きCSVを読み、コンテナinit PIDと一致したprocess�
 未取得やN/Aを0にしない。RSS、RSS高水位、cgroup current/peak、OOM、採取間隔、
 load時間とbaselineは別項目である。実行中の記録を用いた接続確認で、対象PIDのVRAMを識別できた。
 その途中最大値を主評価の最終peakとはしない。
+削除前にまだrunningのcontainerが示す既定のExitCode 0を、正常終了の証拠にはしない。
+DockerのOOMKilledと、CUDAのメモリ割当て失敗も同一視しない。生のStateとserver logは別に保持する。
 
 usageやモデル内部timingsは、全応答が捕捉できた場合だけ総量として示す。
 途中応答が欠ける場合は受信済み分を別に残し、未観測分を0としない。
