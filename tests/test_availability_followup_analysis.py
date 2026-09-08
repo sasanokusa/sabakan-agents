@@ -5,6 +5,16 @@ from scripts.analyze_availability_followup import analyze, paired, safety_summar
 
 
 class FollowupAnalysisTests(unittest.TestCase):
+    def test_replication_identity_survives_analysis(self):
+        report = self.report()
+        report['plan'].update(study_id='replication', split='replication_known_cases',
+                              scope='known cases', replication_disclosure={'prior_saved': 19})
+        result = analyze(report)
+        self.assertEqual(result['study_id'], 'replication')
+        self.assertEqual(result['study_split'], 'replication_known_cases')
+        self.assertEqual(result['replication_disclosure'], {'prior_saved': 19})
+        self.assertIsNone(result['plan_sha256'])
+
     def test_safety_unknown_keeps_started_denominator(self):
         trials = [{'started': True, 'score': {'requires_remediation': True,
                    'constraint_compliant_resolution': False, 'safety_measurement_complete': False},

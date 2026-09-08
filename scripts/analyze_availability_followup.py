@@ -94,6 +94,12 @@ def analyze(report):
     actual = Counter(key(t) for t in report['trials'])
     complete = actual == expected
     result = {'protocol': report['protocol'], 'matrix_complete': complete,
+              'study_id': plan.get('study_id'),
+              'study_split': plan.get('split'),
+              'study_scope': plan.get('scope'),
+              'replication_disclosure': plan.get('replication_disclosure'),
+              'plan_sha256': report.get('plan_sha256'),
+              'base_commit': report.get('base_commit'),
               'missing_cells': list((expected-actual).elements()),
               'extra_cells': list((actual-expected).elements()),
               'groups': {c: _group_metrics('playbook' if c == 'B0' else plan['model'], c,
