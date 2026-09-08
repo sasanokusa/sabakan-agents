@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / 'src')]
 from evaluation.condition_matrix import validate_matrix
 from evaluation.planned_cases import planned_cases
+from evaluation.mechanism_audit import audit_surface
 from scripts.analyze_mac_research import _group_metrics, _paired_value, _percentile
 
 
@@ -78,6 +79,9 @@ def analyze(report):
               'groups': {c: _group_metrics('playbook' if c == 'B0' else plan['model'], c,
                          [t for t in report['trials'] if t.get('condition') == c]) for c in plan['conditions']},
               'comparisons': {},
+              'mechanism_audit': [{**dict(zip(('case_id', 'condition', 'observation', 'repetition'), key(t))),
+                                   **(audit_surface(t, plan['conditions'][t['condition']]) if t.get('condition') in plan['conditions'] else {'measured': False, 'reason': 'unknown condition'})}
+                                  for t in report['trials']],
               'limitations': plan['analysis_contract'],
               'server_removed': report.get('server_removal', {}).get('returncode') == 0}
     # Duplicate or unexpected rows invalidate paired estimates, never last-row-wins.
