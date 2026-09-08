@@ -1,0 +1,11 @@
+# HTTP試行の壁時計時間計測
+
+Issue #13に沿ってHTTP試行に `wall_timing` を追加した。単調時計で各呼出しの開始offset、経過秒、完了有無を保存する。actor_callback、approval_handler、monitored_execute_read、monitored_execute_mutation、monitored_verify、monitored_rollback、http_postcheckを分離する。
+
+actor_callbackはモデルの場合、通信を含む応答待ちであり、サーバー内部の純粋な推論時間ではない。playbookの場合は固定処理の実行時間。Toolの各区間は独立monitorを含む時間であり、Dockerコマンドだけの時間ではない。開始offsetの原点はsetup前。setup・cleanup・未計測のBroker処理をTool時間へ推定配賦しない。承認handlerはfixture自動署名の場合があり、人間の承認待ち時間とは扱わない。
+
+タイムアウトを含むBaseExceptionでもfinallyで経過時間と例外型だけを保存し、同じ例外を呼出し元へ伝える。入力・戻り値・例外メッセージは計測イベントへ保存しない。強制プロセス終了を捕捉する保証はなく、既存checkpointの保存範囲を越える永続性は主張しない。
+
+`evaluation/http-wall-timing-control-20260908.json` は事後検証失敗を注入した公開playbookの実Docker対照。actor呼出し8回、承認2回、変更2回、検証2回、rollback2回、独立HTTP観測2回を記録し、全区間の完了とfixture cleanupを確認した。元の不正設定を復元したためHTTPは未復旧。これはモデル処理時間の実測ではない。
+
+全196 tests成功。戻り値の保持、入力機密情報の非記録、外側タイムアウト時の部分経過時間保持と例外伝播を含む。過去記録へ新しい時間を補完していない。モデル比較への適用は今後の事前計画で明示する。

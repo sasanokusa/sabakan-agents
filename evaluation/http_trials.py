@@ -9,6 +9,7 @@ from evaluation.approval_scenarios import FixtureApprovalScenario
 from evaluation.docker_fixtures import build_fixture_broker, PRINCIPAL, trusted_fixture_approval_handler
 from evaluation.http_fixtures import HttpFixture, HttpExecutor, HttpMonitor, HttpClosedReadMonitor
 from evaluation.research_protocol import CaseContract, TrialEvidence, score_trial
+from evaluation.timing import TrialTiming
 from scripts.evaluate_mac_research import deadline, TrialTimeout
 
 
@@ -42,6 +43,9 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
                                      scenario_name not in FixtureApprovalScenario.MODES):
         raise ValueError('approval scenario requires fixture approval mode and a known state')
     approval_handler = trusted_fixture_approval_handler if approval_mode == 'fixture_auto_signature' else None
+    timing = TrialTiming()
+    record['wall_timing'] = {'protocol': 'sabakan-http-wall-timing-v1', 'events': timing.events,
+        'scope': 'Model callback includes transport; monitored tool spans include independent snapshots. Setup, teardown and uninstrumented overhead are not tool execution. Offsets start before setup.'}
     with tempfile.TemporaryDirectory(prefix='sabakan-http-trial-') as tmp:
         try:
             fixture = HttpFixture(case, tmp, name, image)
@@ -55,6 +59,8 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
             record['fixture_verification_failure'] = verification_fault
             record['fixture_rollback_snapshot_loss'] = snapshot_loss
             monitor = monitor_class(executor, case)
+            for method in ('execute_read', 'execute_mutation', 'verify', 'rollback'):
+                setattr(monitor, method, timing.wrap('monitored_' + method, getattr(monitor, method)))
             broker = build_fixture_broker(Path(tmp) / 'broker', monitor)
             if scenario_name is not None:
                 def change_state():
@@ -66,15 +72,19 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
                     change_state=change_state if scenario_name == 'state_changed' else None)
                 record['approval_scenario'] = scenario_name
                 record['approval_scenario_events'] = approval_handler.events
+            if approval_handler is not None:
+                approval_handler = timing.wrap('approval_handler', approval_handler)
             def tracked_chat(messages, tools):
                 monitor.record_model_input(messages)
                 record['public_inputs'].append(copy.deepcopy(messages))
-                response = chat(messages, tools)
+                with timing.span('actor_callback'):
+                    response = chat(messages, tools)
                 record['model_responses'].append(copy.deepcopy(response))
                 return response
             def postcheck():
                 try:
-                    observed = fixture.postcheck()
+                    with timing.span('http_postcheck'):
+                        observed = fixture.postcheck()
                     record['postcheck_windows'].append(observed)
                     monitor.record_postcheck(observed['ok'])
                     return observed['ok']
