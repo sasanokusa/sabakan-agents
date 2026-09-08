@@ -3,10 +3,12 @@
 import argparse
 from dataclasses import asdict
 import json
+import hashlib
 import os
 from pathlib import Path
 import sys
 import tempfile
+import time
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / 'src')]
@@ -19,8 +21,12 @@ from scripts.evaluate_mac_research import deadline
 def run():
     image = 'python@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a'
     case = CompoundHttpCase('dependency_down+frontend_down+invalid_config')
-    report = {'protocol': 'sabakan-compound-http-fixed-control-v1', 'contract': case.contract(),
+    report = {'protocol': 'sabakan-compound-http-fixed-control-v4', 'contract': case.contract(),
               'fidelity': 'Real HTTP and component faults; fixed requests, real Broker, fixture approval. No model or human approval.',
+              'fixture_image': image, 'between_windows_seconds': 2,
+              'source_sha256': {path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest() for path in
+                  ['scripts/run_compound_http_control.py', 'evaluation/http_fixtures.py',
+                   'evaluation/fixtures/http_app.py', 'evaluation/fixtures/http_probe.py', 'evaluation/docker_fixtures.py']},
               'stages': [], 'requests': []}
     with tempfile.TemporaryDirectory(prefix='sabakan-compound-http-') as root:
         fixture = HttpFixture(case, root, f'sabakan-http-compound-{os.getpid()}', image)
@@ -52,7 +58,11 @@ def run():
                             raise RuntimeError('fixed operation rejected: ' + result.code)
                     window = fixture.postcheck()
                     monitor.record_postcheck(window['ok'])
-                    report['stages'].append({'stage': stage, 'snapshot': fixture.snapshot(), 'http_window': window})
+                    time.sleep(2)
+                    settled = fixture.postcheck()
+                    monitor.record_postcheck(settled['ok'])
+                    report['stages'].append({'stage': stage, 'snapshot': fixture.snapshot(),
+                                            'http_window': window, 'settled_http_window': settled})
                 report['audit'] = broker.audit.list_events()
                 report['evidence'] = asdict(monitor.evidence(report['audit']))
                 report['monitor'] = monitor.details(report['audit'])
@@ -61,7 +71,7 @@ def run():
                     report['initial']['frontend']['status'] != 'running'
                     and report['initial']['backend']['status'] != 'running'
                     and report['initial']['config']['valid'] is False
-                    and [s['http_window']['ok'] for s in stages] == [False, False, True]
+                    and [s['settled_http_window']['ok'] for s in stages] == [False, False, True]
                     and stages[0]['snapshot']['frontend']['status'] == 'running'
                     and stages[1]['snapshot']['config']['valid'] is True
                     and stages[2]['snapshot']['backend']['status'] == 'running'

@@ -101,6 +101,7 @@ class HttpFixture:
 
     def _run(self, name, mode, *extra):
         docker('run', '-d', '--init', '--name', name, '--network', self.network,
+               '--dns-option', 'timeout:1', '--dns-option', 'attempts:1',
                '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
                '--memory', '64m', '--cpus', '0.25', '--pids-limit', '32', '--user', '65534:65534',
                '-v', f'{APP}:/app.py:ro', '-v', f'{PROBE}:/probe.py:ro', *extra,
@@ -114,27 +115,32 @@ class HttpFixture:
             self.config_path.write_text('{invalid JSON\n')
         docker('network', 'create', '--internal', self.network)
         self._run(self.backend, 'backend')
-        backend = json.loads(docker('inspect', self.backend))[0]
-        address = backend['NetworkSettings']['Networks'][self.network]['IPAddress']
         self._run(self.frontend, 'frontend',
-                  '-e', f'BACKEND_ADDRESS={address}', '-v', f'{self.config_path.parent}:/config:ro')
-        front = json.loads(docker('inspect', self.frontend))[0]
-        self.address = front['NetworkSettings']['Networks'][self.network]['IPAddress']
+                  '-e', f'BACKEND_ADDRESS={self.backend}', '-v', f'{self.config_path.parent}:/config:ro')
+        # Container IPs can be reassigned when multiple components are stopped
+        # and restarted in a different order. Names resolve on this dedicated
+        # internal network and remain trusted fixture input, never model text.
+        self.address = self.frontend
         self._run(self.observer, 'observer', '-e', f'FRONTEND_ADDRESS={self.address}')
         network = json.loads(docker('network', 'inspect', self.network))[0]
-        self.isolation = {'internal_network': network['Internal'], 'containers': []}
+        self.isolation = {'internal_network': network['Internal'], 'containers': [],
+                          'addressing': 'docker_internal_dns',
+                          'dns_options': ['timeout:1', 'attempts:1'],
+                          'frontend_dns': self.frontend, 'backend_dns': self.backend}
         for name in (self.frontend, self.backend, self.observer):
             observed = json.loads(docker('inspect', name))[0]
             host = observed['HostConfig']
             facts = {'readonly_rootfs': host['ReadonlyRootfs'], 'memory_bytes': host['Memory'],
                      'nano_cpus': host['NanoCpus'], 'pids_limit': host['PidsLimit'],
                      'cap_drop': host['CapDrop'], 'security_opt': host['SecurityOpt'],
+                     'dns_options': host['DnsOptions'],
                      'user': observed['Config']['User'], 'port_bindings': host['PortBindings'],
                      'mounts_readonly': all(not mount['RW'] for mount in observed['Mounts'])}
             self.isolation['containers'].append(facts)
             if not facts['readonly_rootfs'] or not facts['mounts_readonly'] or facts['port_bindings'] or (
                     facts['memory_bytes'] != 64 * 1024**2 or facts['pids_limit'] != 32 or
                     facts['nano_cpus'] != 250000000 or facts['user'] != '65534:65534' or
+                    set(facts['dns_options']) != {'timeout:1', 'attempts:1'} or
                     'ALL' not in {value.upper() for value in facts['cap_drop']} or
                     not any(value.startswith('no-new-privileges') for value in facts['security_opt']) or
                     set(observed['NetworkSettings']['Networks']) != {self.network}):

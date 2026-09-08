@@ -1,0 +1,233 @@
+{
+  "protocol": "sabakan-http-dns-restart-diagnostic-v1",
+  "initial": {
+    "frontend": {
+      "status": "running",
+      "started_at": "2026-09-08T04:11:03.699233Z"
+    },
+    "backend": {
+      "status": "running",
+      "started_at": "2026-09-08T04:11:03.542688886Z"
+    },
+    "http": {
+      "body": {
+        "dependency": "ready",
+        "status": "ready"
+      },
+      "http_status": 200,
+      "ok": true
+    },
+    "config": {
+      "sha256": "1ae201693c53d80db7f5b067e3a6cd137d13607bff6e417ec38567994f427e08",
+      "valid": true,
+      "validation_error": null,
+      "document": {
+        "enabled": true,
+        "upstream": "sabakan"
+      }
+    },
+    "protected_sha256": "a71ecb58b8538196499a3cc4cc4110105701cb936d92a37380fd1b870e2d0395"
+  },
+  "before_addresses": {
+    "sabakan-http-dns-518766-front": {
+      "sabakan-http-dns-518766-net": {
+        "IPAMConfig": null,
+        "Links": null,
+        "Aliases": null,
+        "DriverOpts": null,
+        "GwPriority": 0,
+        "NetworkID": "3bb57f109723b4f3ea59585c2835b234615a7cc0b879d42d5df3e402e3c1623b",
+        "EndpointID": "5fdf8b02954bc1803189ee89ba5cd0ad2612a384923c00bcb17a81375fc61dc6",
+        "Gateway": "",
+        "IPAddress": "172.20.0.3",
+        "MacAddress": "8e:79:0e:f8:36:6f",
+        "IPPrefixLen": 16,
+        "IPv6Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "DNSNames": [
+          "sabakan-http-dns-518766-front",
+          "38c53a093ad0"
+        ]
+      }
+    },
+    "sabakan-http-dns-518766-back": {
+      "sabakan-http-dns-518766-net": {
+        "IPAMConfig": null,
+        "Links": null,
+        "Aliases": null,
+        "DriverOpts": null,
+        "GwPriority": 0,
+        "NetworkID": "3bb57f109723b4f3ea59585c2835b234615a7cc0b879d42d5df3e402e3c1623b",
+        "EndpointID": "145954a86fc5d78dea7163117c4af21051c7b0fb1523074dfd01ed2ec0ea6f11",
+        "Gateway": "",
+        "IPAddress": "172.20.0.2",
+        "MacAddress": "0a:fb:2e:9e:54:65",
+        "IPPrefixLen": 16,
+        "IPv6Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "DNSNames": [
+          "sabakan-http-dns-518766-back",
+          "75df45160471"
+        ]
+      }
+    }
+  },
+  "after_addresses": {
+    "sabakan-http-dns-518766-front": {
+      "sabakan-http-dns-518766-net": {
+        "IPAMConfig": null,
+        "Links": null,
+        "Aliases": null,
+        "DriverOpts": null,
+        "GwPriority": 0,
+        "NetworkID": "3bb57f109723b4f3ea59585c2835b234615a7cc0b879d42d5df3e402e3c1623b",
+        "EndpointID": "b3a0d9f16773c57adfe2072c609847d0e4f2468ea947ffc76a498d16f3f8dcdf",
+        "Gateway": "",
+        "IPAddress": "172.20.0.2",
+        "MacAddress": "f6:f2:ef:e1:21:6e",
+        "IPPrefixLen": 16,
+        "IPv6Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "DNSNames": [
+          "sabakan-http-dns-518766-front",
+          "38c53a093ad0"
+        ]
+      }
+    },
+    "sabakan-http-dns-518766-back": {
+      "sabakan-http-dns-518766-net": {
+        "IPAMConfig": null,
+        "Links": null,
+        "Aliases": null,
+        "DriverOpts": null,
+        "GwPriority": 0,
+        "NetworkID": "3bb57f109723b4f3ea59585c2835b234615a7cc0b879d42d5df3e402e3c1623b",
+        "EndpointID": "17188611245c6474018e4e4e252cf4b368f0642062c1c526e7f97ecd031278a0",
+        "Gateway": "",
+        "IPAddress": "172.20.0.3",
+        "MacAddress": "1e:73:e3:94:a4:2f",
+        "IPPrefixLen": 16,
+        "IPv6Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "DNSNames": [
+          "sabakan-http-dns-518766-back",
+          "75df45160471"
+        ]
+      }
+    }
+  },
+  "early_window": {
+    "ok": false,
+    "samples": [
+      {
+        "body": null,
+        "error": "URLError",
+        "http_status": null,
+        "ok": false,
+        "offset_seconds": 0.06635305000236258
+      },
+      {
+        "body": null,
+        "error": "URLError",
+        "http_status": null,
+        "ok": false,
+        "offset_seconds": 0.629901964974124
+      },
+      {
+        "body": null,
+        "error": "URLError",
+        "http_status": null,
+        "ok": false,
+        "offset_seconds": 1.1895948270102963
+      }
+    ],
+    "minimum_window_seconds": 1.0,
+    "elapsed_seconds": 1.1895999769913033
+  },
+  "settled_window": {
+    "ok": true,
+    "samples": [
+      {
+        "body": {
+          "dependency": "ready",
+          "status": "ready"
+        },
+        "http_status": 200,
+        "ok": true,
+        "offset_seconds": 0.07827436598017812
+      },
+      {
+        "body": {
+          "dependency": "ready",
+          "status": "ready"
+        },
+        "http_status": 200,
+        "ok": true,
+        "offset_seconds": 0.6383481459924951
+      },
+      {
+        "body": {
+          "dependency": "ready",
+          "status": "ready"
+        },
+        "http_status": 200,
+        "ok": true,
+        "offset_seconds": 1.1956881909864023
+      }
+    ],
+    "minimum_window_seconds": 1.0,
+    "elapsed_seconds": 1.1956936810165644
+  },
+  "diagnostics": [
+    {
+      "name": "sabakan-http-dns-518766-front",
+      "returncode": 0,
+      "stdout": "{\"front\": \"172.20.0.2\", \"back\": \"172.20.0.3\", \"backend_env\": \"sabakan-http-dns-518766-back\", \"frontend_env\": null}\n",
+      "stderr": "",
+      "logs": ""
+    },
+    {
+      "name": "sabakan-http-dns-518766-back",
+      "returncode": 0,
+      "stdout": "{\"front\": \"172.20.0.2\", \"back\": \"172.20.0.3\", \"backend_env\": null, \"frontend_env\": null}\n",
+      "stderr": "",
+      "logs": ""
+    },
+    {
+      "name": "sabakan-http-dns-518766-observer",
+      "returncode": 0,
+      "stdout": "{\"front\": \"172.20.0.2\", \"back\": \"172.20.0.3\", \"backend_env\": null, \"frontend_env\": \"sabakan-http-dns-518766-front\"}\n",
+      "stderr": "",
+      "logs": ""
+    }
+  ],
+  "cleanup": {
+    "complete": true,
+    "removals": [
+      {
+        "resource": "sabakan-http-dns-518766-observer",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "resource": "sabakan-http-dns-518766-front",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "resource": "sabakan-http-dns-518766-back",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "resource": "sabakan-http-dns-518766-net",
+        "returncode": 0,
+        "stderr": ""
+      }
+    ]
+  }
+}
