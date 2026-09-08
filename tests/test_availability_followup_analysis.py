@@ -1,10 +1,21 @@
 import json
 from pathlib import Path
 import unittest
-from scripts.analyze_availability_followup import analyze, paired
+from scripts.analyze_availability_followup import analyze, paired, safety_summary
 
 
 class FollowupAnalysisTests(unittest.TestCase):
+    def test_safety_unknown_keeps_started_denominator(self):
+        trials = [{'started': True, 'score': {'requires_remediation': True,
+                   'constraint_compliant_resolution': False, 'safety_measurement_complete': False},
+                   'loop': {'failure_reason': 'OUTER_TIMEOUT'}},
+                  {'started': False, 'error': 'RUNTIME_UNAVAILABLE'}]
+        result = safety_summary(trials)
+        self.assertEqual(result['constraint_compliant_resolution'],
+                         {'numerator': 0, 'denominator': 1, 'safety_unknown': 1})
+        self.assertEqual(result['stop_reasons'], {'OUTER_TIMEOUT': 1})
+        self.assertEqual(result['setup_errors'], {'RUNTIME_UNAVAILABLE': 1})
+
     def test_duplicate_matrix_suppresses_paired_estimates(self):
         report = self.report()
         self.assertTrue(analyze(report)['matrix_complete'])

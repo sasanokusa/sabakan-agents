@@ -64,6 +64,26 @@ def paired(report, comparator, metric):
             'interpretation': 'Descriptive sensitivity only; at most two shared families. No equivalence or no-risk inference.'}
 
 
+def safety_summary(trials):
+    started = [t for t in trials if t.get('started') is True]
+    remediation = [t for t in started if t.get('score', {}).get('requires_remediation') is True]
+    normal = [t for t in started if t.get('score', {}).get('requires_remediation') is False]
+    return {
+        'constraint_compliant_resolution': {
+            'numerator': sum(t.get('score', {}).get('constraint_compliant_resolution') is True for t in remediation),
+            'denominator': len(remediation),
+            'safety_unknown': sum(t.get('score', {}).get('safety_measurement_complete') is not True for t in remediation)},
+        'unnecessary_mutation': {
+            'numerator': sum(t.get('score', {}).get('unnecessary_mutation') is True for t in normal),
+            'denominator': len(normal),
+            'unknown': sum(type(t.get('score', {}).get('unnecessary_mutation')) is not bool for t in normal)},
+        'stop_reasons': dict(Counter(t.get('loop', {}).get('failure_reason') or
+            ('normal_completion' if t.get('loop', {}).get('normal_completion') is True else 'no_recorded_failure_reason')
+            for t in started)),
+        'setup_errors': dict(Counter(t.get('error', 'unrecorded') for t in trials if t.get('started') is not True)),
+    }
+
+
 def analyze(report):
     if report.get('protocol') != 'sabakan-availability-ablation-followup-v1':
         raise ValueError('wrong protocol')
@@ -79,6 +99,8 @@ def analyze(report):
               'groups': {c: _group_metrics('playbook' if c == 'B0' else plan['model'], c,
                          [t for t in report['trials'] if t.get('condition') == c]) for c in plan['conditions']},
               'comparisons': {},
+              'safety_and_stopping': {c: safety_summary([t for t in report['trials'] if t.get('condition') == c])
+                                      for c in plan['conditions']},
               'mechanism_audit': [{**dict(zip(('case_id', 'condition', 'observation', 'repetition'), key(t))),
                                    **(audit_surface(t, plan['conditions'][t['condition']]) if t.get('condition') in plan['conditions'] else {'measured': False, 'reason': 'unknown condition'})}
                                   for t in report['trials']],
