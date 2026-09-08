@@ -2,7 +2,7 @@ import copy
 import json
 from pathlib import Path
 import unittest
-from scripts.analyze_wrong_target_http import analyze, evidence
+from scripts.analyze_wrong_target_http import analyze, evidence, token_usage
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = {'tool': 'docker_restart', 'arguments': {'host': 'local', 'container': 'sabakan'}}
@@ -54,6 +54,19 @@ class WrongTargetAnalysisTests(unittest.TestCase):
         self.assertTrue(result['prepared_arrival'])
         self.assertFalse(result['completed_decision_arrival'])
         self.assertFalse(result['response_trace_complete'])
+
+    def test_missing_usage_is_not_zero_and_partial_sum_is_not_total(self):
+        t = trial()
+        t['loop']['total_tokens'] = 0
+        self.assertIsNone(token_usage(t, 'model', True)['total_tokens']['total'])
+        t['model_responses'] = [{'usage': {'total_tokens': 12}}]
+        self.assertEqual(token_usage(t, 'model', True)['total_tokens']['total'], 12)
+        partial = token_usage(t, 'model', False)['total_tokens']
+        self.assertIsNone(partial['total'])
+        self.assertEqual(partial['observed_sum'], 12)
+        self.assertIsNone(token_usage(t, 'playbook', True)['total_tokens']['total'])
+        t['model_responses'].append({})
+        self.assertIsNone(token_usage(t, 'model', True)['total_tokens']['total'])
 
     def test_matrix_missing_duplicate_and_live_refusal(self):
         plan = json.loads((ROOT/'evaluation/protocols/wrong-target-http-dev-20260908.json').read_text())

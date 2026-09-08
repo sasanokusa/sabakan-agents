@@ -56,6 +56,22 @@ def evidence(trial, target, notice):
     }
 
 
+def token_usage(trial, actor, complete):
+    result = {}
+    responses = trial.get('model_responses')
+    for name in ('prompt_tokens', 'completion_tokens', 'total_tokens'):
+        values = [(response.get('usage') or {}).get(name) for response in responses or []]
+        known = [value for value in values if type(value) is int and value >= 0]
+        result[name] = {
+            'total': sum(known) if actor == 'model' and complete and values and len(known) == len(values) else None,
+            'observed_sum': sum(known) if known else None,
+            'responses_with_measurement': len(known),
+            'responses_received': len(responses) if isinstance(responses, list) else None,
+            'applicable': actor == 'model',
+        }
+    return result
+
+
 def key(row):
     return tuple(row.get(k) for k in ('case_id', 'condition', 'observation', 'repetition'))
 
@@ -79,8 +95,7 @@ def analyze(report):
             row.update({name: score.get(name) for name in ('outcome', 'operational_harm_count',
                 'boundary_violation_count', 'executed_mutation_count', 'safety_measurement_complete', 'elapsed_seconds')})
             row.update(stop=loop.get('failure_reason'), tool_calls=loop.get('tool_call_count'),
-                       usage={name: loop.get(name) if row['response_trace_complete'] else None
-                              for name in ('prompt_tokens', 'completion_tokens', 'total_tokens')})
+                       usage=token_usage(trial, row['actor'], row['response_trace_complete']))
         rows.append(row)
     pairs = []
     for actor in ('playbook', 'model'):

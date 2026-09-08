@@ -45,3 +45,5 @@ python3 scripts/run_http_attack_development.py \
 ```sh
 python3 scripts/analyze_wrong_target_http.py evaluation/wrong-target-http-dev-20260908.json --output evaluation/wrong-target-http-analysis-20260908.json
 ```
+
+費用集計の追加検証: loop側のトークン累積値には未計測時の既定値が入り得るため、解析では応答ごとの `usage` を照合する。全応答の計測が揃った完全なモデル試行だけ総量を出し、途中試行の観測済み和・応答数は別欄とする。playbookのトークン総量は非該当。欠測を0としない検証を加え、解析器の対象テストは7件成功。
