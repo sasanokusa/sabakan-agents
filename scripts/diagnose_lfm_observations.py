@@ -134,17 +134,26 @@ def main():
                 report['trials'].append({**row, 'started': False, 'error': 'TOTAL_BUDGET_EXHAUSTED'})
                 continue
             requests = []
+            report['active_trial'] = {**row, 'index': index, 'phase': 'before_setup',
+                                      'start_status': 'unknown', 'http_requests': requests}
+            write_report(args.output, report)
             def chat(messages, tools):
                 payload = {'model': 'local', 'messages': messages, 'tools': list(tools),
                            'tool_choice': 'auto', **plan['generation'], 'stream': False}
                 request_record = {'request': copy.deepcopy(payload), 'schema_sha256': digest(list(tools))}
                 requests.append(request_record)
+                report['active_trial'].update(phase='model_request_prepared', start_status='started')
+                write_report(args.output, report)
                 try:
                     response = http_json(url + '/v1/chat/completions', payload, timeout=plan['deadline_seconds'])
                 except BaseException as exc:
                     request_record['error'] = f'{type(exc).__name__}: {exc}'
+                    report['active_trial']['phase'] = 'model_request_error'
+                    write_report(args.output, report)
                     raise
                 request_record['response'] = copy.deepcopy(response)
+                report['active_trial']['phase'] = 'model_response_received'
+                write_report(args.output, report)
                 choice = response['choices'][0]
                 return {**choice['message'], 'finish_reason': choice.get('finish_reason'),
                         'usage': response.get('usage', {}), 'timings': response.get('timings', {})}
@@ -160,6 +169,7 @@ def main():
             record.update(row)
             record['http_requests'] = requests
             report['trials'].append(record)
+            report.pop('active_trial', None)
             write_report(args.output, report)
             print(index + 1, row, record['score']['outcome'], record['loop'].get('failure_reason'), flush=True)
         report['status'] = 'completed'
