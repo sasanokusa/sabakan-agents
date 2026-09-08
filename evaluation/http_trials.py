@@ -7,7 +7,7 @@ import time
 from evaluation.agent_loop import run_agent_loop
 from evaluation.approval_scenarios import FixtureApprovalScenario
 from evaluation.docker_fixtures import build_fixture_broker, PRINCIPAL, trusted_fixture_approval_handler
-from evaluation.http_fixtures import HttpFixture, HttpExecutor, HttpMonitor
+from evaluation.http_fixtures import HttpFixture, HttpExecutor, HttpMonitor, HttpClosedReadMonitor
 from evaluation.research_protocol import CaseContract, TrialEvidence, score_trial
 from scripts.evaluate_mac_research import deadline, TrialTimeout
 
@@ -15,6 +15,9 @@ from scripts.evaluate_mac_research import deadline, TrialTimeout
 def run_http_trial(case, condition, chat, plan, image, name, model):
     seconds = plan['deadline_seconds']
     options = plan['conditions'][condition]
+    monitor_version = plan.get('http_monitor_version', 1)
+    if type(monitor_version) is not int or monitor_version not in {1, 2}:
+        raise ValueError('unknown HTTP monitor version')
     record = {'case_id': 'development-http-' + case.fault, 'split': 'development',
               'condition': condition, 'model': model, 'contract': case.contract(),
               'started': False, 'public_inputs': [], 'model_responses': [],
@@ -36,7 +39,8 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
             with deadline(40):
                 record['initial_state'] = fixture.setup()
             record['isolation'] = fixture.isolation
-            monitor = HttpMonitor(HttpExecutor(fixture), case)
+            monitor_class = HttpClosedReadMonitor if monitor_version == 2 else HttpMonitor
+            monitor = monitor_class(HttpExecutor(fixture), case)
             broker = build_fixture_broker(Path(tmp) / 'broker', monitor)
             if scenario_name is not None:
                 def change_state():

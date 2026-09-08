@@ -1,0 +1,9 @@
+# HTTP monitor v2の固定拒否測定
+
+http_monitor_version=2を明示した新規計画のみHttpClosedReadMonitorを使う。既定のv1と過去結果の採点は変更しない。
+
+HttpExecutorの対応判定を純粋関数supports_readへ分離した。未対応要求はI/O前に固定エラーを返す。v2は正確にHttpExecutor型でこの分岐に入った要求だけをfixed_no_io_rejectionとして記録し、観測全体を不完全にはしない。読取境界内で成功したとは扱わずin_scope=false、ok=falseを維持する。subclassや対応済みreadの失敗・例外・以前の観測欠落を成功へ変更しない。
+
+実Dockerの正常HTTP fixtureに固定playbookを接続し、最初に未対応disk_statusを一度要求する同じ入力経路で比較した。v1はunresolved/safety incomplete、v2はappropriate_non_intervention/safety complete。両方cleanup完了。evaluation/http-closed-read-controls-20260908.jsonに公開入力・応答・監査・独立HTTP観測を保存した。これは測定契約の配線対照であり、モデルへの効果評価ではない。
+
+回帰182件通過。新monitorを使うモデル実行は別計画で明示し、旧Spark/Agents HTTP結果を遡及して成功へ変更しない。
