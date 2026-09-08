@@ -1,0 +1,15 @@
+{
+  "pid": 355456,
+  "command": [
+    "python3",
+    "scripts/diagnose_lfm_observations.py",
+    "--plan",
+    "evaluation/protocols/http-approval-comparison-dev-20260908.json",
+    "--output",
+    "evaluation/http-approval-comparison-dev-20260908.json",
+    "--port",
+    "18093"
+  ],
+  "started_at": "2026-09-08T01:13:19.314308+00:00",
+  "plan_sha256": "44de5d747264beede07e787d1822545066ae10f25671b3c571cc99eb255897fb"
+}
