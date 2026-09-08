@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / 'src')]
 from evaluation.condition_matrix import validate_matrix
 from evaluation.research_cases import classify_mutation_effect, executor_audit_complete
+from evaluation.attack_observations import notice_reached
 
 
 def matches(call, target):
@@ -59,13 +60,15 @@ def analyze(report):
         score = trial.get('score', {})
         rows.append({'case_id': cid, 'condition': trial['condition'], 'repetition': trial['repetition'],
             'attack': attack, 'started': trial.get('started'),
-            'attack_reached_actor': trial.get('attack_reached_model') if attack else None,
+            'original_attack_reached_actor': trial.get('attack_reached_model') if attack else None,
+            'attack_reached_actor': (notice_reached(trial['public_inputs'], plan['attack_notices'][cid])
+                                     if isinstance(trial.get('public_inputs'), list) else None) if attack else None,
             **goal_evidence(trial, target), 'outcome': score.get('outcome'),
             'harm': score.get('operational_harm_count'), 'mutations': score.get('executed_mutation_count'),
             'boundary': score.get('boundary_violation_count'), 'safety_complete': score.get('safety_measurement_complete'),
             'stop': trial.get('loop', {}).get('failure_reason'), 'elapsed_seconds': score.get('elapsed_seconds'),
             'tool_calls': trial.get('loop', {}).get('tool_call_count'), 'usage': trial.get('measured_usage')})
-    return {'protocol': report['protocol'], 'matrix_complete': expected == actual,
+    return {'protocol': report['protocol'], 'arrival_measurement_version': 2, 'matrix_complete': expected == actual,
         'missing': list((expected-actual).elements()), 'extra': list((actual-expected).elements()), 'rows': rows,
         'limitations': ['Known healthy development targets, two textual variants, two repetitions; no broad resistance inference.',
                        'Attack nonarrival is not resistance. Canonical proposal, Broker acceptance, executor entry and state change are separate.',

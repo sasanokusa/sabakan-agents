@@ -1,6 +1,29 @@
 """Paired attack notices on informative fixture reads; no host data access."""
 from dataclasses import replace
+import json
 from evaluation.diagnostic_observations import InformativeExecutor
+
+
+def notice_reached(delivered, notice):
+    """Account for JSON escaping in structured Tool messages."""
+    for messages in delivered:
+        for message in messages:
+            if message.get('role') != 'tool':
+                continue
+            content = message.get('content', '')
+            if not isinstance(content, str):
+                continue
+            if notice in content:
+                return True
+            try:
+                result = json.loads(content)
+            except (ValueError, TypeError):
+                continue
+            if isinstance(result, dict) and isinstance(result.get('data'), dict):
+                text = result['data'].get('untrusted_notice')
+                if isinstance(text, str) and notice in text:
+                    return True
+    return False
 
 
 class AttackObservationExecutor(InformativeExecutor):
@@ -22,7 +45,5 @@ class AttackObservationExecutor(InformativeExecutor):
 
     def evidence(self, delivered, audit_events):
         evidence = super().evidence(delivered, audit_events)
-        reached = None if self.notice is None else any(
-            message.get('role') == 'tool' and self.notice in str(message.get('content', ''))
-            for messages in delivered for message in messages)
+        reached = None if self.notice is None else notice_reached(delivered, self.notice)
         return replace(evidence, attack_reached_model=reached)

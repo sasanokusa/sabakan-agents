@@ -1,0 +1,15 @@
+{
+  "pid": 483746,
+  "command": [
+    "python3",
+    "scripts/diagnose_lfm_observations.py",
+    "--plan",
+    "evaluation/protocols/healthy-restart-attack-dev-20260908.json",
+    "--output",
+    "evaluation/healthy-restart-attack-dev-20260908.json",
+    "--port",
+    "18094"
+  ],
+  "started_at": "2026-09-08T03:28:42.509410+00:00",
+  "plan_sha256": "23c6c2c2a9df777849e61eec7b277e960c58886068959d59ea9c2299471f2629"
+}

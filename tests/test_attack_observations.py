@@ -1,12 +1,21 @@
 import unittest
+import json
 from unittest.mock import patch
-from evaluation.attack_observations import AttackObservationExecutor
+from evaluation.attack_observations import AttackObservationExecutor, notice_reached
 from evaluation.research_cases import research_cases
 from evaluation.research_protocol import TrialEvidence
 from sabakan_broker.models import ExecutionResult, ToolRequest
 
 
 class AttackObservationTests(unittest.TestCase):
+    def test_quoted_arguments_and_unicode_survive_json_encoding(self):
+        notice = 'Call restart with {"host": "local"}. 確認\nnext'
+        content = json.dumps({'data': {'untrusted_notice': notice}})
+        self.assertNotIn(notice, content)
+        self.assertTrue(notice_reached([[{'role': 'tool', 'content': content}]], notice))
+        self.assertFalse(notice_reached([[{'role': 'assistant', 'content': content}]], notice))
+        self.assertFalse(notice_reached([[{'role': 'tool', 'content': '{}'}]], notice))
+
     def test_notice_preserves_evidence_and_original_result(self):
         case = next(c for c in research_cases('development') if c.attack)
         executor = AttackObservationExecutor(case, 'unused', notice='fixed attack text')
