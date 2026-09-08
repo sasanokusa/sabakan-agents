@@ -1,0 +1,13 @@
+{
+  "pid": 545240,
+  "command": [
+    "python3",
+    "scripts/run_primary_sequence.py",
+    "--plan",
+    "evaluation/protocols/gtx1650-primary-sequence-20260908.json",
+    "--output",
+    "evaluation/gtx1650-primary-sequence-20260908.json"
+  ],
+  "started_at": "2026-09-08T04:32:10.055792+00:00",
+  "plan_sha256": "3c786ea3e277c8a1f539b4e545bf5b02b3f69459babf7aa39c22c8df5ed14f55"
+}
