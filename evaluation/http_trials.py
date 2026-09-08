@@ -21,6 +21,9 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
     observation_version = plan.get('http_observation_version', 1)
     if type(observation_version) is not int or observation_version not in {1, 2}:
         raise ValueError('unknown HTTP observation version')
+    verification_fault = plan.get('fixture_verification_failure', False)
+    if type(verification_fault) is not bool:
+        raise ValueError('fixture verification failure must be boolean')
     record = {'case_id': 'development-http-' + case.fault, 'split': 'development',
               'condition': condition, 'model': model, 'contract': case.contract(),
               'started': False, 'public_inputs': [], 'model_responses': [],
@@ -43,7 +46,10 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
                 record['initial_state'] = fixture.setup()
             record['isolation'] = fixture.isolation
             monitor_class = HttpClosedReadMonitor if monitor_version == 2 else HttpMonitor
-            monitor = monitor_class(HttpExecutor(fixture, observation_version=observation_version), case)
+            executor = HttpExecutor(fixture, observation_version=observation_version)
+            executor.force_verification_failure = verification_fault
+            record['fixture_verification_failure'] = verification_fault
+            monitor = monitor_class(executor, case)
             broker = build_fixture_broker(Path(tmp) / 'broker', monitor)
             if scenario_name is not None:
                 def change_state():
