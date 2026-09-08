@@ -186,6 +186,15 @@ class HttpExecutor(DockerFixtureExecutor):
         super().__init__({'nginx': fixture.frontend, 'sabakan': fixture.backend}, config_path=fixture.config_path)
         self.fixture = fixture
         self.observation_version = observation_version
+        self.lose_rollback_snapshot = False
+
+    def rollback(self, request, execution):
+        # A fault in disposable fixture memory, never in the production executor.
+        # Delegate to the normal unavailable-snapshot path instead of forging a
+        # failed restore result after a successful restore.
+        if self.lose_rollback_snapshot and request.tool == 'config_patch':
+            self._config_snapshots.pop(request.request_id, None)
+        return super().rollback(request, execution)
 
     @staticmethod
     def _validation(raw):

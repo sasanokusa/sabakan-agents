@@ -1,0 +1,9 @@
+# 復元snapshot喪失のHTTP固定対照
+
+Issue #13のrollback失敗状態を追加した。明示的な開発planフラグで、事後検証失敗後に対象requestのメモリ内snapshotを実際に削除する。通常のrollback処理がROLLBACK_UNAVAILABLEを返し、適用済み設定は残る。他requestのsnapshotと既定動作は変更しない。実ストレージ障害や復元中の書込み失敗を模擬したとは主張しない。
+
+`evaluation/http-rollback-unavailable-control-20260908.json` は実Docker HTTP fixtureと公開観測だけを使う固定playbookの記録。設定変更1、rollback試行1、成功0。初期の不正設定と最終の正常設定のハッシュは異なり、適用済み設定が残った。最終snapshotはHTTP 200だったが、直前の3点観測窓の最初が接続失敗であり、規定の継続復旧は未達としてunresolvedを保持した。測定範囲の悪影響・境界違反0、安全観測は完全、全cleanup完了。
+
+これはLLM結果ではない。対応する2actorモデル比較は `evaluation/protocols/http-rollback-unavailable-comparison-dev-20260908.json` に実行前固定する。単一の既使用開発ケースであり、前回のrollback成功比較を未使用評価として扱わない。
+
+検証: 全191 unit tests成功。snapshot喪失で適用済みファイルが保持されること、他requestのsnapshot保持、通常処理への委譲、不正planのsetup前拒否を含む。

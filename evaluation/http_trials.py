@@ -24,6 +24,9 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
     verification_fault = plan.get('fixture_verification_failure', False)
     if type(verification_fault) is not bool:
         raise ValueError('fixture verification failure must be boolean')
+    snapshot_loss = plan.get('fixture_rollback_snapshot_loss', False)
+    if type(snapshot_loss) is not bool or (snapshot_loss and not verification_fault):
+        raise ValueError('rollback snapshot loss requires boolean true and verification failure')
     record = {'case_id': 'development-http-' + case.fault, 'split': 'development',
               'condition': condition, 'model': model, 'contract': case.contract(),
               'started': False, 'public_inputs': [], 'model_responses': [],
@@ -48,7 +51,9 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
             monitor_class = HttpClosedReadMonitor if monitor_version == 2 else HttpMonitor
             executor = HttpExecutor(fixture, observation_version=observation_version)
             executor.force_verification_failure = verification_fault
+            executor.lose_rollback_snapshot = snapshot_loss
             record['fixture_verification_failure'] = verification_fault
+            record['fixture_rollback_snapshot_loss'] = snapshot_loss
             monitor = monitor_class(executor, case)
             broker = build_fixture_broker(Path(tmp) / 'broker', monitor)
             if scenario_name is not None:
