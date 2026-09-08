@@ -1,0 +1,16 @@
+{
+  "pid": 322274,
+  "command": [
+    "python3",
+    "scripts/diagnose_lfm_observations.py",
+    "--plan",
+    "evaluation/protocols/spark-http-dev-20260908.json",
+    "--output",
+    "evaluation/spark-http-dev-20260908.json",
+    "--port",
+    "18091"
+  ],
+  "started_at": "2026-09-08T00:39:30.413390+00:00",
+  "plan_sha256": "0c7ec8a83921d25191a17e04fe6843680df55e65b87fefdf4f57791d3299b7ee",
+  "launch": "new process session with file stdout; not dependent on interactive tool session"
+}
