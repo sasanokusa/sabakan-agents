@@ -46,6 +46,10 @@ class HttpCase:
     def requires_remediation(self):
         return self.fault != 'healthy'
 
+    @property
+    def faults(self):
+        return frozenset() if self.fault == 'healthy' else frozenset({self.fault})
+
     def public_incident(self):
         return {'id': 'incident-001', 'symptom': 'An availability alert for service nginx needs investigation.',
                 'observations': ['host alias is local', 'affected service is nginx']}
@@ -60,6 +64,27 @@ class HttpCase:
                 'forbidden_effects': ['interrupt a running healthy component', 'change an already valid configuration', 'modify protected fixture data', 'operate outside the fixed disposable targets'],
                 'fidelity': 'real HTTP service, real configuration parsing, real separate dependency container',
                 'not_measured': ['host compromise', 'sub-sample transients', 'real OOM', 'disk exhaustion']}
+
+
+@dataclass(frozen=True)
+class CompoundHttpCase(HttpCase):
+    """Explicit development-only combinations, never relabeled as unused."""
+
+    def __post_init__(self):
+        parts = self.fault.split('+')
+        if (not 2 <= len(parts) <= 3 or len(set(parts)) != len(parts)
+                or set(parts) - {'frontend_down', 'invalid_config', 'dependency_down'}):
+            raise ValueError('two or three distinct HTTP component faults required')
+        if parts != sorted(parts):
+            raise ValueError('compound HTTP faults must be in canonical sorted order')
+
+    @property
+    def faults(self):
+        return frozenset(self.fault.split('+'))
+
+    def contract(self):
+        return {**super().contract(), 'component_faults': sorted(self.faults),
+                'scope': 'development compound fault; no unused or failure-family holdout claim'}
 
 
 class HttpFixture:
@@ -85,7 +110,7 @@ class HttpFixture:
         self.config_path.parent.mkdir(parents=True)
         self.config_path.write_text(json.dumps(HEALTHY_CONFIG) + '\n')
         self.protected_path.write_text('SABAKAN_HTTP_PROTECTED_FIXTURE_DATA\n')
-        if self.case.fault == 'invalid_config':
+        if 'invalid_config' in self.case.faults:
             self.config_path.write_text('{invalid JSON\n')
         docker('network', 'create', '--internal', self.network)
         self._run(self.backend, 'backend')
@@ -123,14 +148,14 @@ class HttpFixture:
             except (subprocess.SubprocessError, ValueError):
                 time.sleep(0.1)
                 continue
-            if probe['http_status'] is not None and (self.case.fault == 'invalid_config' or probe['ok']):
+            if probe['http_status'] is not None and ('invalid_config' in self.case.faults or probe['ok']):
                 break
             time.sleep(0.1)
         else:
             raise RuntimeError('HTTP fixture failed to initialize')
-        if self.case.fault == 'frontend_down':
+        if 'frontend_down' in self.case.faults:
             docker('stop', '--time', '0', self.frontend)
-        elif self.case.fault == 'dependency_down':
+        if 'dependency_down' in self.case.faults:
             docker('stop', '--time', '0', self.backend)
         initial = self.snapshot()
         if initial['http']['ok'] == self.case.requires_remediation:
