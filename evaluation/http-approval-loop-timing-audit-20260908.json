@@ -1,0 +1,35 @@
+{
+  "protocol": "sabakan-loop-resolution-timing-audit-v1",
+  "source": "evaluation/http-approval-comparison-dev-20260908.json",
+  "source_sha256": "e80c23f54585df0e23608a8fed0ef13c9c68f57ff1feced8ea84e7f12cce6462",
+  "aggregator_sha256": "509e72836e23ae93cfd2ef2103fa3996e19087a4762e491556ff1947c6893a3e",
+  "scope": "Legacy loop health_restored and timing fields only, not independent HTTP score or new runtime measurement. Original records unchanged.",
+  "rows": [
+    {
+      "actor": "model",
+      "trials": 7,
+      "legacy_average_all_outcomes": 117.84295714285713,
+      "corrected_metrics": {
+        "time_to_resolution_seconds": null,
+        "average_time_to_resolution_seconds": null,
+        "resolution_time_observed_count": 0,
+        "resolution_time_missing_count": 0,
+        "elapsed_seconds": 833.8968,
+        "elapsed_time_observed_count": 7
+      }
+    },
+    {
+      "actor": "playbook",
+      "trials": 7,
+      "legacy_average_all_outcomes": 1.5846142857142858,
+      "corrected_metrics": {
+        "time_to_resolution_seconds": null,
+        "average_time_to_resolution_seconds": null,
+        "resolution_time_observed_count": 0,
+        "resolution_time_missing_count": 0,
+        "elapsed_seconds": 20.1284,
+        "elapsed_time_observed_count": 7
+      }
+    }
+  ]
+}

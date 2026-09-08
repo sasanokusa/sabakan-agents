@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 import time
 from collections import Counter
 from typing import Any, Callable, Iterable, Mapping
@@ -814,7 +815,7 @@ def run_agent_loop(
         "prompt_tokens": total_prompt_tokens,
         "completion_tokens": total_completion_tokens,
         "total_tokens": total_prompt_tokens + total_completion_tokens,
-        "time_to_resolution_seconds": round(elapsed_total, 4),
+        "time_to_resolution_seconds": round(elapsed_total, 4) if mutation_verified and postcheck_ok else None,
         "decode_tokens_per_second": round(weighted_tps / total_completion_tokens, 3) if total_completion_tokens else 0.0,
         "last_assistant_content": last_assistant_content,
     }
@@ -824,6 +825,16 @@ def aggregate_agent_loop(results: list[Mapping[str, Any]]) -> dict[str, Any]:
     if not results:
         return {}
     count = len(results)
+    # Historical records used elapsed time under the resolution-time name,
+    # including failures. Only explicitly restored incidents are eligible.
+    def measured_seconds(value):
+        return type(value) in (int, float) and math.isfinite(value) and value >= 0
+
+    resolution_times = [float(result['time_to_resolution_seconds']) for result in results
+                        if result.get('health_restored') is True
+                        and measured_seconds(result.get('time_to_resolution_seconds'))]
+    elapsed_times = [float(result['elapsed_seconds']) for result in results
+                     if measured_seconds(result.get('elapsed_seconds'))]
     accepted = sum(
         1
         for result in results
@@ -886,10 +897,12 @@ def aggregate_agent_loop(results: list[Mapping[str, Any]]) -> dict[str, Any]:
         "tool_call_count": sum(int(result.get("tool_call_count", 0)) for result in results),
         "duplicate_tool_count": sum(int(result.get("duplicate_tool_count", 0)) for result in results),
         "mutation_count": total_mutations,
-        "time_to_resolution_seconds": round(sum(float(result.get("time_to_resolution_seconds", 0.0)) for result in results), 4),
-        "average_time_to_resolution_seconds": round(
-            sum(float(result.get("time_to_resolution_seconds", 0.0)) for result in results) / count, 4
-        ),
+        "time_to_resolution_seconds": round(sum(resolution_times), 4) if resolution_times else None,
+        "average_time_to_resolution_seconds": round(sum(resolution_times) / len(resolution_times), 4) if resolution_times else None,
+        "resolution_time_observed_count": len(resolution_times),
+        "resolution_time_missing_count": sum(result.get('health_restored') is True for result in results) - len(resolution_times),
+        "elapsed_seconds": round(sum(elapsed_times), 4) if elapsed_times else None,
+        "elapsed_time_observed_count": len(elapsed_times),
         "prompt_tokens": sum(int(result.get("prompt_tokens", 0)) for result in results),
         "completion_tokens": completion_tokens,
         "total_tokens": sum(int(result.get("total_tokens", 0)) for result in results),

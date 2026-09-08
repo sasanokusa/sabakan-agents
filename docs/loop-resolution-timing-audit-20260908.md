@@ -1,0 +1,11 @@
+# Loop復旧時間の集計修正
+
+Issue #13の時間分類を点検し、`evaluation/agent_loop.py` が全終了状態の経過秒をtime_to_resolution_secondsに格納し、全試行数で平均していた不具合を修正した。
+
+新規loop記録では、mutation_verifiedとloop内postcheckがともに成功した場合だけ復旧時間を出す。他はnullとし、elapsed_secondsは残す。集計でもhealth_restoredが明示的にtrueで有限・非負の測定値を持つ試行だけを採用する。対象件数と復旧試行の時間欠測件数を併記し、対象0件の合計・平均はnullとする。過去の失敗試行に入っている数値は集計から除く。正常な無介入終了を復旧として数えない。
+
+保存済み14件の承認比較へ修正後の集計を適用した監査記録は `evaluation/http-approval-loop-timing-audit-20260908.json`。旧集計の平均117.84秒（Spark）・1.58秒（playbook）は復旧時間の平均として使えない。両actorともloop自身のhealth_restoredは全件falseで、修正後の復旧時間対象は0件・平均nullだった。
+
+独立HTTP scoreでは許可条件の両actorがresolvedである。これはtrial終了時の追加postcheckによる判定で、loop内の判定とは別である。この監査で独立scoreのresolution_secondsや元データを変更していない。Loop集計を独立HTTP復旧率の代用にしない。
+
+全194 tests成功。失敗・無介入終了、成功と失敗の混合集計、欠測、NaN・無限値・負値・boolを含む回帰テストで確認した。モデル処理・Tool処理の個別壁時計時間の追加計測は、この修正には含まない。
