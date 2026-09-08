@@ -1,0 +1,12 @@
+{
+  "action": "move archived model to SSD, retain original path as symlink",
+  "source": "/home/sasa/sabakan-agent/models/LFM2.5-2.6B-Q4_K_M",
+  "destination": "/mnt/ssd/sabakan-models/LFM2.5-2.6B-Q4_K_M",
+  "file": "LFM2.5-2.6B-Q4_K_M.gguf",
+  "bytes": 1674455040,
+  "sha256_before": "02a8b7e17487d326e46d68ce0ba24211e1b80a14c4cd0597fa73c1cd697f52ed",
+  "sha256_after": "02a8b7e17487d326e46d68ce0ba24211e1b80a14c4cd0597fa73c1cd697f52ed",
+  "original_path_verified": true,
+  "running_container_mounts_checked": true,
+  "active_primary_models_moved": false
+}
