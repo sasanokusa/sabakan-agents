@@ -1,0 +1,9 @@
+# 外部復旧と反復制限のモデル試行接続
+
+HTTP条件からidentical_repeat_limitとexternal_recovery_delay_secondsを明示的に選択できるようにした。外側deadline、生成条件、権限を条件指定で上書きしない。不正値はsetup前に拒否し、外部復旧はdependency_down fixtureに限定する。
+
+controllerはモデルloop開始直前に起動し、終了時に未発火timerをキャンセルする。発火後はDocker呼出しの終了を待ってからfixtureを削除する。controller状態と単調時計の時刻を別記録し、外部復旧を使ったresolvedにはexternal_or_mixed_not_establishedの帰属を付ける。モデルの自律復旧率へ含めない。
+
+`evaluation/http-guard-trial-wiring-20260908.json` は固定ポーリングをモデルと同じrun_http_trialへ渡した実Docker対照。4秒遅延、3秒poll、上限2／4の2条件を実行した。上限2はLOOP_DETECTED、上限4は通常終了し、controllerはともにcontainer_started、cleanup完了。独立最終HTTPは両条件で成功し、既存scoreは両方resolvedだった。これは外部のHTTP正常化であり、上限2の呼出し元による観測完遂とは違う。後続解析は、モデル入力に届いた正常HTTP、guard停止、最終HTTPを必ず分離する。
+
+全203 tests成功。条件選択・入力検証と外側制限の保持を含む。公開入力・Tool surface・ヒントを固定したSparkの8試行（2mode×2閾値×2反復）を `evaluation/protocols/http-timed-guard-dev-20260908.json` に事前固定する。遅延は120秒、無進捗ではcontrollerなし。既使用開発ケースであり、未使用評価・自律復旧・多段階復旧は主張しない。既定の本番閾値は変更しない。

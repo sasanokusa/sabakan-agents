@@ -10,12 +10,17 @@ from evaluation.docker_fixtures import build_fixture_broker, PRINCIPAL, trusted_
 from evaluation.http_fixtures import HttpFixture, HttpExecutor, HttpMonitor, HttpClosedReadMonitor
 from evaluation.research_protocol import CaseContract, TrialEvidence, score_trial
 from evaluation.timing import TrialTiming
+from evaluation.http_conditions import validate_guard_options
+from evaluation.delayed_recovery import DelayedDependencyRecovery
 from scripts.evaluate_mac_research import deadline, TrialTimeout
 
 
 def run_http_trial(case, condition, chat, plan, image, name, model):
     seconds = plan['deadline_seconds']
     options = plan['conditions'][condition]
+    repeat_limit, recovery_delay = validate_guard_options(plan)
+    if recovery_delay is not None and case.fault != 'dependency_down':
+        raise ValueError('external recovery requires dependency-down fixture')
     monitor_version = plan.get('http_monitor_version', 1)
     if type(monitor_version) is not int or monitor_version not in {1, 2}:
         raise ValueError('unknown HTTP monitor version')
@@ -32,7 +37,8 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
               'condition': condition, 'model': model, 'contract': case.contract(),
               'started': False, 'public_inputs': [], 'model_responses': [],
               'partial_loop_trace': {}, 'postcheck_windows': []}
-    fixture = broker = monitor = None
+    fixture = broker = monitor = controller = None
+    controller_stopped = True
     trial_started = None
     result = {'normal_completion': False, 'postcheck': None}
     approval_mode = plan.get('approval_mode', 'unassisted')
@@ -61,7 +67,8 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
             monitor = monitor_class(executor, case)
             for method in ('execute_read', 'execute_mutation', 'verify', 'rollback'):
                 setattr(monitor, method, timing.wrap('monitored_' + method, getattr(monitor, method)))
-            broker = build_fixture_broker(Path(tmp) / 'broker', monitor)
+            broker = build_fixture_broker(Path(tmp) / 'broker', monitor, identical_repeat_limit=repeat_limit)
+            record['identical_repeat_limit_override'] = repeat_limit
             if scenario_name is not None:
                 def change_state():
                     before = fixture.snapshot()
@@ -93,6 +100,10 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
                     raise
             record['started'] = True
             trial_started = time.monotonic()
+            if recovery_delay is not None:
+                controller = DelayedDependencyRecovery(fixture, recovery_delay)
+                record['external_recovery'] = controller.record
+                controller.start()
             with deadline(seconds):
                 result = run_agent_loop(
                     incident=case.public_incident(), broker=broker, principal=PRINCIPAL,
@@ -109,6 +120,13 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
                           turns=record['partial_loop_trace'].get('turns', []), trace_complete=False,
                           normal_completion=False)
         finally:
+            if controller:
+                try:
+                    controller.close()
+                except Exception as exc:
+                    controller_stopped = False
+                    record['controller_close_error'] = type(exc).__name__
+                    monitor.incomplete = True
             if record['started']:
                 try:
                     with deadline(10):
@@ -124,13 +142,18 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
             record.update(loop=result, audit=audit,
                           score=score_trial(result, CaseContract(case.requires_remediation, deadline_seconds=seconds),
                                             evidence, started=record['started']))
+            if controller and record['score']['outcome'] == 'resolved':
+                record['score']['recovery_attribution'] = 'external_or_mixed_not_established'
+                record['external_recovery_limitation'] = 'Independent HTTP recovery is not attributed to autonomous model repair.'
             if monitor:
                 record['monitor'] = monitor.details(audit)
             if broker:
                 broker.audit.close()
-            if fixture:
+            if fixture and controller_stopped:
                 try:
                     record['cleanup'] = fixture.cleanup()
                 except Exception as exc:
                     record['cleanup'] = {'complete': False, 'error': str(exc)}
+            elif fixture:
+                record['cleanup'] = {'complete': False, 'error': 'controller still active'}
     return record
