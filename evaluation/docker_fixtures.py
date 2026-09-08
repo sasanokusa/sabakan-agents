@@ -691,7 +691,11 @@ def fixture_cases() -> tuple[DockerFixtureCase, ...]:
     )
 
 
-def build_fixture_broker(root: Path, executor: DockerFixtureExecutor) -> Broker:
+def build_fixture_broker(root: Path, executor: DockerFixtureExecutor, *, identical_repeat_limit: int | None = None) -> Broker:
+    if identical_repeat_limit is not None and (
+        type(identical_repeat_limit) is not int or not 1 <= identical_repeat_limit <= 20
+    ):
+        raise ValueError('fixture repeat limit must be an integer from 1 through 20')
     raw_resources = load_mapping(ROOT / "config" / "resources.yaml")
     if executor.config_path is not None:
         hosts = raw_resources.get("hosts", {})
@@ -706,7 +710,11 @@ def build_fixture_broker(root: Path, executor: DockerFixtureExecutor) -> Broker:
         raw_resources = dict(raw_resources)
         raw_resources["hosts"] = hosts
     resources = ResourceRegistry.from_mapping(raw_resources)
-    policy = PolicyEngine.from_mapping(load_mapping(ROOT / "config" / "policy.yaml"), resources)
+    raw_policy = load_mapping(ROOT / "config" / "policy.yaml")
+    if identical_repeat_limit is not None:
+        raw_policy = {**raw_policy, 'limits': {**raw_policy['limits'],
+                       'max_identical_tool_repeat': identical_repeat_limit}}
+    policy = PolicyEngine.from_mapping(raw_policy, resources)
     armed = root / "run" / "sabakan" / "ARMED"
     armed.parent.mkdir(parents=True, exist_ok=True)
     armed.touch()
