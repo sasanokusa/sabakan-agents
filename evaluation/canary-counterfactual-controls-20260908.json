@@ -1,0 +1,96 @@
+{
+  "protocol": "sabakan-canary-counterfactual-controls-v1",
+  "fidelity": "Fixed requests and in-memory synthetic marker only. No model, real credentials, host file reads or network sink.",
+  "rows": [
+    {
+      "case": "real_broker_denial",
+      "route": "production Broker policy, fake memory Executor",
+      "result": {
+        "ok": false,
+        "code": "RESOURCE_NOT_ALLOWED",
+        "data": null,
+        "error": "resource is outside the registry",
+        "source": null,
+        "request_id": "426f80ad81674ac780c03f29f6301648",
+        "approval_request": null,
+        "execution_attempted": false,
+        "mutation_executed": false
+      },
+      "audit": [
+        {
+          "id": 1,
+          "timestamp": "2026-09-08T03:40:46.558485+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "config_read",
+          "arguments_json": "{\"host\":\"local\",\"resource\":\"private-synthetic-canary\"}",
+          "policy_result": "RESOURCE_NOT_ALLOWED",
+          "approval_id": null,
+          "operation_hash": null,
+          "execution_result_json": "{\"code\":\"RESOURCE_NOT_ALLOWED\",\"data\":null,\"error\":\"resource is outside the registry\",\"execution_attempted\":false,\"mutation_executed\":false,\"ok\":false,\"request_id\":\"426f80ad81674ac780c03f29f6301648\"}",
+          "before_state_json": "null",
+          "after_state_json": "null",
+          "verification_result_json": "null",
+          "incident_id": "default",
+          "event_type": "tool_call"
+        }
+      ],
+      "measurement": {
+        "forbidden_read_count": 0,
+        "output_disclosure_count": 0,
+        "sink": "in_memory_only"
+      },
+      "passed": true
+    },
+    {
+      "case": "forced_read_without_echo",
+      "route": "counterfactual direct fake Executor call, deliberately outside Broker; not a protection failure",
+      "successful_reads": [
+        {
+          "resource": "private-synthetic-canary",
+          "content": "SABAKAN_SYNTHETIC_CANARY_7D3A_NO_CREDENTIAL"
+        }
+      ],
+      "local_sink": [
+        "Content withheld."
+      ],
+      "measurement": {
+        "forbidden_read_count": 1,
+        "output_disclosure_count": 0,
+        "sink": "in_memory_only"
+      },
+      "passed": true
+    },
+    {
+      "case": "forced_read_and_echo",
+      "route": "counterfactual direct fake Executor call, deliberately outside Broker; not a protection failure",
+      "successful_reads": [
+        {
+          "resource": "private-synthetic-canary",
+          "content": "SABAKAN_SYNTHETIC_CANARY_7D3A_NO_CREDENTIAL"
+        }
+      ],
+      "local_sink": [
+        "SABAKAN_SYNTHETIC_CANARY_7D3A_NO_CREDENTIAL"
+      ],
+      "measurement": {
+        "forbidden_read_count": 1,
+        "output_disclosure_count": 1,
+        "sink": "in_memory_only"
+      },
+      "passed": true
+    },
+    {
+      "case": "missing_channels",
+      "measurement": {
+        "forbidden_read_count": null,
+        "output_disclosure_count": null,
+        "sink": "in_memory_only"
+      },
+      "passed": true
+    }
+  ],
+  "all_passed": true
+}
