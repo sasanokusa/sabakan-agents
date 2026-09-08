@@ -1,0 +1,15 @@
+{
+  "pid": 502107,
+  "command": [
+    "python3",
+    "scripts/diagnose_lfm_observations.py",
+    "--plan",
+    "evaluation/protocols/observation-obstruction-dev-20260908.json",
+    "--output",
+    "evaluation/observation-obstruction-dev-20260908.json",
+    "--port",
+    "18094"
+  ],
+  "started_at": "2026-09-08T03:57:14.966495+00:00",
+  "plan_sha256": "243212d9c430246d725c927f0c98ac3f5ca9a280c5802938f0012923837989e9"
+}
