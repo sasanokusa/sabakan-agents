@@ -1,0 +1,421 @@
+{
+  "protocol": "sabakan-partial-config-file-controls-v1",
+  "rows": [
+    {
+      "mode": "partial_restore",
+      "approval_supplied": true,
+      "initial": {
+        "sha256": "6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93",
+        "bytes": 38,
+        "valid": true,
+        "validation_error": null
+      },
+      "initial_broker_code": "APPROVAL_REQUIRED",
+      "result_code": "CONFIG_VALIDATION_FAILED",
+      "result_ok": false,
+      "reported_mutation_executed": false,
+      "write_events": [
+        {
+          "phase": "candidate_partial_write",
+          "bytes_written": 22,
+          "before": {
+            "sha256": "6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93",
+            "bytes": 38,
+            "valid": true,
+            "validation_error": null
+          },
+          "after": {
+            "sha256": "30800d58d6d9319cbdfef643d5c116b2f9f07e6c03de6871c0b546205cb19eb3",
+            "bytes": 22,
+            "valid": false,
+            "validation_error": "config parse error: Unterminated string starting at: line 2 column 19 (char 20)"
+          },
+          "injected_error": "OSError"
+        },
+        {
+          "phase": "rollback_write",
+          "bytes_written": 38,
+          "before": {
+            "sha256": "30800d58d6d9319cbdfef643d5c116b2f9f07e6c03de6871c0b546205cb19eb3",
+            "bytes": 22,
+            "valid": false,
+            "validation_error": "config parse error: Unterminated string starting at: line 2 column 19 (char 20)"
+          },
+          "after": {
+            "sha256": "6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93",
+            "bytes": 38,
+            "valid": true,
+            "validation_error": null
+          }
+        }
+      ],
+      "final": {
+        "sha256": "6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93",
+        "bytes": 38,
+        "valid": true,
+        "validation_error": null
+      },
+      "audit": [
+        {
+          "id": 3,
+          "timestamp": "2026-09-08T04:52:34.717515+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "config_patch",
+          "arguments_json": "{\"host\":\"local\",\"patch\":{\"content\":\"{\\n \\\"enabled\\\": true, \\\"upstream\\\": \\\"sabakan\\\"\\n}\\n\"},\"resource\":\"nginx-main\"}",
+          "policy_result": "ALLOWED",
+          "approval_id": "be11fae4b2de48d792fb06278b850223",
+          "operation_hash": "ceae1254e898053d57309dbafdf947b9553f06ce6d5264e416236c5fc532ae8e",
+          "execution_result_json": "{\"code\":\"CONFIG_VALIDATION_FAILED\",\"data\":{\"execution\":{\"mutation_executed\":false,\"rollback_attempted\":true,\"rollback_error\":null,\"rollback_success\":true,\"validation_error\":\"fixed partial-write injection after prefix persisted\"},\"rollback\":null,\"rollback_attempted\":true,\"rollback_code\":null,\"rollback_success\":true,\"verification\":null},\"error\":\"fixed partial-write injection after prefix persisted\",\"execution_attempted\":true,\"mutation_executed\":false,\"ok\":false,\"request_id\":\"be11fae4b2de48d792fb06278b850223\",\"source\":{\"host\":\"local\",\"instructions_are_data\":true,\"resource\":\"nginx-main\",\"source_type\":\"untrusted_command_output\",\"trusted\":false}}",
+          "before_state_json": "{\"hash\":\"0bc19eac2ce65f6e5b1f9b4a1cfb67b2a12ca54507c37fc105063a6bcc92d704\"}",
+          "after_state_json": "{\"data\":{\"config_sha256\":\"6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93\",\"config_size\":38,\"service_status\":\"missing\"}}",
+          "verification_result_json": "null",
+          "incident_id": "default",
+          "event_type": "MUTATION_RESULT"
+        },
+        {
+          "id": 2,
+          "timestamp": "2026-09-08T04:52:34.714471+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "config_patch",
+          "arguments_json": "{\"host\":\"local\",\"patch\":{\"content\":\"{\\n \\\"enabled\\\": true, \\\"upstream\\\": \\\"sabakan\\\"\\n}\\n\"},\"resource\":\"nginx-main\"}",
+          "policy_result": "ALLOWED",
+          "approval_id": "be11fae4b2de48d792fb06278b850223",
+          "operation_hash": "ceae1254e898053d57309dbafdf947b9553f06ce6d5264e416236c5fc532ae8e",
+          "execution_result_json": "{\"code\":\"MUTATION_INTENT\",\"data\":{\"before_hash\":\"0bc19eac2ce65f6e5b1f9b4a1cfb67b2a12ca54507c37fc105063a6bcc92d704\",\"status\":\"validated\"},\"error\":null,\"execution_attempted\":false,\"mutation_executed\":false,\"ok\":true,\"request_id\":\"be11fae4b2de48d792fb06278b850223\",\"source\":{\"host\":\"local\",\"instructions_are_data\":true,\"resource\":\"nginx-main\",\"source_type\":\"untrusted_command_output\",\"trusted\":false}}",
+          "before_state_json": "{\"hash\":\"0bc19eac2ce65f6e5b1f9b4a1cfb67b2a12ca54507c37fc105063a6bcc92d704\"}",
+          "after_state_json": "null",
+          "verification_result_json": "null",
+          "incident_id": "default",
+          "event_type": "MUTATION_INTENT"
+        },
+        {
+          "id": 1,
+          "timestamp": "2026-09-08T04:52:34.712298+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "config_patch",
+          "arguments_json": "{\"host\":\"local\",\"patch\":{\"content\":\"{\\n \\\"enabled\\\": true, \\\"upstream\\\": \\\"sabakan\\\"\\n}\\n\"},\"resource\":\"nginx-main\"}",
+          "policy_result": "APPROVAL_REQUIRED",
+          "approval_id": null,
+          "operation_hash": "ceae1254e898053d57309dbafdf947b9553f06ce6d5264e416236c5fc532ae8e",
+          "execution_result_json": "{\"approval_request\":{\"before_hash\":\"0bc19eac2ce65f6e5b1f9b4a1cfb67b2a12ca54507c37fc105063a6bcc92d704\",\"expires_at\":\"2026-09-08T04:57:34.712106+00:00\",\"host\":\"local\",\"nonce\":\"VtR0v-5RsM3VaC4j5jyZ_eW_i6NLggdz\",\"operation\":\"config_patch\",\"operation_hash\":\"ceae1254e898053d57309dbafdf947b9553f06ce6d5264e416236c5fc532ae8e\",\"patch_hash\":\"6a434c48e8c7212c37742f96a9c38c6c5ae6298610e07773a33ed1444c83641c\",\"principal\":\"docker-fixture\",\"request_id\":\"be11fae4b2de48d792fb06278b850223\",\"required_plane\":\"approval\",\"resource\":\"nginx-main\"},\"code\":\"APPROVAL_REQUIRED\",\"data\":{\"reason\":\"L2 mutation requires approval approval\"},\"error\":null,\"execution_attempted\":false,\"mutation_executed\":false,\"ok\":false,\"request_id\":\"be11fae4b2de48d792fb06278b850223\"}",
+          "before_state_json": "null",
+          "after_state_json": "null",
+          "verification_result_json": "null",
+          "incident_id": "default",
+          "event_type": "tool_call"
+        }
+      ],
+      "partial_write_observed": true,
+      "intermediate_invalid_config_observed": true,
+      "original_bytes_restored": true,
+      "residual_change_observed": false,
+      "passed": true,
+      "temporary_directory_removed": true
+    },
+    {
+      "mode": "partial_restore_failed",
+      "approval_supplied": true,
+      "initial": {
+        "sha256": "6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93",
+        "bytes": 38,
+        "valid": true,
+        "validation_error": null
+      },
+      "initial_broker_code": "APPROVAL_REQUIRED",
+      "result_code": "CONFIG_VALIDATION_FAILED",
+      "result_ok": false,
+      "reported_mutation_executed": false,
+      "write_events": [
+        {
+          "phase": "candidate_partial_write",
+          "bytes_written": 22,
+          "before": {
+            "sha256": "6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93",
+            "bytes": 38,
+            "valid": true,
+            "validation_error": null
+          },
+          "after": {
+            "sha256": "30800d58d6d9319cbdfef643d5c116b2f9f07e6c03de6871c0b546205cb19eb3",
+            "bytes": 22,
+            "valid": false,
+            "validation_error": "config parse error: Unterminated string starting at: line 2 column 19 (char 20)"
+          },
+          "injected_error": "OSError"
+        },
+        {
+          "phase": "rollback_write_rejected",
+          "bytes_written": 0,
+          "before": {
+            "sha256": "30800d58d6d9319cbdfef643d5c116b2f9f07e6c03de6871c0b546205cb19eb3",
+            "bytes": 22,
+            "valid": false,
+            "validation_error": "config parse error: Unterminated string starting at: line 2 column 19 (char 20)"
+          },
+          "after": {
+            "sha256": "30800d58d6d9319cbdfef643d5c116b2f9f07e6c03de6871c0b546205cb19eb3",
+            "bytes": 22,
+            "valid": false,
+            "validation_error": "config parse error: Unterminated string starting at: line 2 column 19 (char 20)"
+          },
+          "injected_error": "OSError"
+        }
+      ],
+      "final": {
+        "sha256": "30800d58d6d9319cbdfef643d5c116b2f9f07e6c03de6871c0b546205cb19eb3",
+        "bytes": 22,
+        "valid": false,
+        "validation_error": "config parse error: Unterminated string starting at: line 2 column 19 (char 20)"
+      },
+      "audit": [
+        {
+          "id": 3,
+          "timestamp": "2026-09-08T04:52:34.740168+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "config_patch",
+          "arguments_json": "{\"host\":\"local\",\"patch\":{\"content\":\"{\\n \\\"enabled\\\": true, \\\"upstream\\\": \\\"sabakan\\\"\\n}\\n\"},\"resource\":\"nginx-main\"}",
+          "policy_result": "ALLOWED",
+          "approval_id": "8b45376e277847159a2f8985d5fba82e",
+          "operation_hash": "ceae1254e898053d57309dbafdf947b9553f06ce6d5264e416236c5fc532ae8e",
+          "execution_result_json": "{\"code\":\"CONFIG_VALIDATION_FAILED\",\"data\":{\"execution\":{\"mutation_executed\":false,\"rollback_attempted\":true,\"rollback_error\":\"fixed rollback-write injection before write\",\"rollback_success\":false,\"validation_error\":\"fixed partial-write injection after prefix persisted\"},\"rollback\":null,\"rollback_attempted\":true,\"rollback_code\":null,\"rollback_success\":false,\"verification\":null},\"error\":\"fixed partial-write injection after prefix persisted\",\"execution_attempted\":true,\"mutation_executed\":false,\"ok\":false,\"request_id\":\"8b45376e277847159a2f8985d5fba82e\",\"source\":{\"host\":\"local\",\"instructions_are_data\":true,\"resource\":\"nginx-main\",\"source_type\":\"untrusted_command_output\",\"trusted\":false}}",
+          "before_state_json": "{\"hash\":\"0bc19eac2ce65f6e5b1f9b4a1cfb67b2a12ca54507c37fc105063a6bcc92d704\"}",
+          "after_state_json": "{\"data\":{\"config_sha256\":\"30800d58d6d9319cbdfef643d5c116b2f9f07e6c03de6871c0b546205cb19eb3\",\"config_size\":22,\"service_status\":\"missing\"}}",
+          "verification_result_json": "null",
+          "incident_id": "default",
+          "event_type": "MUTATION_RESULT"
+        },
+        {
+          "id": 2,
+          "timestamp": "2026-09-08T04:52:34.737332+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "config_patch",
+          "arguments_json": "{\"host\":\"local\",\"patch\":{\"content\":\"{\\n \\\"enabled\\\": true, \\\"upstream\\\": \\\"sabakan\\\"\\n}\\n\"},\"resource\":\"nginx-main\"}",
+          "policy_result": "ALLOWED",
+          "approval_id": "8b45376e277847159a2f8985d5fba82e",
+          "operation_hash": "ceae1254e898053d57309dbafdf947b9553f06ce6d5264e416236c5fc532ae8e",
+          "execution_result_json": "{\"code\":\"MUTATION_INTENT\",\"data\":{\"before_hash\":\"0bc19eac2ce65f6e5b1f9b4a1cfb67b2a12ca54507c37fc105063a6bcc92d704\",\"status\":\"validated\"},\"error\":null,\"execution_attempted\":false,\"mutation_executed\":false,\"ok\":true,\"request_id\":\"8b45376e277847159a2f8985d5fba82e\",\"source\":{\"host\":\"local\",\"instructions_are_data\":true,\"resource\":\"nginx-main\",\"source_type\":\"untrusted_command_output\",\"trusted\":false}}",
+          "before_state_json": "{\"hash\":\"0bc19eac2ce65f6e5b1f9b4a1cfb67b2a12ca54507c37fc105063a6bcc92d704\"}",
+          "after_state_json": "null",
+          "verification_result_json": "null",
+          "incident_id": "default",
+          "event_type": "MUTATION_INTENT"
+        },
+        {
+          "id": 1,
+          "timestamp": "2026-09-08T04:52:34.735163+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "config_patch",
+          "arguments_json": "{\"host\":\"local\",\"patch\":{\"content\":\"{\\n \\\"enabled\\\": true, \\\"upstream\\\": \\\"sabakan\\\"\\n}\\n\"},\"resource\":\"nginx-main\"}",
+          "policy_result": "APPROVAL_REQUIRED",
+          "approval_id": null,
+          "operation_hash": "ceae1254e898053d57309dbafdf947b9553f06ce6d5264e416236c5fc532ae8e",
+          "execution_result_json": "{\"approval_request\":{\"before_hash\":\"0bc19eac2ce65f6e5b1f9b4a1cfb67b2a12ca54507c37fc105063a6bcc92d704\",\"expires_at\":\"2026-09-08T04:57:34.735059+00:00\",\"host\":\"local\",\"nonce\":\"TYVIyMovmVYyCpNbL20-ibDI4gbAGgyR\",\"operation\":\"config_patch\",\"operation_hash\":\"ceae1254e898053d57309dbafdf947b9553f06ce6d5264e416236c5fc532ae8e\",\"patch_hash\":\"6a434c48e8c7212c37742f96a9c38c6c5ae6298610e07773a33ed1444c83641c\",\"principal\":\"docker-fixture\",\"request_id\":\"8b45376e277847159a2f8985d5fba82e\",\"required_plane\":\"approval\",\"resource\":\"nginx-main\"},\"code\":\"APPROVAL_REQUIRED\",\"data\":{\"reason\":\"L2 mutation requires approval approval\"},\"error\":null,\"execution_attempted\":false,\"mutation_executed\":false,\"ok\":false,\"request_id\":\"8b45376e277847159a2f8985d5fba82e\"}",
+          "before_state_json": "null",
+          "after_state_json": "null",
+          "verification_result_json": "null",
+          "incident_id": "default",
+          "event_type": "tool_call"
+        }
+      ],
+      "partial_write_observed": true,
+      "intermediate_invalid_config_observed": true,
+      "original_bytes_restored": false,
+      "residual_change_observed": true,
+      "passed": true,
+      "temporary_directory_removed": true
+    },
+    {
+      "mode": "validation_failed",
+      "approval_supplied": true,
+      "initial": {
+        "sha256": "6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93",
+        "bytes": 38,
+        "valid": true,
+        "validation_error": null
+      },
+      "initial_broker_code": "APPROVAL_REQUIRED",
+      "result_code": "CONFIG_VALIDATION_FAILED",
+      "result_ok": false,
+      "reported_mutation_executed": false,
+      "write_events": [
+        {
+          "phase": "candidate_write",
+          "bytes_written": 14,
+          "before": {
+            "sha256": "6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93",
+            "bytes": 38,
+            "valid": true,
+            "validation_error": null
+          },
+          "after": {
+            "sha256": "4789ac02ef5a9afe811861148bd8b1a76d4142f1762b08903cc5a16b6cb2ddc9",
+            "bytes": 14,
+            "valid": false,
+            "validation_error": "config parse error: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+          }
+        },
+        {
+          "phase": "rollback_write",
+          "bytes_written": 38,
+          "before": {
+            "sha256": "4789ac02ef5a9afe811861148bd8b1a76d4142f1762b08903cc5a16b6cb2ddc9",
+            "bytes": 14,
+            "valid": false,
+            "validation_error": "config parse error: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+          },
+          "after": {
+            "sha256": "6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93",
+            "bytes": 38,
+            "valid": true,
+            "validation_error": null
+          }
+        }
+      ],
+      "final": {
+        "sha256": "6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93",
+        "bytes": 38,
+        "valid": true,
+        "validation_error": null
+      },
+      "audit": [
+        {
+          "id": 3,
+          "timestamp": "2026-09-08T04:52:34.804905+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "config_patch",
+          "arguments_json": "{\"host\":\"local\",\"patch\":{\"content\":\"{invalid JSON\\n\"},\"resource\":\"nginx-main\"}",
+          "policy_result": "ALLOWED",
+          "approval_id": "973e49751aa34d88b84444f87461b180",
+          "operation_hash": "cf82e16ea826c2129bffcea303d9c88aaf502f005fb1860c8f652a90488e2523",
+          "execution_result_json": "{\"code\":\"CONFIG_VALIDATION_FAILED\",\"data\":{\"execution\":{\"mutation_executed\":false,\"rollback_attempted\":true,\"rollback_error\":null,\"rollback_success\":true,\"validation_error\":\"config parse error: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)\"},\"rollback\":null,\"rollback_attempted\":true,\"rollback_code\":null,\"rollback_success\":true,\"verification\":null},\"error\":\"config parse error: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)\",\"execution_attempted\":true,\"mutation_executed\":false,\"ok\":false,\"request_id\":\"973e49751aa34d88b84444f87461b180\",\"source\":{\"host\":\"local\",\"instructions_are_data\":true,\"resource\":\"nginx-main\",\"source_type\":\"untrusted_command_output\",\"trusted\":false}}",
+          "before_state_json": "{\"hash\":\"0bc19eac2ce65f6e5b1f9b4a1cfb67b2a12ca54507c37fc105063a6bcc92d704\"}",
+          "after_state_json": "{\"data\":{\"config_sha256\":\"6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93\",\"config_size\":38,\"service_status\":\"missing\"}}",
+          "verification_result_json": "null",
+          "incident_id": "default",
+          "event_type": "MUTATION_RESULT"
+        },
+        {
+          "id": 2,
+          "timestamp": "2026-09-08T04:52:34.801532+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "config_patch",
+          "arguments_json": "{\"host\":\"local\",\"patch\":{\"content\":\"{invalid JSON\\n\"},\"resource\":\"nginx-main\"}",
+          "policy_result": "ALLOWED",
+          "approval_id": "973e49751aa34d88b84444f87461b180",
+          "operation_hash": "cf82e16ea826c2129bffcea303d9c88aaf502f005fb1860c8f652a90488e2523",
+          "execution_result_json": "{\"code\":\"MUTATION_INTENT\",\"data\":{\"before_hash\":\"0bc19eac2ce65f6e5b1f9b4a1cfb67b2a12ca54507c37fc105063a6bcc92d704\",\"status\":\"validated\"},\"error\":null,\"execution_attempted\":false,\"mutation_executed\":false,\"ok\":true,\"request_id\":\"973e49751aa34d88b84444f87461b180\",\"source\":{\"host\":\"local\",\"instructions_are_data\":true,\"resource\":\"nginx-main\",\"source_type\":\"untrusted_command_output\",\"trusted\":false}}",
+          "before_state_json": "{\"hash\":\"0bc19eac2ce65f6e5b1f9b4a1cfb67b2a12ca54507c37fc105063a6bcc92d704\"}",
+          "after_state_json": "null",
+          "verification_result_json": "null",
+          "incident_id": "default",
+          "event_type": "MUTATION_INTENT"
+        },
+        {
+          "id": 1,
+          "timestamp": "2026-09-08T04:52:34.799176+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "config_patch",
+          "arguments_json": "{\"host\":\"local\",\"patch\":{\"content\":\"{invalid JSON\\n\"},\"resource\":\"nginx-main\"}",
+          "policy_result": "APPROVAL_REQUIRED",
+          "approval_id": null,
+          "operation_hash": "cf82e16ea826c2129bffcea303d9c88aaf502f005fb1860c8f652a90488e2523",
+          "execution_result_json": "{\"approval_request\":{\"before_hash\":\"0bc19eac2ce65f6e5b1f9b4a1cfb67b2a12ca54507c37fc105063a6bcc92d704\",\"expires_at\":\"2026-09-08T04:57:34.799034+00:00\",\"host\":\"local\",\"nonce\":\"tNK1RhrBFA7blcNT2EIxCT9pml8Nz3v_\",\"operation\":\"config_patch\",\"operation_hash\":\"cf82e16ea826c2129bffcea303d9c88aaf502f005fb1860c8f652a90488e2523\",\"patch_hash\":\"e9483f76ca1944a1650820ab4c409869a138eb9f115312a698564b370969bf20\",\"principal\":\"docker-fixture\",\"request_id\":\"973e49751aa34d88b84444f87461b180\",\"required_plane\":\"approval\",\"resource\":\"nginx-main\"},\"code\":\"APPROVAL_REQUIRED\",\"data\":{\"reason\":\"L2 mutation requires approval approval\"},\"error\":null,\"execution_attempted\":false,\"mutation_executed\":false,\"ok\":false,\"request_id\":\"973e49751aa34d88b84444f87461b180\"}",
+          "before_state_json": "null",
+          "after_state_json": "null",
+          "verification_result_json": "null",
+          "incident_id": "default",
+          "event_type": "tool_call"
+        }
+      ],
+      "partial_write_observed": false,
+      "intermediate_invalid_config_observed": true,
+      "original_bytes_restored": true,
+      "residual_change_observed": false,
+      "passed": true,
+      "temporary_directory_removed": true
+    },
+    {
+      "mode": "partial_restore",
+      "approval_supplied": false,
+      "initial": {
+        "sha256": "6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93",
+        "bytes": 38,
+        "valid": true,
+        "validation_error": null
+      },
+      "initial_broker_code": "APPROVAL_REQUIRED",
+      "result_code": "APPROVAL_REQUIRED",
+      "result_ok": false,
+      "reported_mutation_executed": false,
+      "write_events": [],
+      "final": {
+        "sha256": "6a2da7f2dc7ca298350efa4bf8a5d75e45f46fbdeab8fcc51a5fbc7709bcee93",
+        "bytes": 38,
+        "valid": true,
+        "validation_error": null
+      },
+      "audit": [
+        {
+          "id": 1,
+          "timestamp": "2026-09-08T04:52:34.820904+00:00",
+          "principal": "docker-fixture",
+          "session": "unknown",
+          "model": "unknown",
+          "host": "local",
+          "tool": "config_patch",
+          "arguments_json": "{\"host\":\"local\",\"patch\":{\"content\":\"{\\n \\\"enabled\\\": true, \\\"upstream\\\": \\\"sabakan\\\"\\n}\\n\"},\"resource\":\"nginx-main\"}",
+          "policy_result": "APPROVAL_REQUIRED",
+          "approval_id": null,
+          "operation_hash": "ceae1254e898053d57309dbafdf947b9553f06ce6d5264e416236c5fc532ae8e",
+          "execution_result_json": "{\"approval_request\":{\"before_hash\":\"0bc19eac2ce65f6e5b1f9b4a1cfb67b2a12ca54507c37fc105063a6bcc92d704\",\"expires_at\":\"2026-09-08T04:57:34.820824+00:00\",\"host\":\"local\",\"nonce\":\"KXgP9tvYqFCRjyFKa3iuqFwE4Qldkoup\",\"operation\":\"config_patch\",\"operation_hash\":\"ceae1254e898053d57309dbafdf947b9553f06ce6d5264e416236c5fc532ae8e\",\"patch_hash\":\"6a434c48e8c7212c37742f96a9c38c6c5ae6298610e07773a33ed1444c83641c\",\"principal\":\"docker-fixture\",\"request_id\":\"64d95226fb164ff6af07031f427436c6\",\"required_plane\":\"approval\",\"resource\":\"nginx-main\"},\"code\":\"APPROVAL_REQUIRED\",\"data\":{\"reason\":\"L2 mutation requires approval approval\"},\"error\":null,\"execution_attempted\":false,\"mutation_executed\":false,\"ok\":false,\"request_id\":\"64d95226fb164ff6af07031f427436c6\"}",
+          "before_state_json": "null",
+          "after_state_json": "null",
+          "verification_result_json": "null",
+          "incident_id": "default",
+          "event_type": "tool_call"
+        }
+      ],
+      "partial_write_observed": false,
+      "intermediate_invalid_config_observed": false,
+      "original_bytes_restored": true,
+      "residual_change_observed": false,
+      "passed": true,
+      "temporary_directory_removed": true
+    }
+  ],
+  "all_passed": true,
+  "fidelity": "Real temporary-file writes and original Executor/Broker path; simulated OSError, no HTTP service, Docker, model, host configuration or credentials.",
+  "limitation": "Intermediate file validity is measured at write boundaries, not continuous availability or service impact.",
+  "source_sha256": {
+    "scripts/run_partial_config_controls.py": "63ecefc9aee2688b8ce163a468a79c873309d7d9218d863f679c882896e02b60",
+    "evaluation/docker_fixtures.py": "d0f9577a741478b808927ce4a17f584a6671a6377a01f64f82a94c5e2d5e0ff1",
+    "src/sabakan_broker/broker.py": "88f223be7461521477d7a8546fd131ee9252ff74354bb1338b65858c9ffd9db3"
+  }
+}
