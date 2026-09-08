@@ -1,0 +1,15 @@
+{
+  "pid": 343052,
+  "command": [
+    "python3",
+    "scripts/diagnose_lfm_observations.py",
+    "--plan",
+    "evaluation/protocols/spark-http-v2-dev-20260908.json",
+    "--output",
+    "evaluation/spark-http-v2-dev-20260908.json",
+    "--port",
+    "18092"
+  ],
+  "started_at": "2026-09-08T00:59:02.655425+00:00",
+  "plan_sha256": "0518e2222779d53f8495a93daab1f614affe9cf5bdbecfa4fb2b6de770d2de61"
+}
