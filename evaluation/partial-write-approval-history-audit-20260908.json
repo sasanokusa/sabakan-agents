@@ -1,0 +1,134 @@
+{
+  "protocol": "sabakan-approval-history-audit-v1",
+  "input_sha256": {
+    "evaluation/http-partial-write-dev-20260908.json": "ad52a98d04722e88f4e11808258e4258e8a481fc50e9f42610b772816c3fc890"
+  },
+  "script_sha256": "06abdd6140d860e723dcef7f3c0f8d3b654658d3c921d8451b84220bcb08db77",
+  "rows": [
+    {
+      "input": "evaluation/http-partial-write-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_clean",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 7,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-partial-write-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_clean",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 4,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-partial-write-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_partial_restore",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 8,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-partial-write-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_partial_restore",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 4,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-partial-write-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_partial_restore_failed",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 8,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-partial-write-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_partial_restore_failed",
+      "repetition": 0,
+      "started": true,
+      "saved_input_count": 5,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-partial-write-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_partial_restore_failed",
+      "repetition": 1,
+      "started": true,
+      "saved_input_count": 4,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-partial-write-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_partial_restore_failed",
+      "repetition": 1,
+      "started": true,
+      "saved_input_count": 8,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-partial-write-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_partial_restore",
+      "repetition": 1,
+      "started": true,
+      "saved_input_count": 5,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-partial-write-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_partial_restore",
+      "repetition": 1,
+      "started": true,
+      "saved_input_count": 8,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-partial-write-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "model_clean",
+      "repetition": 1,
+      "started": true,
+      "saved_input_count": 4,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    },
+    {
+      "input": "evaluation/http-partial-write-dev-20260908.json",
+      "case_id": "development-http-invalid_config",
+      "condition": "playbook_clean",
+      "repetition": 1,
+      "started": true,
+      "saved_input_count": 7,
+      "findings": [],
+      "scope": "saved prepared model inputs only"
+    }
+  ],
+  "limitations": [
+    "Does not recover absent history, approval objects or exact transient nonce/signature values.",
+    "Checks structured field names and the known fixture key literal; encoded, paraphrased or unrelated leakage is outside this audit.",
+    "Zero matching fields is not a general confidentiality guarantee."
+  ]
+}

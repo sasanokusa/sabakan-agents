@@ -1,6 +1,6 @@
 # 研究評価の総合報告（2026-09-08）
 
-状態: 主評価と攻撃比較の結果を反映した作業版。部分書込み12試行の収集・解析とIssue別の最終照合が残っており、Goal完了の宣言ではない。
+状態: 採用した主評価・開発比較の収集、解析、Issue別照合を完了。未採用・未検証の拡張は末尾と要件照合表に明記する。
 
 ## 採用範囲
 
@@ -37,7 +37,7 @@ Spark B2のhint入力到達は全8試行で0だった。schemaは期待した段
 
 [事後検証失敗からの復元成功](http-rollback-comparison-20260908.md)と[snapshot喪失による復元不可](http-rollback-unavailable-comparison-20260908.md)を各2actorで比較した。元の不正設定へ戻ったことはサービス復旧ではない。snapshot喪失はストレージ故障と区別する。[承認履歴18件の監査](approval-history-audit-20260908.md)では構造化承認情報や既知fixture鍵を保存済みLLM入力に検出しなかったが、未知の符号化漏えいまで否定しない。
 
-[一時ファイル固定対照4件](partial-config-file-controls-20260908.md)では部分書込み・復元成功/失敗・検証失敗・承認なしの非実行を観測した。返却mutation flagがfalseでも実書込みが起きるため、独立したhashとbyte数を使う。[HTTP部分書込み比較12試行](http-partial-write-plan-20260908.md)は収集中であり、結果は未確定。終了後にこの節へ反映する。
+[一時ファイル固定対照4件](partial-config-file-controls-20260908.md)では部分書込み・復元成功/失敗・検証失敗・承認なしの非実行を観測した。返却mutation flagがfalseでも実書込みが起きるため、独立したhashとbyte数を使う。[HTTP部分書込み比較12試行](http-partial-write-results-20260908.md)を完了。playbookは全条件2/2最終HTTP復旧、Sparkはclean2/2、復元成功1/2、復元失敗0/2。注入8件すべてで部分書込みを観測した。復元成功条件4件の害計測は不明として保持し、復元成功とHTTP復旧を分離する。追加12件の承認履歴監査は限定した検出対象について0件だった。
 
 ## RQ3: 同一資源条件での費用と失敗
 
@@ -55,8 +55,8 @@ AgentDojoは非信頼Tool出力を扱うエージェントについて、正当�
 
 AIOpsLabはmicroservice環境、故障注入、負荷、telemetry、agent interfaceを組み合わせて運用タスクを評価する。[AIOpsLab原論文](https://arxiv.org/abs/2501.06706v1)。本研究は低VRAMの小型モデルと限定したBroker操作に範囲を絞り、復旧・非介入・境界・実効果・費用の分離、および否定的結果の再現可能な記録を提供する。先行研究を上回る性能・保証を測定したとはしない。原典abstract確認日2026-09-08、網羅的関連研究調査ではない。
 
-## 未採用の拡張と完了までの残件
+## 未採用・未検証の拡張
 
 systemd/OS起動のケースを採用していないためVMは未追加。ops-agentd、Hermes、Discord、本番自律運用は後段に留めた。人間承認運用、ホスト侵害・container脱出耐性、未知故障族への汎化、実OOM/ENOSPC下のLLM復旧の主評価は未検証である。実OOM・専用tmpfs ENOSPCと再発は[固定対照](resource-fault-controls-20260907.md)として確認した範囲に限る。
 
-部分書込み比較の完了・解析・履歴監査、全回帰、Issue別の要件と証拠の最終照合が残る。リモートへのpushやIssueのクローズは行っていない。
+採用した比較の解析・履歴監査と[Issue別照合](issue-evidence-audit-20260908.md)を完了した。全回帰266件が通過した。リモートへのpushやIssueのクローズは行っていない。

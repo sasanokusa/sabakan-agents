@@ -1,12 +1,12 @@
 # Issue要件と証拠の照合（2026-09-08）
 
-状態: 部分書込み比較が実行中のため最終照合途中。GitHub Issueのチェックボックスや状態は変更していない。本表は研究として採用した比較と、未採用・未検証の範囲を区別する。全Issueを閉じられるという宣言ではない。
+状態: 採用範囲の証拠照合を完了。GitHub Issueのチェックボックスや状態は変更していない。本表は研究として採用した比較と、未採用・未検証の範囲を区別する。全Issueを閉じられるという宣言ではない。
 
 ## リポジトリとユーザー指定
 
 | 要件 | 確認できた証拠 | 判定 |
 | --- | --- | --- |
-| 現状確認、最新リモートの取り込み、既存変更保護 | [更新記録](docker-controls-20260907.md): mainをbfdda56→b4b8acaへfast-forward。作業branchで継続。後続fetchでも未取り込みcommitなし | 実施済み。完了時に再確認 |
+| 現状確認、最新リモートの取り込み、既存変更保護 | [更新記録](docker-controls-20260907.md): mainをbfdda56→b4b8acaへfast-forward。作業branchで継続。後続fetchでも未取り込みcommitなし | 実施済み。最終fetchでも未取り込み変更なし |
 | Spark X2.5 4Bを追加し不要な候補を除外 | manifestと[主評価](gtx1650-primary-results-20260908.md): Sparkを採用、LFMをarchive。MiniCPM追加は別作業で主評価には含めない | 実施済み、既存履歴保持 |
 | 容量不足時はSSDへ移動可 | [LFM移動記録](../evaluation/archived-lfm-storage-move-20260908.json): 未使用1.67GBをSSDへ移し、元pathのsymlinkと前後hash一致を確認 | 実施済み。稼働中モデルは移動せず |
 
@@ -40,9 +40,9 @@
 | 承認方式、allow/deny/pending/expired/unanswered/state_changed | [7状態×2actor](http-approval-comparison-20260908.md) | fixture支援とunassistedを分離、人間承認は未評価 |
 | hash/principal/nonce/expiry/plane改ざん、replay、前提不一致、非実行 | 固定要求対照とapproval/security回帰（上記266件に含む） | 固定要求での検証、任意運用の保証ではない |
 | 承認/モデル/Tool/復旧時間、escalation区分 | 各rawのapproval状態、[壁時計区間](http-wall-timing-20260908.md)、[復旧時間修正](loop-resolution-timing-audit-20260908.md) | 旧データに区間を推定補完せず、pendingは模擬即時応答 |
-| 設定検証失敗・部分適用 | [ファイル4対照](partial-config-file-controls-20260908.md)、[HTTP12件計画](http-partial-write-plan-20260908.md) | HTTP比較は実行中、未完了 |
+| 設定検証失敗・部分適用 | [ファイル4対照](partial-config-file-controls-20260908.md)、[HTTP12件結果](http-partial-write-results-20260908.md) | 12件完了。復元成功条件4件の害計測は不明、無害としない |
 | 事後検証失敗、復元成功/失敗、独立状態 | [復元成功2actor](http-rollback-comparison-20260908.md)、[snapshot喪失2actor](http-rollback-unavailable-comparison-20260908.md) | 注入verificationとsnapshot喪失、実ストレージ故障とは異なる |
-| LLM履歴に承認情報なし、実ホスト設定/credentialなし | [18試行入力監査](approval-history-audit-20260908.md)、隔離構成、生成経路回帰 | 保存済み構造化情報とfixture鍵の限定監査。部分書込み12件は終了後に追加監査 |
+| LLM履歴に承認情報なし、実ホスト設定/credentialなし | [18試行入力監査](approval-history-audit-20260908.md)、隔離構成、生成経路回帰 | 保存済み構造化情報とfixture鍵の限定監査。[部分書込み12件も追加監査済み](../evaluation/partial-write-approval-history-audit-20260908.json)、検出0 |
 | 同条件playbook/モデル、事前計画、人間承認範囲 | 各条件別plan/hash、今回の12件も2actor×2反復 | 人間の参加・待ち時間評価は未採用と明示 |
 
 ## #15–18: 実故障、採用範囲、最終報告
@@ -51,4 +51,4 @@
 
 #16のVMはsystemd/OS起動を採用ケースが必要としないため未採用。#17のdaemon、Hermes、Discord、自律運用は後段・未有効化。#18は全ての条件付き拡張の実装を要求していないが、未検証を確認済みにしない。これらのIssueを実装完了として閉じる根拠にはならない。
 
-[総合報告](research-summary-20260908.md)でRQ1の付加価値なし/機構到達、RQ2の境界/害/誤拒否/停止/未解決、RQ3の同一条件の費用と欠測、攻撃/反復/actor到達、実故障/模擬、承認方式、旧新データ、関連研究との限定的な位置付けをまとめた。部分書込み結果と最後の整合性確認を反映するまで、最終版は未完了とする。
+[総合報告](research-summary-20260908.md)でRQ1の付加価値なし/機構到達、RQ2の境界/害/誤拒否/停止/未解決、RQ3の同一条件の費用と欠測、攻撃/反復/actor到達、実故障/模擬、承認方式、旧新データ、関連研究との限定的な位置付けをまとめた。部分書込み結果と最終整合性確認を反映済み。

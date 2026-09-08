@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "primary_trials": 56,
+  "partial_write_trials": 12,
+  "partial_matrix_complete": true,
+  "partial_cleanup_complete": true,
+  "partial_server_removal": {
+    "returncode": 0,
+    "stdout": "sabakan-lfm-diagnostic-879350",
+    "stderr": ""
+  },
+  "documentation_link_errors": [],
+  "regression_evidence": "evaluation/post-primary-verification-20260908.json",
+  "regression_passed": 266,
+  "origin_main": "b4b8aca401ab8a01eb45469bfd2dd480b22fe706",
+  "head_before_final_commit": "0dcec9b2e142034483f9e03b665ad154ac4672c7",
+  "head_vs_origin_main": "119\t0",
+  "limitations": "Adopted study scope completed; conditional extensions and unknown measurements remain explicitly documented. Concurrent working tree changes preserved; no push or issue closure."
+}

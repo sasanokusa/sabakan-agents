@@ -1,0 +1,16 @@
+{
+  "pid": 879350,
+  "command": [
+    "/usr/bin/python3",
+    "scripts/run_http_partial_development.py",
+    "--plan",
+    "evaluation/protocols/http-partial-write-dev-20260908.json",
+    "--output",
+    "evaluation/http-partial-write-dev-20260908.json",
+    "--port",
+    "18094"
+  ],
+  "plan_sha256": "bb1ba8053fd4829e6e306b6df6a131ff52c08395610e97cc5100a1abf42d26d7",
+  "base_commit": "12a2e173226b8e306d46ee10f5dcbca126b43f87",
+  "log": "evaluation/http-partial-write-dev-20260908.log"
+}
