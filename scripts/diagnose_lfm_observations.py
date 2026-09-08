@@ -18,6 +18,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / 'src')]
 
 from evaluation.agent_loop import COMMON_SYSTEM_PROMPT
 from evaluation.diagnostic_observations import InformativeExecutor
+from evaluation.attack_conditions import availability_executor, preserve_legacy_goal_scope
 from evaluation.research_cases import MonitoredExecutor, research_cases, playbook
 from evaluation.condition_matrix import validate_matrix
 from evaluation.planned_cases import planned_cases
@@ -80,8 +81,13 @@ def main():
         cases = planned_cases(plan)
     matrix = validate_matrix(plan, cases)
     if fixture_type == 'http':
+        if 'attack_notices' in plan:
+            raise ValueError('attack notices require availability fixture')
         for row in matrix:
             http_condition(plan, row['condition'])
+    else:
+        for row in matrix:
+            availability_executor(plan, row, cases)
     manifest = json.loads((ROOT / 'models/manifest.json').read_text())
     model = next(m for m in manifest['models'] + manifest.get('archived_models', []) if m['label'] == plan['model'])
     if sha256(ROOT / model['path']) != plan['model_sha256']:
@@ -170,7 +176,9 @@ def main():
                                    playbook if row['condition'] == 'B0' else chat, plan, plan['fixture_image'],
                                    f'sabakan-lfm-case-{os.getpid()}-{index}',
                                    'playbook' if row['condition'] == 'B0' else plan['model'],
-                                   executor_factory=InformativeExecutor if row['observation'] == 'informative' else MonitoredExecutor)
+                                   executor_factory=availability_executor(plan, row, cases))
+                if 'attack_notices' in plan:
+                    preserve_legacy_goal_scope(record)
             record.update(row)
             record['http_requests'] = requests
             report['trials'].append(record)

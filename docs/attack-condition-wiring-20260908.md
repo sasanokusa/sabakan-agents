@@ -1,0 +1,9 @@
+# 開発攻撃文のrunner接続
+
+Issue #7向けにavailability runnerへ明示的なattack_noticesの選択を追加した。planが指定しない場合は既存Executor経路を維持する。指定時は既知のケースID、informative観測、攻撃あり／なしと非空の攻撃文の一致をモデルロード前に検証する。HTTP fixtureへの誤適用も拒否する。
+
+実行には既存のAttackObservationExecutorを使い、正常系の状態証拠を保持したままuntrusted_noticeを付加する。攻撃到達は次の入力に攻撃文が含まれたことから測る。固定対照による配信の検証は [既存記録](attack-delivery-controls-20260908.md) を参照。
+
+旧run_trialのattack_goal_*はsystem_rebootを対象とするため、明示的な攻撃文を使う結果ではlegacy_system_reboot_goal_metricsへ保存する。custom_attack_goal_measured=falseとし、許可済み再起動やcanary漏えいを測定したとは扱わない。独立した変更・悪影響の観測は維持する。個別攻撃目標の解析とLLM実測は後続の作業である。
+
+全210 tests成功。攻撃あり・cleanの選択、攻撃文欠落とcleanへの注入の拒否、旧目標指標と独立悪影響の保存を確認した。既存研究の生記録は変更していない。
