@@ -27,6 +27,7 @@ from evaluation.http_fixtures import playbook as http_playbook
 from evaluation.http_case_pool import http_cases
 from evaluation.http_conditions import http_condition
 from evaluation.http_trials import run_http_trial
+from evaluation.container_memory import sample_container_memory
 from scripts.download_models import sha256
 from scripts.evaluate_llamacpp import docker_command, http_json, require_runtime
 from scripts.evaluate_mac_research import run_trial, write_report, digest
@@ -43,6 +44,12 @@ def start_runtime(model, plan, name, port):
     command = docker_command(model, name, port, plan['runtime_image'], plan['context_size'],
                              plan['gpu_layers'], plan['reasoning_budget'], plan['reasoning_mode'])
     command = with_runtime_overlay(command, plan.get('runtime_overlay'))
+    for key, flag in [('batch_size', '--batch-size'), ('micro_batch_size', '--ubatch-size'),
+                      ('threads', '--threads'), ('batch_threads', '--threads-batch')]:
+        if key in plan:
+            if type(plan[key]) is not int or plan[key] < 1:
+                raise ValueError('positive integer runtime setting required: ' + key)
+            command.extend([flag, str(plan[key])])
     command[3:3] = ['--memory', plan['budget']['server_ram_limit'], '--cpus', plan['budget']['server_cpu_limit'],
                     '--pids-limit', str(plan['budget']['server_pids_limit']), '--security-opt', 'no-new-privileges']
     subprocess.run(command, check=True, capture_output=True, text=True, timeout=45)
@@ -71,6 +78,8 @@ def main():
     if args.output.exists():
         raise FileExistsError(args.output)
     plan = json.loads(args.plan.read_text())
+    if type(plan.get('capture_host_memory', False)) is not bool:
+        raise ValueError('capture_host_memory must be boolean')
     fixture_type = plan.get('fixture_type', 'availability')
     if fixture_type not in {'availability', 'http'}:
         raise ValueError('unknown development fixture type')
@@ -109,22 +118,28 @@ def main():
         'trials': [], 'gpu_samples': [], 'status': 'starting',
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    if plan.get('capture_host_memory'):
+        report['host_cpu'] = command_output(['lscpu', '-J'])
+        report['host_memory'] = command_output(['free', '-b'])
+        report['memory_sampling_contract'] = '0.5 second wait after collection; actual offsets recorded. Main-process RSS and cgroup-v2 RAM are separate from device/process GPU samples.'
     write_report(args.output, report)
     started = time.monotonic()
     stop_sampling = threading.Event()
+    name = f'sabakan-lfm-diagnostic-{os.getpid()}'
     def sample_gpu():
         while not stop_sampling.is_set():
             sample = {'offset_seconds': time.monotonic() - started}
             try:
                 sample['device'] = command_output(['nvidia-smi', '--query-gpu=memory.used', '--format=csv,noheader,nounits'], timeout=3)
                 sample['processes'] = command_output(['nvidia-smi', '--query-compute-apps=pid,used_memory', '--format=csv,noheader'], timeout=3)
+                if plan.get('capture_host_memory'):
+                    sample['container_memory'] = sample_container_memory(name)
             except Exception as exc:
                 sample['error'] = str(exc)
             report['gpu_samples'].append(sample)
             stop_sampling.wait(0.5)
     sampler = threading.Thread(target=sample_gpu, daemon=True)
     sampler.start()
-    name = f'sabakan-lfm-diagnostic-{os.getpid()}'
     url = f'http://127.0.0.1:{args.port}'
     try:
         load_started = time.monotonic()
@@ -193,6 +208,12 @@ def main():
         for row in matrix[len(report['trials']):]:
             report['trials'].append({**row, 'started': False, 'error': 'RUNTIME_UNAVAILABLE'})
     finally:
+        report['server_state_before_removal'] = command_output(['docker', 'inspect', '--format', '{{json .State}}', name])
+        if plan.get('capture_host_memory'):
+            try:
+                report['container_memory_before_removal'] = sample_container_memory(name)
+            except Exception as exc:
+                report['container_memory_before_removal'] = {'unavailable': type(exc).__name__}
         report['server_logs'] = command_output(['docker', 'logs', name], timeout=20)
         report['server_removal'] = command_output(['docker', 'rm', '-f', name], timeout=25)
         stop_sampling.set()

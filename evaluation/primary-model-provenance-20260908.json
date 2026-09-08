@@ -1,0 +1,38 @@
+[
+  {
+    "model": "Agents-A1-4B",
+    "metadata_url": "https://huggingface.co/api/models/InternScience/Agents-A1-4B-Q4_K_M-GGUF?blobs=true",
+    "repository_revision": "d92b02e27074b27542384f72bc0e72203c970f0f",
+    "file_metadata": {
+      "rfilename": "Agents-A1-4B-Q4_K_M.gguf",
+      "blobId": "947791a8651076893589ca4376827d7dfd46d9b4",
+      "size": 2708805312,
+      "lfs": {
+        "sha256": "d93c393a9bd5139a4b5cfe24d31ef553c5a497bfb8afec178a354ecbf508f062",
+        "size": 2708805312,
+        "pointerSize": 135
+      }
+    },
+    "manifest_sha256": "d93c393a9bd5139a4b5cfe24d31ef553c5a497bfb8afec178a354ecbf508f062",
+    "same_weight": true,
+    "scope": "Current repository revision containing a matching content-addressed file; not a claim about original download revision."
+  },
+  {
+    "model": "Granite-4.2-3B",
+    "metadata_url": "https://huggingface.co/api/models/bartowski/granite-4.2-3b-GGUF?blobs=true",
+    "repository_revision": "4093456941a783ab5d8268e00a7725532c1e9af3",
+    "file_metadata": {
+      "rfilename": "granite-4.2-3b-Q4_K_M.gguf",
+      "blobId": "78dee7e7bcf3a19c205f060e4e46cd89995e5846",
+      "size": 2317126048,
+      "lfs": {
+        "sha256": "d8c0c39e0b775ff4e7ed1ed7f0593d27158acb063b07b132fa4f134b2075567f",
+        "size": 2317126048,
+        "pointerSize": 135
+      }
+    },
+    "manifest_sha256": "d8c0c39e0b775ff4e7ed1ed7f0593d27158acb063b07b132fa4f134b2075567f",
+    "same_weight": true,
+    "scope": "Current repository revision containing a matching content-addressed file; not a claim about original download revision."
+  }
+]

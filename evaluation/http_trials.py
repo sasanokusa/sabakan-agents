@@ -33,8 +33,9 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
     snapshot_loss = plan.get('fixture_rollback_snapshot_loss', False)
     if type(snapshot_loss) is not bool or (snapshot_loss and not verification_fault):
         raise ValueError('rollback snapshot loss requires boolean true and verification failure')
-    record = {'case_id': 'development-http-' + case.fault, 'split': 'development',
-              'condition': condition, 'model': model, 'contract': case.contract(),
+    contract = case.contract()
+    record = {'case_id': contract['case_id'], 'split': contract['split'],
+              'condition': condition, 'model': model, 'contract': contract,
               'started': False, 'public_inputs': [], 'model_responses': [],
               'partial_loop_trace': {}, 'postcheck_windows': []}
     fixture = broker = monitor = controller = None

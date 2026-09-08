@@ -1,0 +1,15 @@
+{
+  "pid": 542262,
+  "command": [
+    "python3",
+    "scripts/diagnose_lfm_observations.py",
+    "--plan",
+    "evaluation/protocols/shared-runtime-granite-dev-20260908.json",
+    "--output",
+    "evaluation/shared-runtime-granite-dev-20260908.json",
+    "--port",
+    "18094"
+  ],
+  "started_at": "2026-09-08T04:20:27.925435+00:00",
+  "plan_sha256": "123ec94dbf871465749d5be414f3ac3ae81db931514e456b536b7e6b89f59692"
+}

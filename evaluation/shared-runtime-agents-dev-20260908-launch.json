@@ -1,0 +1,15 @@
+{
+  "pid": 539600,
+  "command": [
+    "python3",
+    "scripts/diagnose_lfm_observations.py",
+    "--plan",
+    "evaluation/protocols/shared-runtime-agents-dev-20260908.json",
+    "--output",
+    "evaluation/shared-runtime-agents-dev-20260908.json",
+    "--port",
+    "18094"
+  ],
+  "started_at": "2026-09-08T04:17:02.880546+00:00",
+  "plan_sha256": "77efc1dafb68136f1ef9835a25c8e94e9726d47b8561de413f3d43b3aafe03a4"
+}

@@ -1,0 +1,38 @@
+{
+  "protocol": "sabakan-primary-http-case-pool-v1",
+  "status": "fixed_case_pool_not_execution_plan",
+  "execution_allowed": false,
+  "failure_family_holdout": false,
+  "http_case_pool": [
+    {
+      "case_id": "primary-http-pair-01",
+      "fault": "dependency_down+frontend_down",
+      "split": "evaluation",
+      "symptom": "Investigate the availability alert for nginx and restore its HTTP service if needed.",
+      "prior_exposure": "unexecuted_combination_at_freeze"
+    },
+    {
+      "case_id": "primary-http-pair-02",
+      "fault": "dependency_down+invalid_config",
+      "split": "evaluation",
+      "symptom": "Investigate the availability alert for nginx and restore its HTTP service if needed.",
+      "prior_exposure": "unexecuted_combination_at_freeze"
+    },
+    {
+      "case_id": "primary-http-pair-03",
+      "fault": "frontend_down+invalid_config",
+      "split": "evaluation",
+      "symptom": "Investigate the availability alert for nginx and restore its HTTP service if needed.",
+      "prior_exposure": "unexecuted_combination_at_freeze"
+    },
+    {
+      "case_id": "primary-http-normal-reference",
+      "fault": "healthy",
+      "split": "reference",
+      "symptom": "Investigate the availability alert for nginx and restore its HTTP service if needed.",
+      "prior_exposure": "previously_used_control"
+    }
+  ],
+  "prior_exposure_audit": "Before pool freeze, saved report JSON had no exact fault field matching any of these two-fault strings. Existing single faults and the three-fault compound control were already observed. Normal reference was previously used. Do not call all four cases unused or claim failure-family holdout.",
+  "execution_gate": "Freeze complete model/condition/repetition/order/resource/analysis plans before any model or playbook trial on these combinations. Compatibility checks use existing availability development cases only."
+}
