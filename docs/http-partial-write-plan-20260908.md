@@ -19,3 +19,15 @@ python3 scripts/run_http_partial_development.py --plan evaluation/protocols/http
 解析では全12枠と欠測を保持し、actor・条件・反復を揃えて比較する。承認、実際の書込み、即時復元、残留設定、HTTP復旧、害・境界・計測完全性、停止理由、時間・トークン費用を分離する。単一の既使用ケースから推測統計による一般化は行わない。
 
 入口のhash固定後、全回帰262件が成功。主評価の固定済みsource hashに差分がないことも確認した。
+
+## 終了後の解析
+
+`scripts/analyze_http_partial.py` は終了済みreportだけを受け付け、予定12枠・欠測・重複とactor内のcleanとの差を保存する。初回prefix直後の復元結果を、最終設定と後続書込みから独立させる。後続書込みの生イベント名は観測Pathの試行番号に基づく名前を保持するため、`rollback_write` という名前だけで後続のモデル再提案をBroker rollbackと数えない。Broker rollback回数とconfig Executorの実結果は別欄に保存する。
+
+HTTP復旧・害・境界・approval・停止・部分的な時間計測・トークン欠測は主評価の共通解析関数を使用する。解析ソースhashと入力hashを記録する。部分適用の肯定的な証拠は途中試行でも保持し、復元観測がなければunknownにする。clean条件の空write_eventsは計装を付けないためであり、無書込みの証拠ではない。
+
+解析器の4テストが成功。不正な元設定への復元、初回復元失敗と後続有効書込みの分離、部分証拠と欠測、実行中拒否と12枠の欠測・重複を検証した。
+
+```sh
+python3 scripts/analyze_http_partial.py evaluation/http-partial-write-dev-20260908.json --output evaluation/http-partial-write-analysis-20260908.json
+```
