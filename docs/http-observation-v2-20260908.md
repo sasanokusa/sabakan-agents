@@ -1,0 +1,7 @@
+# HTTP観測版2
+
+http_observation_version=2を明示した計画のみ、service_statusに実際のprobe結果（HTTP body/errorを含む）と固定のmanaged_configuration=nginx-main、dependency_container=sabakanを追加する。旧版の既定値は1のまま。故障ラベル・正解操作を返さず、全ケースで同じ固定の管理対象名を公開する。
+
+実Dockerのinvalid_configとdependency_downに固定の公開playbookを接続した。両方でHTTP応答本文がBrokerを経由して次の意思決定入力へ届き、最終HTTP復旧を確認した。evaluation/http-observation-v2-controls-20260908.jsonに実入力と独立観測を保存。monitor版2を併用した配線対照であり、旧結果との単一機構比較でもモデルの成功実績でもない。
+
+回帰183件通過。モデル評価時は新しい観測契約・monitor版を事前に固定し、旧結果を変更しない。

@@ -180,9 +180,12 @@ class HttpFixture:
 
 
 class HttpExecutor(DockerFixtureExecutor):
-    def __init__(self, fixture):
+    def __init__(self, fixture, *, observation_version=1):
+        if type(observation_version) is not int or observation_version not in {1, 2}:
+            raise ValueError('unknown HTTP observation version')
         super().__init__({'nginx': fixture.frontend, 'sabakan': fixture.backend}, config_path=fixture.config_path)
         self.fixture = fixture
+        self.observation_version = observation_version
 
     @staticmethod
     def _validation(raw):
@@ -210,7 +213,11 @@ class HttpExecutor(DockerFixtureExecutor):
             result = super().execute_read(request)
             if result.ok:
                 probe = self.fixture.probe()
-                return replace(result, data={**result.data, 'http_ok': probe['ok'], 'http_status': probe['http_status']})
+                data = {**result.data, 'http_ok': probe['ok'], 'http_status': probe['http_status']}
+                if self.observation_version == 2:
+                    data.update(http_response=probe, managed_configuration='nginx-main',
+                                dependency_container='sabakan')
+                return replace(result, data=data)
             return result
         if request.tool == 'journal_query':
             return ExecutionResult(True, 'READ_OK', {'evidence_source': 'current HTTP diagnostic response, not historical journal',

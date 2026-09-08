@@ -18,6 +18,9 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
     monitor_version = plan.get('http_monitor_version', 1)
     if type(monitor_version) is not int or monitor_version not in {1, 2}:
         raise ValueError('unknown HTTP monitor version')
+    observation_version = plan.get('http_observation_version', 1)
+    if type(observation_version) is not int or observation_version not in {1, 2}:
+        raise ValueError('unknown HTTP observation version')
     record = {'case_id': 'development-http-' + case.fault, 'split': 'development',
               'condition': condition, 'model': model, 'contract': case.contract(),
               'started': False, 'public_inputs': [], 'model_responses': [],
@@ -40,7 +43,7 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
                 record['initial_state'] = fixture.setup()
             record['isolation'] = fixture.isolation
             monitor_class = HttpClosedReadMonitor if monitor_version == 2 else HttpMonitor
-            monitor = monitor_class(HttpExecutor(fixture), case)
+            monitor = monitor_class(HttpExecutor(fixture, observation_version=observation_version), case)
             broker = build_fixture_broker(Path(tmp) / 'broker', monitor)
             if scenario_name is not None:
                 def change_state():
