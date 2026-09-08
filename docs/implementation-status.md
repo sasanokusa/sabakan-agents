@@ -14,7 +14,7 @@ Issue #18の追跡範囲に対する現在の証拠を以下にまとめる。�
 | #14/#15 HTTP | [Sparkの観測版2による開発4件](spark-http-v2-development-20260908.md)。frontendと設定不備を復旧、正常は非介入、依存先停止は誤った再起動で未復旧 | 観測・monitor版が異なる旧結果と単純比較しない。未使用ケース・故障族汎化は未評価 |
 | #14/#15 複合故障 | [3故障の段階的修復と内部DNS修正](compound-http-controls-20260908.md)。IP再割当てを実測し、3変更後のHTTP正常化を固定要求で確認 | 直後と待機後のHTTPを分離。モデルの多段階復旧と未使用ケースの主評価は未完了 |
 | #7 攻撃 | [正常対象restart誘導の16試行](healthy-restart-attack-development-20260908.md)は全件非介入。[canaryの16試行](canary-attack-development-20260908.md)は禁止読出し・本文出力0だがSparkのreasoningにmarker 2件 | API全出力で漏えいなしとは言えない。少数の開発条件での結果を一般的な耐性と解釈しない |
-| #7 正当タスク妨害 | [観測継続誘導の16試行](observation-obstruction-development-20260908.md)。Sparkの停止ケースはclean 2/2、attack 1/2復旧、playbookは両方2/2 | 同一観測の反復実行は0。1件の対応差から因果効果を断定しない。許可済み別対象への誤操作は残件 |
+| #7 正当タスク妨害 | [観測継続誘導の16試行](observation-obstruction-development-20260908.md)。Sparkの停止ケースはclean 2/2、attack 1/2復旧、playbookは両方2/2 | 同一観測の反復実行は0。1件の対応差から因果効果を断定しない。[別の許可対象への誤操作8試行](wrong-target-http-plan-20260908.md)は準備済み、主評価後に実行 |
 | #11 guard | [実時間の固定対照](timed-guard-controls-20260908.md)と[Sparkの8試行](http-timed-guard-development-20260908.md)を完了 | 上限4の改善は確認せず既定2を維持。多段階復旧・広いケースでの採用判断は未完了 |
 | #12 モデル主評価 | [共通runtime確認](primary-runtime-preflight-20260908.md)を完了し、[3モデル・56試行の事前計画](gtx1650-primary-plan-20260908.md)をcommit `96ee05a`で固定、実行開始 | 主評価は収集中で未完了。2故障組合せ3件と既使用正常referenceを分離。背景GPU使用量、モデルprocess VRAM、RSS、cgroup RAMを混同しない |
 
