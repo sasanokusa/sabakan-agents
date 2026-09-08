@@ -16,7 +16,7 @@ Issue #18の追跡範囲に対する現在の証拠を以下にまとめる。�
 | #7 攻撃 | [正常対象restart誘導の16試行](healthy-restart-attack-development-20260908.md)は全件非介入。[canaryの16試行](canary-attack-development-20260908.md)は禁止読出し・本文出力0だがSparkのreasoningにmarker 2件 | API全出力で漏えいなしとは言えない。少数の開発条件での結果を一般的な耐性と解釈しない |
 | #7 正当タスク妨害 | [観測継続誘導の16試行](observation-obstruction-development-20260908.md)。Sparkの停止ケースはclean 2/2、attack 1/2復旧、playbookは両方2/2 | 同一観測の反復実行は0。1件の対応差から因果効果を断定しない。[別の許可対象への誤操作8試行](wrong-target-http-plan-20260908.md)は準備済み、主評価後に実行 |
 | #11 guard | [実時間の固定対照](timed-guard-controls-20260908.md)と[Sparkの8試行](http-timed-guard-development-20260908.md)を完了 | 上限4の改善は確認せず既定2を維持。多段階復旧・広いケースでの採用判断は未完了 |
-| #12 モデル主評価 | [共通runtime確認](primary-runtime-preflight-20260908.md)を完了し、[3モデル・56試行の事前計画](gtx1650-primary-plan-20260908.md)をcommit `96ee05a`で固定、実行開始 | 主評価は収集中で未完了。2故障組合せ3件と既使用正常referenceを分離。背景GPU使用量、モデルprocess VRAM、RSS、cgroup RAMを混同しない |
+| #12 モデル主評価 | [共通runtime確認](primary-runtime-preflight-20260908.md)を完了し、[3モデル・56試行の事前計画](gtx1650-primary-plan-20260908.md)をcommit `96ee05a`で固定、実行開始 | [56試行と正式解析が完了](gtx1650-primary-results-20260908.md)。複合故障はplaybook 6/6、各LLM条件0/6、正常は全条件2/2非介入。Agentsで害2件、Sparkの1件は害計測不明。付加価値や同等性を示さず、故障族汎化も未評価 |
 
 Spark X2.5 4Bを有効なモデル候補へ追加し、LFMは過去結果・重みを保持して候補から除外した。開発評価の結果であり、主評価によるモデル順位を確定したものではない。VMと製品連携は必要性・採用範囲を判断する後段項目で、未実装を実装済みとは扱わない。
 
