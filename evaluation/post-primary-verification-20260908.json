@@ -1,0 +1,19 @@
+{
+  "scope": "Local regression and report link check after primary and other-target analysis; partial-write study still running",
+  "base_commit": "097c3d2b478f90279c0535ebbe0248cf22ff633a",
+  "command": "PYTHONPATH=src:. python3 -m unittest discover -s tests",
+  "tests": 266,
+  "status": "passed",
+  "elapsed_seconds": 2.686,
+  "report_link_check": {
+    "missing": [],
+    "files": [
+      "docs/research-summary-20260908.md",
+      "docs/gtx1650-primary-results-20260908.md",
+      "docs/wrong-target-http-results-20260908.md",
+      "docs/implementation-status.md",
+      "docs/http-partial-write-plan-20260908.md"
+    ]
+  },
+  "limitation": "Regression success does not replace actual model comparisons or prove all issue requirements complete."
+}
