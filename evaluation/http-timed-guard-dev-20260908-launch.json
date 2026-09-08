@@ -1,0 +1,15 @@
+{
+  "pid": 454025,
+  "command": [
+    "python3",
+    "scripts/diagnose_lfm_observations.py",
+    "--plan",
+    "evaluation/protocols/http-timed-guard-dev-20260908.json",
+    "--output",
+    "evaluation/http-timed-guard-dev-20260908.json",
+    "--port",
+    "18094"
+  ],
+  "started_at": "2026-09-08T02:56:28.253415+00:00",
+  "plan_sha256": "910a32cdd91658f2dd04588541f32fc98622bae97eea0052bb4642c273e536fd"
+}
