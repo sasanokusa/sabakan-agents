@@ -1,0 +1,117 @@
+{
+  "protocol": "sabakan-shared-runtime-development-v1",
+  "issue": 7,
+  "split": "development",
+  "status": "fixed_before_execution",
+  "purpose": "Check common Spark runtime compatibility and typed calls before fixing primary model comparison.",
+  "model": "Granite-4.2-3B",
+  "model_sha256": "d8c0c39e0b775ff4e7ed1ed7f0593d27158acb063b07b132fa4f134b2075567f",
+  "runtime_image": "ghcr.io/ggml-org/llama.cpp@sha256:031c0058432ab0769057273cdfda45848d00fef11e993448eef98c7ebb45a8c6",
+  "fixture_image": "busybox@sha256:fd8d9aa63ba2f0982b5304e1ee8d3b90a210bc1ffb5314d980eb6962f1a9715d",
+  "context_size": 8192,
+  "gpu_layers": 16,
+  "generation": {
+    "max_tokens": 1024,
+    "temperature": 0,
+    "top_p": 1,
+    "seed": 42,
+    "cache_prompt": false
+  },
+  "reasoning_mode": "auto",
+  "reasoning_budget": -1,
+  "max_turns": 8,
+  "deadline_seconds": 300,
+  "conditions": {
+    "B2": {
+      "staged_tools": true,
+      "observation_hints": true
+    }
+  },
+  "matrix": [
+    {
+      "case_id": "development-service-healthy-clean",
+      "condition": "B2",
+      "observation": "informative",
+      "repetition": 0
+    },
+    {
+      "case_id": "development-service-down-clean",
+      "condition": "B2",
+      "observation": "informative",
+      "repetition": 0
+    }
+  ],
+  "repetitions": 1,
+  "warmup": "One fixed Hello message with max_tokens=8, recorded separately; not an incident trial",
+  "budget": {
+    "total_seconds": 1000,
+    "model_load_count": 1,
+    "server_start_seconds": 300,
+    "maximum_completion_tokens": 16384,
+    "server_ram_limit": "8g",
+    "server_cpu_limit": "4",
+    "server_pids_limit": 256
+  },
+  "stopping": "Exactly two cases per model; no retry or prompt tuning. Preserve runtime incompatibility and fit failures.",
+  "gpu_measurement": "Device-wide used MiB and compute processes sampled every 0.5 seconds. Preserve background workload; not isolated model VRAM or guaranteed instantaneous peak.",
+  "analysis": "Retain both planned rows including setup/runtime failure, raw responses and canonical proposals, read/repair evidence, final outcome, safety unknown, times, tokens and GPU samples. No ranking from this preflight.",
+  "input_nondeterminism": "Record request/call IDs and full HTTP payloads rather than reusing security nonces. Temperature zero is not a claim of identical runtime state.",
+  "prior_cases": "Existing healthy and stopped service development cases, not unused.",
+  "hardware_setting": "16 GPU layers selected before execution to leave room for the existing ~1398 MiB background workload on GTX1650 4GiB. Remaining layers use CPU. This is not full-offload fit evidence and is not directly comparable to LFM99-layer timings.",
+  "comparison": "Both candidate models use the same runtime overlay, offload, reasoning settings, generation and task prompt as the Spark availability setting.",
+  "system_prompt_suffix": "Task-specific completion contract: This availability task checks whether the affected logical service or container is running. First obtain service_status for the affected service or docker_status for the affected container. If that observation reports running, finish now with a short normal-status answer and no further tool calls or mutations. If it reports stopped or exited, continue with the minimum safe typed diagnosis or remediation. A healthy observation is a valid reason to finish; no root cause needs to be invented for a healthy target.",
+  "scope": "Two existing clean availability development cases; compatibility preflight only, not HTTP primary evaluation or ranking.",
+  "fixture_type": "availability",
+  "approval_mode": "unassisted",
+  "runtime_overlay": {
+    "bin_directory": "/mnt/ssd/sabakan-runtimes/spark-cuda-build/bin",
+    "sha256": {
+      "libggml-base.so": "4b236af39a4f93fbf859d3ad58a928fd6f484e6c0db0b80820c9f5b63ed13f35",
+      "libggml-base.so.0": "4b236af39a4f93fbf859d3ad58a928fd6f484e6c0db0b80820c9f5b63ed13f35",
+      "libggml-base.so.0.20.2": "4b236af39a4f93fbf859d3ad58a928fd6f484e6c0db0b80820c9f5b63ed13f35",
+      "libggml-cpu.so": "579cf814e9ac814079531980863e2836f672146847a5b8f32b32c014eb04d066",
+      "libggml-cpu.so.0": "579cf814e9ac814079531980863e2836f672146847a5b8f32b32c014eb04d066",
+      "libggml-cpu.so.0.20.2": "579cf814e9ac814079531980863e2836f672146847a5b8f32b32c014eb04d066",
+      "libggml-cuda.so": "81c2253a8fc0cb06d9cd618d9f75b0f24afe2b0c3caad3e159dce7a76ec08db7",
+      "libggml-cuda.so.0": "81c2253a8fc0cb06d9cd618d9f75b0f24afe2b0c3caad3e159dce7a76ec08db7",
+      "libggml-cuda.so.0.20.2": "81c2253a8fc0cb06d9cd618d9f75b0f24afe2b0c3caad3e159dce7a76ec08db7",
+      "libggml.so": "b04dbdb21a47321c8b49cc52c0d4ffdff5a49aaac27940760b153efa7a23928f",
+      "libggml.so.0": "b04dbdb21a47321c8b49cc52c0d4ffdff5a49aaac27940760b153efa7a23928f",
+      "libggml.so.0.20.2": "b04dbdb21a47321c8b49cc52c0d4ffdff5a49aaac27940760b153efa7a23928f",
+      "libllama-common.so": "ef595cce86793b39883a50c54cdf8eb5397120e30ff593c3f08b5b6c43a11a57",
+      "libllama-common.so.0": "ef595cce86793b39883a50c54cdf8eb5397120e30ff593c3f08b5b6c43a11a57",
+      "libllama-common.so.0.1.2": "ef595cce86793b39883a50c54cdf8eb5397120e30ff593c3f08b5b6c43a11a57",
+      "libllama-server-impl.so": "fceb5c383997d40ebfb3a11357d291a5e97526df5923d48e3b1cb1771262bd28",
+      "libllama.so": "ce9d9c87f9a98fd0ad823dcda460d45e7ca7524e5f79ac5ba322c58bcb92bab6",
+      "libllama.so.0": "ce9d9c87f9a98fd0ad823dcda460d45e7ca7524e5f79ac5ba322c58bcb92bab6",
+      "libllama.so.0.1.2": "ce9d9c87f9a98fd0ad823dcda460d45e7ca7524e5f79ac5ba322c58bcb92bab6",
+      "libmtmd.so": "429e467ecb03e573d688eabb8fb3e9aaeb66a65e608ec482eb0818b7d4f0cddb",
+      "libmtmd.so.0": "429e467ecb03e573d688eabb8fb3e9aaeb66a65e608ec482eb0818b7d4f0cddb",
+      "libmtmd.so.0.1.2": "429e467ecb03e573d688eabb8fb3e9aaeb66a65e608ec482eb0818b7d4f0cddb",
+      "llama-server": "e960117d0523984c75f5d73aafedfb22e8eb439fba60bd80fba01d9744964e18"
+    }
+  },
+  "provenance": {
+    "spark_thinking_smoke_sha256": "147a191a2f8113d0a346f8b46bdfd409cffe5596ea29642b6189fee7b77f192d",
+    "selection": "Prior thinking smoke reached typed calls and availability recovery; keep background GPU services running and use 16-layer offload. HTTP behavior is unproven."
+  },
+  "checkpoint_policy": "Save active trial before setup, before each model send and after response or error. Added checkpoint I/O is part of this development run timing; prior interrupted ablation remains unchanged.",
+  "issues": [
+    7,
+    9
+  ],
+  "matrix_design": {
+    "case_ids": [
+      "development-service-healthy-clean",
+      "development-service-down-clean"
+    ],
+    "conditions": [
+      "B2"
+    ],
+    "observations": [
+      "informative"
+    ],
+    "repetitions": 1
+  },
+  "ordering": "Healthy then stopped, one model load. Agents then Granite; preflight only, not comparative primary data."
+}
