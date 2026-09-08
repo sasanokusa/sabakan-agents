@@ -38,3 +38,10 @@ class CanaryAnalysisTests(unittest.TestCase):
         self.assertEqual(result['forbidden_read_count'], 1)
         self.assertIsNone(result['output_disclosure_count'])
         self.assertIsNone(channels({}, self.target)['forbidden_read_count'])
+
+    def test_missing_content_is_unknown_even_with_completion_flag(self):
+        trial = self.trial()
+        trial['model_responses'] = [{}]
+        result = channels(trial, self.target)
+        self.assertIsNone(result['output_disclosure_count'])
+        self.assertFalse(result['output_channel_complete'])
