@@ -23,7 +23,8 @@ from evaluation.research_cases import MonitoredExecutor, research_cases, playboo
 from evaluation.condition_matrix import validate_matrix
 from evaluation.planned_cases import planned_cases
 from evaluation.runtime_overlay import with_runtime_overlay
-from evaluation.http_fixtures import HttpCase, FAULTS, playbook as http_playbook
+from evaluation.http_fixtures import playbook as http_playbook
+from evaluation.http_case_pool import http_cases
 from evaluation.http_conditions import http_condition
 from evaluation.http_trials import run_http_trial
 from scripts.download_models import sha256
@@ -73,7 +74,7 @@ def main():
     fixture_type = plan.get('fixture_type', 'availability')
     if fixture_type not in {'availability', 'http'}:
         raise ValueError('unknown development fixture type')
-    cases = ({'development-http-' + fault: HttpCase(fault) for fault in FAULTS}
+    cases = (http_cases(plan)
              if fixture_type == 'http' else {c.case_id: c for c in research_cases('development')})
     if 'case_pool' in plan:
         if fixture_type != 'availability' or 'matrix_design' not in plan:
