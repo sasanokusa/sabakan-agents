@@ -1,0 +1,15 @@
+{
+  "pid": 385146,
+  "command": [
+    "python3",
+    "scripts/diagnose_lfm_observations.py",
+    "--plan",
+    "evaluation/protocols/http-rollback-comparison-dev-20260908.json",
+    "--output",
+    "evaluation/http-rollback-comparison-dev-20260908.json",
+    "--port",
+    "18094"
+  ],
+  "started_at": "2026-09-08T01:33:53.241634+00:00",
+  "plan_sha256": "adafd0aba3f19b299851bebcd2e473b944c0acf134bdab51ceb2d23f37bc65f3"
+}
