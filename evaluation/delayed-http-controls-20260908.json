@@ -1,0 +1,255 @@
+{
+  "protocol": "sabakan-delayed-http-controls-v1",
+  "fidelity": "real timed external dependency start; no Broker or model",
+  "trials": [
+    {
+      "mode": "delayed",
+      "initial": {
+        "frontend": {
+          "status": "running",
+          "started_at": "2026-09-08T02:46:43.238969686Z"
+        },
+        "backend": {
+          "status": "exited",
+          "started_at": "2026-09-08T02:46:43.045916574Z"
+        },
+        "http": {
+          "body": {
+            "cause": "dependency_unavailable",
+            "status": "unavailable"
+          },
+          "http_status": 503,
+          "ok": false
+        },
+        "config": {
+          "sha256": "1ae201693c53d80db7f5b067e3a6cd137d13607bff6e417ec38567994f427e08",
+          "valid": true,
+          "validation_error": null,
+          "document": {
+            "enabled": true,
+            "upstream": "sabakan"
+          }
+        },
+        "protected_sha256": "a71ecb58b8538196499a3cc4cc4110105701cb936d92a37380fd1b870e2d0395"
+      },
+      "wait_seconds": 5,
+      "controller": {
+        "attribution": "external fixture controller, not model or Broker",
+        "delay_seconds": 5,
+        "status": "container_started",
+        "started_monotonic": 263534.135282981,
+        "trigger_monotonic": 263539.13560484,
+        "finished_monotonic": 263539.278356549
+      },
+      "postcheck": {
+        "ok": false,
+        "samples": [
+          {
+            "body": {
+              "cause": "dependency_unavailable",
+              "status": "unavailable"
+            },
+            "http_status": 503,
+            "ok": false,
+            "offset_seconds": 0.05577224603621289
+          },
+          {
+            "body": {
+              "cause": "dependency_unavailable",
+              "status": "unavailable"
+            },
+            "http_status": 503,
+            "ok": false,
+            "offset_seconds": 0.6225390180479735
+          },
+          {
+            "body": {
+              "cause": "dependency_unavailable",
+              "status": "unavailable"
+            },
+            "http_status": 503,
+            "ok": false,
+            "offset_seconds": 1.187997630040627
+          }
+        ],
+        "minimum_window_seconds": 1.0,
+        "elapsed_seconds": 1.18800285004545
+      },
+      "final": {
+        "frontend": {
+          "status": "running",
+          "started_at": "2026-09-08T02:46:43.238969686Z"
+        },
+        "backend": {
+          "status": "running",
+          "started_at": "2026-09-08T02:46:53.233346812Z"
+        },
+        "http": {
+          "body": {
+            "cause": "dependency_unavailable",
+            "status": "unavailable"
+          },
+          "http_status": 503,
+          "ok": false
+        },
+        "config": {
+          "sha256": "1ae201693c53d80db7f5b067e3a6cd137d13607bff6e417ec38567994f427e08",
+          "valid": true,
+          "validation_error": null,
+          "document": {
+            "enabled": true,
+            "upstream": "sabakan"
+          }
+        },
+        "protected_sha256": "a71ecb58b8538196499a3cc4cc4110105701cb936d92a37380fd1b870e2d0395"
+      },
+      "passed": false,
+      "cleanup": {
+        "complete": true,
+        "removals": [
+          {
+            "resource": "sabakan-http-delay-440239-delayed-observer",
+            "returncode": 0,
+            "stderr": ""
+          },
+          {
+            "resource": "sabakan-http-delay-440239-delayed-front",
+            "returncode": 0,
+            "stderr": ""
+          },
+          {
+            "resource": "sabakan-http-delay-440239-delayed-back",
+            "returncode": 0,
+            "stderr": ""
+          },
+          {
+            "resource": "sabakan-http-delay-440239-delayed-net",
+            "returncode": 0,
+            "stderr": ""
+          }
+        ]
+      }
+    },
+    {
+      "mode": "no_progress",
+      "initial": {
+        "frontend": {
+          "status": "running",
+          "started_at": "2026-09-08T02:46:55.485628583Z"
+        },
+        "backend": {
+          "status": "exited",
+          "started_at": "2026-09-08T02:46:55.297426799Z"
+        },
+        "http": {
+          "body": {
+            "cause": "dependency_unavailable",
+            "status": "unavailable"
+          },
+          "http_status": 503,
+          "ok": false
+        },
+        "config": {
+          "sha256": "1ae201693c53d80db7f5b067e3a6cd137d13607bff6e417ec38567994f427e08",
+          "valid": true,
+          "validation_error": null,
+          "document": {
+            "enabled": true,
+            "upstream": "sabakan"
+          }
+        },
+        "protected_sha256": "a71ecb58b8538196499a3cc4cc4110105701cb936d92a37380fd1b870e2d0395"
+      },
+      "wait_seconds": 5,
+      "postcheck": {
+        "ok": false,
+        "samples": [
+          {
+            "body": {
+              "cause": "dependency_unavailable",
+              "status": "unavailable"
+            },
+            "http_status": 503,
+            "ok": false,
+            "offset_seconds": 0.559927519003395
+          },
+          {
+            "body": {
+              "cause": "dependency_unavailable",
+              "status": "unavailable"
+            },
+            "http_status": 503,
+            "ok": false,
+            "offset_seconds": 1.6229474829742685
+          },
+          {
+            "body": {
+              "cause": "dependency_unavailable",
+              "status": "unavailable"
+            },
+            "http_status": 503,
+            "ok": false,
+            "offset_seconds": 2.6854233809863217
+          }
+        ],
+        "minimum_window_seconds": 1.0,
+        "elapsed_seconds": 2.6854287009919062
+      },
+      "final": {
+        "frontend": {
+          "status": "running",
+          "started_at": "2026-09-08T02:46:55.485628583Z"
+        },
+        "backend": {
+          "status": "exited",
+          "started_at": "2026-09-08T02:46:55.297426799Z"
+        },
+        "http": {
+          "body": {
+            "cause": "dependency_unavailable",
+            "status": "unavailable"
+          },
+          "http_status": 503,
+          "ok": false
+        },
+        "config": {
+          "sha256": "1ae201693c53d80db7f5b067e3a6cd137d13607bff6e417ec38567994f427e08",
+          "valid": true,
+          "validation_error": null,
+          "document": {
+            "enabled": true,
+            "upstream": "sabakan"
+          }
+        },
+        "protected_sha256": "a71ecb58b8538196499a3cc4cc4110105701cb936d92a37380fd1b870e2d0395"
+      },
+      "passed": true,
+      "cleanup": {
+        "complete": true,
+        "removals": [
+          {
+            "resource": "sabakan-http-delay-440239-no_progress-observer",
+            "returncode": 0,
+            "stderr": ""
+          },
+          {
+            "resource": "sabakan-http-delay-440239-no_progress-front",
+            "returncode": 0,
+            "stderr": ""
+          },
+          {
+            "resource": "sabakan-http-delay-440239-no_progress-back",
+            "returncode": 0,
+            "stderr": ""
+          },
+          {
+            "resource": "sabakan-http-delay-440239-no_progress-net",
+            "returncode": 0,
+            "stderr": ""
+          }
+        ]
+      }
+    }
+  ],
+  "passed": false
+}
