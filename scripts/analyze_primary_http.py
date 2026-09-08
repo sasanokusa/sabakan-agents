@@ -284,6 +284,10 @@ def main():
     frozen = args.plan.read_bytes()
     if hashlib.sha256(frozen).hexdigest() != sequence.get('plan_sha256') or json.loads(frozen) != sequence.get('plan'):
         raise ValueError('primary plan hash or embedded plan mismatch')
+    changed = [path for path, expected in sequence['plan']['source_sha256'].items()
+               if hashlib.sha256((ROOT / path).read_bytes()).hexdigest() != expected]
+    if changed:
+        raise ValueError('analysis requires the frozen execution/effect helpers: ' + ', '.join(changed))
     reports, hashes = {}, {}
     recorded = {b['id']: b for b in sequence.get('blocks', [])}
     for block in sequence['plan']['blocks']:
@@ -296,7 +300,9 @@ def main():
             reports[block['output']] = json.loads(data)
             hashes[block['output']] = sha
     result = analyze(sequence, reports)
-    result.update(input_sha256=hashlib.sha256(raw).hexdigest(), block_input_sha256=hashes)
+    result.update(input_sha256=hashlib.sha256(raw).hexdigest(), block_input_sha256=hashes,
+                  analysis_code_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                  analysis_python=sys.version, execution_and_effect_sources_verified=True)
     with args.output.open('x') as output:
         json.dump(result, output, indent=2)
         output.write('\n')

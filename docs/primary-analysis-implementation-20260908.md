@@ -3,6 +3,8 @@
 `scripts/analyze_primary_http.py` は、事前固定した親planに対応する終了済みsequenceだけを解析する。
 収集中の結果を正式な主評価集計として出力しない。親planのhashと埋込plan、
 各block出力のhash、実行コードhash、モデル、case契約を照合する。
+解析時のeffect・schema helperも固定sourceと照合し、変更されていれば元の解析としては実行しない。
+解析器自身のSHA256とPython versionも出力に残す。後の別版再採点は元の結果と分離する。
 
 ```sh
 python3 scripts/analyze_primary_http.py evaluation/gtx1650-primary-sequence-20260908.json \
