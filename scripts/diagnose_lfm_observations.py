@@ -22,7 +22,8 @@ from evaluation.research_cases import MonitoredExecutor, research_cases, playboo
 from evaluation.condition_matrix import validate_matrix
 from evaluation.planned_cases import planned_cases
 from evaluation.runtime_overlay import with_runtime_overlay
-from evaluation.http_fixtures import HttpCase, FAULTS
+from evaluation.http_fixtures import HttpCase, FAULTS, playbook as http_playbook
+from evaluation.http_conditions import http_condition
 from evaluation.http_trials import run_http_trial
 from scripts.download_models import sha256
 from scripts.evaluate_llamacpp import docker_command, http_json, require_runtime
@@ -78,8 +79,9 @@ def main():
             raise ValueError('explicit availability case pool requires a matrix design')
         cases = planned_cases(plan)
     matrix = validate_matrix(plan, cases)
-    if fixture_type == 'http' and any(r['condition'] == 'B0' for r in matrix):
-        raise ValueError('HTTP playbook requires its separate public observation policy')
+    if fixture_type == 'http':
+        for row in matrix:
+            http_condition(plan, row['condition'])
     manifest = json.loads((ROOT / 'models/manifest.json').read_text())
     model = next(m for m in manifest['models'] + manifest.get('archived_models', []) if m['label'] == plan['model'])
     if sha256(ROOT / model['path']) != plan['model_sha256']:
@@ -158,8 +160,11 @@ def main():
                 return {**choice['message'], 'finish_reason': choice.get('finish_reason'),
                         'usage': response.get('usage', {}), 'timings': response.get('timings', {})}
             if fixture_type == 'http':
-                record = run_http_trial(cases[row['case_id']], row['condition'], chat, plan, plan['fixture_image'],
-                                        f'sabakan-http-model-{os.getpid()}-{index}', plan['model'])
+                actor, trial_plan = http_condition(plan, row['condition'])
+                record = run_http_trial(cases[row['case_id']], row['condition'],
+                                        http_playbook if actor == 'playbook' else chat, trial_plan, plan['fixture_image'],
+                                        f'sabakan-http-model-{os.getpid()}-{index}',
+                                        'playbook' if actor == 'playbook' else plan['model'])
             else:
                 record = run_trial(cases[row['case_id']], row['condition'],
                                    playbook if row['condition'] == 'B0' else chat, plan, plan['fixture_image'],
