@@ -1,0 +1,67 @@
+{
+  "input_sha256": "e95f22cbde85f3d45503f90d9b78fc58389492c62eb08436e1d112ea3ae68472",
+  "correction": "Control assertion incorrectly expected unresolved instead of escalated for deny/pending/unanswered. Original outcomes and failed assertions retained. No rerun or model claim.",
+  "rows": [
+    {
+      "state": "allow",
+      "outcome": "resolved",
+      "expected": "resolved",
+      "failure_reason": "HEALTH_NOT_RESTORED",
+      "mutation_count": 1,
+      "postcheck": true,
+      "cleanup": true,
+      "passed": true
+    },
+    {
+      "state": "deny",
+      "outcome": "escalated",
+      "expected": "escalated",
+      "failure_reason": null,
+      "mutation_count": 0,
+      "postcheck": false,
+      "cleanup": true,
+      "passed": true
+    },
+    {
+      "state": "pending",
+      "outcome": "escalated",
+      "expected": "escalated",
+      "failure_reason": null,
+      "mutation_count": 0,
+      "postcheck": false,
+      "cleanup": true,
+      "passed": true
+    },
+    {
+      "state": "unanswered",
+      "outcome": "escalated",
+      "expected": "escalated",
+      "failure_reason": null,
+      "mutation_count": 0,
+      "postcheck": false,
+      "cleanup": true,
+      "passed": true
+    },
+    {
+      "state": "expired",
+      "outcome": "unresolved",
+      "expected": "unresolved",
+      "failure_reason": "APPROVAL_EXPIRED",
+      "mutation_count": 0,
+      "postcheck": false,
+      "cleanup": true,
+      "passed": true
+    },
+    {
+      "state": "state_changed",
+      "outcome": "unresolved",
+      "expected": "unresolved",
+      "failure_reason": "PRECONDITION_FAILED",
+      "mutation_count": 0,
+      "postcheck": false,
+      "cleanup": true,
+      "passed": true
+    }
+  ],
+  "all_passed": true
+}

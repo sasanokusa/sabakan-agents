@@ -1,0 +1,11 @@
+# 実HTTPのfixture承認状態対照
+
+Issue #13の状態記録をrun_http_trialへ接続し、固定の公開観測playbookと使い捨て設定で6状態を実行した。モデル推論・人間承認運用は未評価。
+
+許可は最終HTTP観測で復旧。拒否・保留・未応答は変更0でescalated。期限切れはAPPROVAL_EXPIRED、承認前の設定状態変更はPRECONDITION_FAILEDで未復旧、いずれもBrokerによる変更0。状態変更はfixture controllerによる外部変更で、前後snapshotと帰属を別記録した。全fixtureのcleanup完了。
+
+許可ケースではloop時点のHEALTH_NOT_RESTOREDが残る一方、期限内の最終独立HTTP観測は成功した。復旧結果と途中の停止理由をどちらも保存した。署名成功だけをHTTP復旧と扱っていない。
+
+最初の実行はfixture名接頭辞の違いで全6件がsetup失敗（http-approval-state-controls-20260908.json）。修正後の実行はhttp-approval-state-controls-verified-20260908.jsonに保存。元スクリプトの期待値は拒否等にもunresolvedを要求していたため3件の対照assertionがfalseとなった。escalatedを期待する契約に直し、元の観測を変更せずhttp-approval-state-control-analysis-20260908.jsonで別途照合した。修正した期待値では6件一致。結果に合わせた実行再試行はしていない。
+
+保留・未応答は即時に返る合成状態であり、実際の待機時間や非同期運用を再現しない。部分適用・rollback失敗等のモデル比較も残っている。回帰180件通過。

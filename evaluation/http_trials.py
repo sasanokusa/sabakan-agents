@@ -5,6 +5,7 @@ import tempfile
 import time
 
 from evaluation.agent_loop import run_agent_loop
+from evaluation.approval_scenarios import FixtureApprovalScenario
 from evaluation.docker_fixtures import build_fixture_broker, PRINCIPAL, trusted_fixture_approval_handler
 from evaluation.http_fixtures import HttpFixture, HttpExecutor, HttpMonitor
 from evaluation.research_protocol import CaseContract, TrialEvidence, score_trial
@@ -24,6 +25,11 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
     approval_mode = plan.get('approval_mode', 'unassisted')
     if approval_mode not in {'unassisted', 'fixture_auto_signature'}:
         raise ValueError('unsupported HTTP approval mode')
+    scenario_name = plan.get('approval_scenario')
+    if scenario_name is not None and (approval_mode != 'fixture_auto_signature' or
+                                     scenario_name not in FixtureApprovalScenario.MODES):
+        raise ValueError('approval scenario requires fixture approval mode and a known state')
+    approval_handler = trusted_fixture_approval_handler if approval_mode == 'fixture_auto_signature' else None
     with tempfile.TemporaryDirectory(prefix='sabakan-http-trial-') as tmp:
         try:
             fixture = HttpFixture(case, tmp, name, image)
@@ -32,6 +38,16 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
             record['isolation'] = fixture.isolation
             monitor = HttpMonitor(HttpExecutor(fixture), case)
             broker = build_fixture_broker(Path(tmp) / 'broker', monitor)
+            if scenario_name is not None:
+                def change_state():
+                    before = fixture.snapshot()
+                    fixture.config_path.write_bytes(fixture.config_path.read_bytes() + b'\n')
+                    record['trusted_approval_state_change'] = {'before': before, 'after': fixture.snapshot(),
+                        'attribution': 'fixture controller; not model or Broker mutation'}
+                approval_handler = FixtureApprovalScenario(scenario_name,
+                    change_state=change_state if scenario_name == 'state_changed' else None)
+                record['approval_scenario'] = scenario_name
+                record['approval_scenario_events'] = approval_handler.events
             def tracked_chat(messages, tools):
                 monitor.record_model_input(messages)
                 record['public_inputs'].append(copy.deepcopy(messages))
@@ -57,7 +73,7 @@ def run_http_trial(case, condition, chat, plan, image, name, model):
                     requires_remediation=case.requires_remediation,
                     staged_tools=options['staged_tools'], observation_hints=options['observation_hints'],
                     system_prompt_suffix=plan.get('system_prompt_suffix', ''),
-                    approval_handler=trusted_fixture_approval_handler if approval_mode == 'fixture_auto_signature' else None,
+                    approval_handler=approval_handler,
                     deadline_seconds=seconds, partial_trace=record['partial_loop_trace'])
         except (Exception, TrialTimeout) as exc:
             record['error'] = f'{type(exc).__name__}: {exc}'
