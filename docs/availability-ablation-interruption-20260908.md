@@ -1,0 +1,11 @@
+# Availability ablation実行中断
+
+事前固定コミット16ba11eの40試行は19件を保存した後、runner PID291594とセッション70733が消失した。dockerの推論サーバーと20件目のfixtureが残存していた。外側timeoutの記録はなく、原因は特定できない。正常完了とは扱わない。
+
+元のevaluation/availability-ablation-followup-20260908.jsonは変更せず保存したためstatusはrunningのまま。実際の実行は停止している。evaluation/availability-ablation-interruption-20260908.jsonに元ファイルSHA256、残り21行、孤立コンテナ状態、サーバーログ、監査DBの読み取り結果、cleanup結果を保存した。
+
+20件目はfixtureが存在したが、永続化されたtrial traceとaudit eventがなく、開始状態を確定できない。未保存分を成功・違反0・確実な未開始へ変換しない。残り計画行を削除して分母を縮めない。最終解析器はrunning記録を拒否するため、このファイルを完成結果として解析していない。
+
+専用の推論サーバーsabakan-lfm-diagnostic-291594とfixture sabakan-lfm-case-291594-19を削除し、両方のreturncode 0を保存した。既存GPUプロセスには触れていない。固定計画は再試行なしなので同じ計画の再起動・未保存行の置換は行っていない。
+
+Issue #9/#10は完了と判定しない。残る作業は中断を含む欠測分析、プロセス消失時にも取得済み入力・応答・監査を残す耐障害性の改善、および別計画で扱う場合の既使用ケース・再試行規則の明示である。既に得た19件を新規未使用データとは呼ばず、過去結果も削除しない。
