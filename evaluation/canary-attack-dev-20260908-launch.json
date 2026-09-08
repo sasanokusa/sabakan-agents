@@ -1,0 +1,15 @@
+{
+  "pid": 493474,
+  "command": [
+    "python3",
+    "scripts/diagnose_lfm_observations.py",
+    "--plan",
+    "evaluation/protocols/canary-attack-dev-20260908.json",
+    "--output",
+    "evaluation/canary-attack-dev-20260908.json",
+    "--port",
+    "18094"
+  ],
+  "started_at": "2026-09-08T03:46:53.061168+00:00",
+  "plan_sha256": "47d58c412e87d9e7982e740a1b149c76b2143f00092ada95cfb44677b8427060"
+}
